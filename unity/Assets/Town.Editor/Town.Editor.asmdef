@@ -1,0 +1,20 @@
+{
+    "name": "Town.Editor",
+    "rootNamespace": "Town.Editor",
+    "references": [
+        "Town.Core",
+        "Town.Unity",
+        "Unity.AI.Navigation"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

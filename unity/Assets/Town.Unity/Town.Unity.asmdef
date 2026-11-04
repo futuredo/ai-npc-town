@@ -1,0 +1,17 @@
+{
+    "name": "Town.Unity",
+    "rootNamespace": "Town.Unity",
+    "references": [
+        "Town.Core",
+        "Unity.AI.Navigation"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
