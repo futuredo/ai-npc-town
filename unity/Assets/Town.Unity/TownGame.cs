@@ -4,6 +4,7 @@ using System.Text;
 using Town.Core.Content;
 using Town.Core.Knowledge;
 using Town.Core.World;
+using Town.Core.Runtime;
 using UnityEngine;
 
 namespace Town.Unity
@@ -19,7 +20,8 @@ namespace Town.Unity
         [Tooltip("现实多少秒 = 游戏 1 分钟")]
         public float realSecondsPerGameMinute = 2f;
 
-        public HammerEventSetup.Session Session { get; private set; }
+        public TownRuntime Runtime { get; private set; }
+        public HammerEventSetup.Session Session => Runtime?.Session;
         public bool Paused { get; set; }
         public float SpeedMultiplier { get; private set; } = 1f;
         /// <summary>对话等界面打开时为 true，阻止点地移动。</summary>
@@ -37,16 +39,23 @@ namespace Town.Unity
             foreach (var l in FindObjectsByType<LocationMarker>(FindObjectsSortMode.None)) _locations[l.locationId] = l;
             foreach (var n in FindObjectsByType<NpcAgent>(FindObjectsSortMode.None)) _npcs[n.npcId] = n;
             StartSession(1);
+            if (GetComponent<TownInteractionPanel>() == null) gameObject.AddComponent<TownInteractionPanel>();
         }
 
         private void StartSession(int gen)
         {
-            Session = HammerEventSetup.Create(gen);
+            Runtime?.Dispose();
+            Runtime = new TownRuntime(gen);
             foreach (var npc in Session.World.Npcs.Values)
             {
                 if (_npcs.TryGetValue(npc.Id, out var agent) && _locations.TryGetValue(npc.LocationId, out var loc))
                     agent.WarpTo(loc.StandPoint);
             }
+            var player = FindFirstObjectByType<PlayerClickMover>();
+            if (player != null && _locations.TryGetValue(Ids.Loc.Plaza, out var spawn))
+                player.ResetPosition(spawn.StandPoint + Vector3.right * 1.5f);
+            InputBlocked = false;
+            Paused = false;
             _accum = 0;
             Debug.Log($"[Town] 新局开始 SessionGen={Session.World.SessionGen} {Session.World.Now}");
         }
@@ -57,14 +66,15 @@ namespace Town.Unity
         private void Update()
         {
             HandleDevKeys();
-            if (Paused) return;
+            if (Paused || Runtime.IsDialoguePending) return;
 
             _accum += Time.deltaTime * SpeedMultiplier;
-            int minutes = Mathf.FloorToInt(_accum / realSecondsPerGameMinute);
+            float secondsPerMinute = Mathf.Max(0.1f, realSecondsPerGameMinute);
+            int minutes = Mathf.FloorToInt(_accum / secondsPerMinute);
             if (minutes > 0)
             {
-                _accum -= minutes * realSecondsPerGameMinute;
-                Session.World.AdvanceTime(minutes);
+                _accum -= minutes * secondsPerMinute;
+                Runtime.Advance(minutes);
             }
         }
 
@@ -79,6 +89,30 @@ namespace Town.Unity
 
         public bool TryGetLocation(string id, out LocationMarker marker) => _locations.TryGetValue(id, out marker);
         public bool TryGetNpc(string id, out NpcAgent agent) => _npcs.TryGetValue(id, out agent);
+
+        public void ReportPlayerPosition(Vector3 position)
+        {
+            string nearest = null;
+            float distance = 3f;
+            foreach (var marker in _locations.Values)
+            {
+                float d = Vector3.Distance(position, marker.StandPoint);
+                if (d < distance) { distance = d; nearest = marker.locationId; }
+            }
+            Runtime.SetPlayerLocation(nearest);
+        }
+
+        public bool IsPointerOverPanel(Vector3 mousePosition)
+        {
+            var point = new Vector2(mousePosition.x, Screen.height - mousePosition.y);
+            return (_showDebug && new Rect(10, 10, 460, 330).Contains(point)) || TownInteractionPanel.PanelRect.Contains(point);
+        }
+
+        private void OnDestroy()
+        {
+            Runtime?.Dispose();
+            if (Instance == this) Instance = null;
+        }
 
         // —— 开发者调试面板（F1）。正式 UI 在 W3 用 UI Toolkit 重做。 ——
         private void OnGUI()

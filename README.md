@@ -2,6 +2,8 @@
 
 研究课题：面向小镇社会交互的 AI NPC 记忆与行为系统。文档见 [docs/](docs/)。
 
+当前入口：[素材与准备清单](docs/素材与准备清单.md) · [工程骨架说明](docs/工程骨架说明.md) · [开发日志](docs/开发日志/README.md)。
+
 ## 目录
 
 ```
@@ -10,8 +12,11 @@ unity/                    Unity 6000.3.23f1 工程
   Assets/Town.Core/       纯 C# 核心（世界事实 / 角色认知 / 动作 / 模型请求），不依赖 UnityEngine
   Assets/Town.Unity/      表现层 MonoBehaviour
   Assets/Town.Editor/     编辑器工具：灰盒场景生成、命令行截图
+  Assets/Town.Content/    正式素材与配置收纳目录（当前待导入）
   Assets/Scenes/          Town_Graybox.unity
 dotnet/                   复用 Town.Core 源码的 dotnet 工程，用于命令行编译和单元测试
+  Town.Sandbox/           完全离线的找锤子、归还与维修流程演示
+art/                      素材清单、来源与制作约定
 ```
 
 ## 常用命令
@@ -19,7 +24,8 @@ dotnet/                   复用 Town.Core 源码的 dotnet 工程，用于命�
 跑核心单元测试（不需要打开 Unity）：
 
 ```bash
-dotnet test dotnet/Town.sln
+dotnet test dotnet/Town.sln --configuration Release
+dotnet run --project dotnet/Town.Sandbox --configuration Release
 ```
 
 重新生成灰盒场景（Unity 编辑器必须关闭；编辑器里也可以用菜单「Town/生成灰盒场景」）：
@@ -31,6 +37,8 @@ dotnet test dotnet/Town.sln
 ## 运行
 
 用 Unity Hub 打开 `unity/` → 打开 `Assets/Scenes/Town_Graybox.unity` → Play。
+
+右侧操作面板自动挂载，走近居民后可选固定话题。走到雨棚查看收纳箱并拿起锤子，再回到阿木身边出示线索、归还；维修需 60 游戏分钟，可用面板开发按钮加速。该入口默认离线，无 API 费用。完整的 Unity Play / 寻路验收仍待进行，详见本次开发日志。
 
 | 按键 | 作用 |
 | --- | --- |

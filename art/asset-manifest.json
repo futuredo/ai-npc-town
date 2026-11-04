@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-04",
+  "stage": "greybox",
+  "assets": [
+    {
+      "id": "char_player",
+      "name": "玩家",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "idle",
+        "walk"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "char_residents",
+      "name": "阿木、阿禾、小川",
+      "quantity": 3,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "idle",
+        "walk",
+        "talk"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "env_locations",
+      "name": "广场、作坊、杂货铺、雨棚、住宅门口",
+      "quantity": 5,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "static"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "prop_hammer",
+      "name": "锤子",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "placed",
+        "held"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "prop_box",
+      "name": "收纳箱",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "closed",
+        "open"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "prop_rack",
+      "name": "工具架",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "empty",
+        "with_hammer"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "prop_bench",
+      "name": "长凳",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "broken",
+        "repaired"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "prop_seats",
+      "name": "临时座位",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "visible"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "ui_panels",
+      "name": "对话、记事本、任务、事件回顾、快捷话题",
+      "quantity": 5,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "normal",
+        "disabled",
+        "loading"
+      ],
+      "target_directory": "unity/Assets/Town.Content/UI",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "font_chinese",
+      "name": "中文字体",
+      "quantity": 1,
+      "priority": "P1",
+      "status": "planned",
+      "states": [
+        "full_text_coverage"
+      ],
+      "target_directory": "unity/Assets/Town.Content/UI",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    },
+    {
+      "id": "sfx_basic",
+      "name": "基础交互与环境音效",
+      "quantity": 6,
+      "priority": "P2",
+      "status": "planned",
+      "states": [
+        "one_shot",
+        "loop"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Audio",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+    }
+  ]
+}
