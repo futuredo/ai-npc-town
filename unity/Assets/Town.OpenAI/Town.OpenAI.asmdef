@@ -1,0 +1,9 @@
+{
+  "name": "Town.OpenAI",
+  "rootNamespace": "Town.OpenAI",
+  "references": ["Town.Core"],
+  "overrideReferences": true,
+  "precompiledReferences": ["Newtonsoft.Json.dll"],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

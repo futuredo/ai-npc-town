@@ -43,10 +43,12 @@ dotnet test dotnet/Town.sln
 
 ## 约定
 
+- OpenAI 已提供低成本验证入口，见 [OpenAI 接入与成本规范](docs/OpenAI接入与成本规范.md)。默认离线；显式 `--live` 才调用 API，单轮最多 3 次，模型固定为 `gpt-6-luna`。
+
 - 分支流程见 [分支与协作规范](docs/分支与协作规范.md)：`main` 保存阶段基线，`develop` 集成日常开发，功能通过独立分支和 PR 合入。
 - GitHub Actions 自动运行核心逻辑测试；该检查不代替 Unity 编辑器和实际玩法验收。
 
 - 世界事实只能通过 `WorldState.Commit` 修改；MonoBehaviour 不直接改状态。
 - 角色认知只能通过 `KnowledgeStore.Learn` 写入，并且必须带来源。
 - 提示组装只能使用 `NpcPerceptionView`，拿不到世界真值。
-- 模型 API Key 只放在本地环境变量或 `.env`（已被 git 忽略），不进仓库。
+- 模型 API Key 优先放在根目录 `.env.local`（已被 Git 忽略），不进入仓库或 Unity 资源。项目级约定见 [AGENTS.md](AGENTS.md)。

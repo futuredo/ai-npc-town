@@ -14,7 +14,7 @@
 | 寻路 | NavMesh（AI Navigation 包） | 4 个地点、3 个角色，无需自写 |
 | UI | UGUI（游戏内）+ IMGUI/UI Toolkit（调试面板） | 调试面板求快，不求好看 |
 | 异步 | C# async/await（可选 UniTask） | 主线程采快照 → 后台等推理 → 回主线程校验执行 |
-| 模型 | **云端 API**，通过 `ILLMClient` 接口接入；主模型 1 个 + 便宜模型 1 个 | 本月不碰本地模型（LLMUnity 放到下个月评估）；按公司合规要求选供应商 |
+| 模型 | **OpenAI 云端 API**，通过 `ILLMClient` 接入；先固定低成本 `gpt-6-luna` 做小样本验证 | 2026-11-04 已按用户选择接入；不自动升级或重试，预算见 [OpenAI 接入与成本规范](OpenAI接入与成本规范.md)；本地模型后续评估 |
 | 输出格式 | JSON Schema 结构化输出 / 工具调用 | 解析成功 ≠ 合法，后面还要业务校验 |
 | 序列化 | Newtonsoft.Json | 存档、日志、用例、回放共用 |
 | 配置 | ScriptableObject（角色卡、动作表、事件）+ JSON 导出 | 方便策划改，方便测试工具读 |
