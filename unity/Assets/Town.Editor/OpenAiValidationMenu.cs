@@ -20,9 +20,9 @@ namespace Town.Editor
             if (_running) return;
             _running = true;
             using var cancellation = new CancellationTokenSource();
-            Action cancel = () => cancellation.Cancel();
-            AssemblyReloadEvents.beforeAssemblyReload += cancel;
-            EditorApplication.quitting += cancel;
+            void Cancel() => cancellation.Cancel();
+            AssemblyReloadEvents.beforeAssemblyReload += Cancel;
+            EditorApplication.quitting += Cancel;
             try
             {
                 // Assets -> unity -> 仓库根。仅 Editor 读取本机文件，不把 Key 序列化到 Unity 资源。
@@ -40,8 +40,8 @@ namespace Town.Editor
             }
             finally
             {
-                AssemblyReloadEvents.beforeAssemblyReload -= cancel;
-                EditorApplication.quitting -= cancel;
+                AssemblyReloadEvents.beforeAssemblyReload -= Cancel;
+                EditorApplication.quitting -= Cancel;
                 _running = false;
             }
         }
