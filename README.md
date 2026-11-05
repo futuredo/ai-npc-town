@@ -62,7 +62,7 @@ dotnet run --project dotnet/Town.Sandbox --configuration Release -- rumor
 
 - OpenAI 已提供低成本验证入口，见 [OpenAI 接入与成本规范](docs/OpenAI接入与成本规范.md)。默认离线；显式 `--live` 才调用 API，单轮最多 3 次，模型固定为 `gpt-6-luna`。
 
-- 分支流程见 [分支与协作规范](docs/分支与协作规范.md)：`main` 保存阶段基线，`develop` 集成日常开发，功能通过独立分支和 PR 合入。
+- 分支流程见 [分支与协作规范](docs/分支与协作规范.md)：单人阶段直接在 `main` 开发，提交前本地跑测试。
 - GitHub Actions 自动运行核心逻辑测试；该检查不代替 Unity 编辑器和实际玩法验收。
 
 - 世界事实只能通过 `WorldState.Commit` 修改；MonoBehaviour 不直接改状态。

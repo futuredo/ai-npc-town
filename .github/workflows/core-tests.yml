@@ -2,9 +2,7 @@ name: 核心逻辑测试
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
