@@ -63,5 +63,16 @@ namespace Town.Core.World
         };
 
         public static string Name(string id) => id != null && Names.TryGetValue(id, out var n) ? n : (id ?? "路上");
+
+        /// <summary>给模型的人物身份（姓名取自 <see cref="Names"/>，避免与显示名分叉）。只描述身份与口吻，不含认知或世界真值。</summary>
+        public static readonly IReadOnlyDictionary<string, string> Personas = new Dictionary<string, string>
+        {
+            [Npc.Amu] = Names[Npc.Amu] + "，矮人符文铁匠，拱门符文的守护者；说话短、带反问，只信亲眼所见",
+            [Npc.Ahe] = Names[Npc.Ahe] + "，醉月旅店老板娘，消息灵通、爱讲故事，说话热闹",
+            [Npc.Xiaochuan] = Names[Npc.Xiaochuan] + "，半精灵跑腿少年，说话结巴、容易脸红，想学符文锻造",
+        };
+
+        public static string Persona(string npcId) =>
+            npcId != null && Personas.TryGetValue(npcId, out var p) ? p : "小镇居民";
     }
 }

@@ -14,7 +14,7 @@ namespace Town.Editor
     {
         private static bool _running;
 
-        [MenuItem("Town/AI/测试阿禾认知（1次付费请求）")]
+        [MenuItem("Town/AI/测试梅芙认知（1次付费请求）")]
         public static async void ValidateAhe()
         {
             if (_running) return;
@@ -46,7 +46,7 @@ namespace Town.Editor
             }
         }
 
-        [MenuItem("Town/AI/测试阿禾认知（1次付费请求）", true)]
+        [MenuItem("Town/AI/测试梅芙认知（1次付费请求）", true)]
         private static bool CanValidate() => !_running && !EditorApplication.isCompiling;
     }
 }

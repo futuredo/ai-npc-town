@@ -82,6 +82,26 @@ namespace Town.Core.Tests
             Assert.IsTrue((await client.ReplyAsync(Request(), CancellationToken.None)).Success);
         }
 
+        [TestCase(Ids.Npc.Amu, "布伦", "符文铁匠")]
+        [TestCase(Ids.Npc.Ahe, "梅芙", "旅店")]
+        [TestCase(Ids.Npc.Xiaochuan, "芬恩", "跑腿")]
+        public async Task 模型扮演的身份与当前角色显示名一致(string npc, string name, string role)
+        {
+            var fake = new FakeHttp();
+            fake.Handler = async (message, _) =>
+            {
+                var instructions = (string)JObject.Parse(await message.Content.ReadAsStringAsync())["instructions"];
+                StringAssert.Contains("你扮演" + Ids.Name(npc), instructions);
+                StringAssert.Contains(name, instructions);
+                StringAssert.Contains(role, instructions);
+                foreach (var old in new[] { "阿木", "阿禾", "小川", "木匠，", "杂货店" })
+                    StringAssert.DoesNotContain(old, instructions);
+                return Response();
+            };
+            using var client = new OpenAiDialogueClient("test-not-a-real-key", new Budget(), fake);
+            Assert.IsTrue((await client.ReplyAsync(Request(npc), CancellationToken.None)).Success);
+        }
+
         [Test]
         public void 请求快照不受之后认知写入影响()
         {

@@ -24,7 +24,7 @@ internal static class Program
         {
             (Npc: Ids.Npc.Ahe, Question: "你知道锤子现在在哪里吗？请分清你看到的和你猜的。"),
             (Npc: Ids.Npc.Xiaochuan, Question: "锤子在哪里？你是怎么知道的？"),
-            (Npc: Ids.Npc.Amu, Question: "小川是偷走你的锤子的吗？")
+            (Npc: Ids.Npc.Amu, Question: $"{Ids.Name(Ids.Npc.Xiaochuan)}是偷走你的锤子的吗？")
         };
         Console.WriteLine($"模型 {OpenAiPolicy.Model}；最多 {cases.Length} 次；预留估算 ${cases.Length * OpenAiPolicy.ReservationUsdPerRequest:0.000}；不自动重试。");
         if (!args.Contains("--live"))

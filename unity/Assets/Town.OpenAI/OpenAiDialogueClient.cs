@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Town.Core.Brain;
+using Town.Core.World;
 
 namespace Town.OpenAI
 {
@@ -71,9 +72,7 @@ namespace Town.OpenAI
 
         private static JObject BuildPayload(NpcDialogueRequest request)
         {
-            var identity = request.NpcId == "amu" ? "阿木，木匠，重视守约、说话直接" :
-                request.NpcId == "ahe" ? "阿禾，杂货店主，热心但分清亲眼所见和猜测" :
-                request.NpcId == "xiaochuan" ? "小川，跑腿青年，愿意帮忙" : "小镇居民";
+            var identity = Ids.Persona(request.NpcId);
             var knowledge = new JArray(request.Beliefs.Select(b => new JObject
             {
                 ["id"] = b.Id, ["proposition"] = b.PropositionId, ["text"] = b.Text,
