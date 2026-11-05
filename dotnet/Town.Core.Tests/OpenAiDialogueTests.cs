@@ -72,8 +72,9 @@ namespace Town.Core.Tests
                 Assert.AreEqual(OpenAiPolicy.MaxOutputTokens, (int)body["max_output_tokens"]);
                 var data = JObject.Parse((string)body["input"][0]["content"]);
                 var beliefs = (JArray)data["known_beliefs"];
-                CollectionAssert.AreEquivalent(new[] { "P1", "P5" }, beliefs.Select(x => (string)x["proposition"]));
-                StringAssert.DoesNotContain("雨棚", data.ToString());
+                CollectionAssert.AreEquivalent(new[] { "P1", "P5", "W1", "W2" }, beliefs.Select(x => (string)x["proposition"]));
+                StringAssert.DoesNotContain("石亭", data.ToString());
+                StringAssert.DoesNotContain("灯灵", data.ToString());
                 StringAssert.DoesNotContain("TruthInWorld", data.ToString());
                 return Response();
             };
@@ -93,7 +94,7 @@ namespace Town.Core.Tests
             Assert.IsTrue(view.Knows(Propositions.Location));
         }
 
-        [TestCase("雨棚的收纳箱里。", null, "completed", "none", "knowledge_leak")]
+        [TestCase("在石亭的箱子里。", null, "completed", "none", "knowledge_leak")]
         [TestCase("不知道。", "B9999", "completed", "none", "unknown_citation")]
         [TestCase("不知道。", null, "incomplete", "none", "incomplete_response")]
         [TestCase("我去拿。", null, "completed", "fetch_item", "invalid_output")]

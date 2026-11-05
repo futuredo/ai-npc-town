@@ -1,40 +1,21 @@
 {
   "schema_version": 1,
-  "updated_at": "2026-11-04",
+  "updated_at": "2026-11-05",
   "stage": "greybox",
   "assets": [
     {
       "id": "char_player",
-      "name": "玩家",
+      "name": "玩家：外乡信使",
       "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
-      "states": [
-        "idle",
-        "walk"
-      ],
-      "target_directory": "unity/Assets/Town.Content/Characters",
-      "source": null,
-      "author": null,
-      "license": null,
-      "attribution": null,
-      "modifications": [],
-      "import_verified": false,
-      "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
-    },
-    {
-      "id": "char_residents",
-      "name": "阿木、阿禾、小川",
-      "quantity": 3,
-      "priority": "P1",
-      "status": "planned",
+      "priority": "P0",
       "states": [
         "idle",
         "walk",
-        "talk"
+        "talk",
+        "give"
       ],
       "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -42,18 +23,90 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     },
     {
-      "id": "env_locations",
-      "name": "广场、作坊、杂货铺、雨棚、住宅门口",
-      "quantity": 5,
-      "priority": "P1",
+      "id": "char_residents",
+      "name": "布伦（矮人符文铁匠）、梅芙（旅店老板娘）、芬恩（半精灵跑腿）",
+      "quantity": 3,
+      "priority": "P0",
+      "states": [
+        "idle",
+        "walk",
+        "talk",
+        "give",
+        "hammering",
+        "sad",
+        "cheer"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
       "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+    },
+    {
+      "id": "anim_humanoid",
+      "name": "共用人形动画",
+      "quantity": 8,
+      "priority": "P0",
+      "states": [
+        "idle",
+        "walk",
+        "talk",
+        "give",
+        "hammering",
+        "scared",
+        "cheer",
+        "sad"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+    },
+    {
+      "id": "env_landmarks",
+      "name": "钟楼、铁匠铺、旅店、旧哨塔石亭、旧井、灯节拱门、民居",
+      "quantity": 7,
+      "priority": "P0",
+      "states": [
+        "static",
+        "arch_off",
+        "arch_on"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+    },
+    {
+      "id": "env_nature",
+      "name": "树、石、地面、篱笆",
+      "quantity": 10,
+      "priority": "P0",
       "states": [
         "static"
       ],
       "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -61,19 +114,19 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     },
     {
-      "id": "prop_hammer",
-      "name": "锤子",
+      "id": "prop_rune_hammer",
+      "name": "符文锤",
       "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
+      "priority": "P0",
       "states": [
         "placed",
         "held"
       ],
       "target_directory": "unity/Assets/Town.Content/Props",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -81,19 +134,22 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     },
     {
-      "id": "prop_box",
-      "name": "收纳箱",
-      "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
+      "id": "prop_misc",
+      "name": "收纳箱、铁砧、锻造炉、灯笼、摊位、酒桶、长椅、彩旗、石板底座等",
+      "quantity": 20,
+      "priority": "P0",
       "states": [
+        "static",
+        "open",
         "closed",
-        "open"
+        "lit",
+        "unlit"
       ],
       "target_directory": "unity/Assets/Town.Content/Props",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -101,79 +157,38 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     },
     {
-      "id": "prop_rack",
-      "name": "工具架",
+      "id": "vfx_core",
+      "name": "灯灵、恶灵、显化光效、钟声波纹、炉火、窃贼印记、守护灵光",
+      "quantity": 7,
+      "priority": "P0",
+      "states": [
+        "loop",
+        "burst"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Prefabs",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+    },
+    {
+      "id": "ui_fantasy",
+      "name": "奇幻 UI 框体、回音石板、信使手账、结局卡、约 20 个图标",
       "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
+      "priority": "P0",
       "states": [
-        "empty",
-        "with_hammer"
-      ],
-      "target_directory": "unity/Assets/Town.Content/Props",
-      "source": null,
-      "author": null,
-      "license": null,
-      "attribution": null,
-      "modifications": [],
-      "import_verified": false,
-      "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
-    },
-    {
-      "id": "prop_bench",
-      "name": "长凳",
-      "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
-      "states": [
-        "broken",
-        "repaired"
-      ],
-      "target_directory": "unity/Assets/Town.Content/Props",
-      "source": null,
-      "author": null,
-      "license": null,
-      "attribution": null,
-      "modifications": [],
-      "import_verified": false,
-      "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
-    },
-    {
-      "id": "prop_seats",
-      "name": "临时座位",
-      "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
-      "states": [
-        "visible"
-      ],
-      "target_directory": "unity/Assets/Town.Content/Props",
-      "source": null,
-      "author": null,
-      "license": null,
-      "attribution": null,
-      "modifications": [],
-      "import_verified": false,
-      "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
-    },
-    {
-      "id": "ui_panels",
-      "name": "对话、记事本、任务、事件回顾、快捷话题",
-      "quantity": 5,
-      "priority": "P1",
-      "status": "planned",
-      "states": [
-        "normal",
-        "disabled",
-        "loading"
+        "static"
       ],
       "target_directory": "unity/Assets/Town.Content/UI",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -181,18 +196,18 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     },
     {
-      "id": "font_chinese",
-      "name": "中文字体",
-      "quantity": 1,
-      "priority": "P1",
-      "status": "planned",
+      "id": "font_cjk",
+      "name": "中文标题字体 + 正文字体",
+      "quantity": 2,
+      "priority": "P0",
       "states": [
-        "full_text_coverage"
+        "static"
       ],
       "target_directory": "unity/Assets/Town.Content/UI",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -200,19 +215,19 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     },
     {
-      "id": "sfx_basic",
-      "name": "基础交互与环境音效",
-      "quantity": 6,
-      "priority": "P2",
-      "status": "planned",
+      "id": "audio_sfx",
+      "name": "钟声、锤击、炉火、环境、脚步、UI、灯灵/恶灵、魔法",
+      "quantity": 15,
+      "priority": "P0",
       "states": [
-        "one_shot",
+        "oneshot",
         "loop"
       ],
       "target_directory": "unity/Assets/Town.Content/Audio",
+      "status": "planned",
       "source": null,
       "author": null,
       "license": null,
@@ -220,7 +235,26 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "正式素材尚未准备；当前灰盒不是正式资源。"
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+    },
+    {
+      "id": "audio_music",
+      "name": "白天、黄昏紧张、钟响结局",
+      "quantity": 3,
+      "priority": "P0",
+      "states": [
+        "loop"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Audio",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
     }
   ]
 }

@@ -106,7 +106,7 @@ namespace Town.Core.Tests
             using var runtime = new TownRuntime();
             var result = await runtime.TalkAsync(Ids.Npc.Amu, Propositions.Location);
             Assert.That(result.Success, Is.True);
-            Assert.That(result.Reply, Does.Not.Contain("雨棚"));
+            Assert.That(result.Reply, Does.Not.Contain("石亭"));
             Assert.That(runtime.Memory.For(Ids.Npc.Amu).Count, Is.EqualTo(1));
             Assert.That(runtime.Memory.For(Ids.Npc.Ahe), Is.Empty);
             Assert.That(runtime.Session.World.Version, Is.Zero);

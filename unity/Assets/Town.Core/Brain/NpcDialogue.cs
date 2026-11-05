@@ -26,12 +26,15 @@ namespace Town.Core.Brain
             Beliefs = Array.AsReadOnly(beliefs);
         }
 
-        public static NpcDialogueRequest From(NpcPerceptionView view, string playerText)
+        /// <param name="includeSecrets">默认不把该角色自己的秘密放进快照；只有角色信任玩家时才由规则层传 true。</param>
+        public static NpcDialogueRequest From(NpcPerceptionView view, string playerText, bool includeSecrets = false)
         {
             if (view == null) throw new ArgumentNullException(nameof(view));
             if (string.IsNullOrWhiteSpace(playerText) || playerText.Length > 500)
                 throw new ArgumentException("玩家输入须为 1—500 个字符。", nameof(playerText));
-            var beliefs = view.ActiveBeliefs.Select(b => new DialogueBelief(b)).ToArray();
+            var beliefs = view.ActiveBeliefs
+                .Where(b => includeSecrets || Propositions.All[b.PropositionId].SecretOwnerId != view.NpcId)
+                .Select(b => new DialogueBelief(b)).ToArray();
             if (beliefs.Length > 24) throw new ArgumentException("首轮验证最多使用 24 条认知。");
             return new NpcDialogueRequest(view.NpcId, playerText, beliefs);
         }

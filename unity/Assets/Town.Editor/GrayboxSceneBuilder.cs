@@ -73,10 +73,12 @@ namespace Town.Editor
             ground.GetComponent<Renderer>().sharedMaterial = Mat("Ground", new Color(0.62f, 0.66f, 0.55f));
 
             // 功能点：建筑中心、尺寸、颜色、交互物
-            Building(env, Ids.Loc.Workshop, "木工作坊", new Vector3(-17, 0, 9), new Vector3(8, 4, 6), new Color(0.65f, 0.48f, 0.32f), "工具架（空）");
-            Building(env, Ids.Loc.Store, "杂货铺", new Vector3(17, 0, 9), new Vector3(8, 4, 6), new Color(0.85f, 0.75f, 0.45f), "柜台");
-            Building(env, Ids.Loc.Shelter, "公共雨棚", new Vector3(14, 0, -13), new Vector3(7, 2.5f, 4), new Color(0.5f, 0.6f, 0.7f), "收纳箱");
-            Building(env, Ids.Loc.Homes, "住宅区", new Vector3(-17, 0, -13), new Vector3(9, 5, 5), new Color(0.75f, 0.7f, 0.68f), null);
+            Building(env, Ids.Loc.Workshop, "符文铁匠铺", new Vector3(-17, 0, 9), new Vector3(8, 4, 6), new Color(0.65f, 0.48f, 0.32f), "铁砧");
+            Building(env, Ids.Loc.Store, "醉月旅店", new Vector3(17, 0, 9), new Vector3(8, 4, 6), new Color(0.85f, 0.75f, 0.45f), "酒桶");
+            Building(env, Ids.Loc.Shelter, "旧哨塔石亭", new Vector3(14, 0, -13), new Vector3(6, 3.5f, 4), new Color(0.55f, 0.58f, 0.62f), "箱子");
+            Building(env, Ids.Loc.Homes, "民居", new Vector3(-17, 0, -13), new Vector3(9, 5, 5), new Color(0.75f, 0.7f, 0.68f), null);
+            Building(env, Ids.Loc.Well, "旧井", new Vector3(0, 0, -15), new Vector3(2.4f, 1.2f, 2.4f), new Color(0.4f, 0.42f, 0.5f), null);
+            Building(env, Ids.Loc.BellTower, "钟楼", new Vector3(0, 0, 16), new Vector3(4.5f, 12, 4.5f), new Color(0.6f, 0.55f, 0.7f), "回音石板");
             Plaza(env);
 
             var surface = env.AddComponent<NavMeshSurface>();
@@ -87,9 +89,9 @@ namespace Town.Editor
             AssetDatabase.CreateAsset(surface.navMeshData, NavMeshPath);
 
             // —— 角色 ——
-            Character(Ids.Npc.Amu, "阿木", new Color(0.55f, 0.35f, 0.2f), new Vector3(-3, 0, 2));
-            Character(Ids.Npc.Ahe, "阿禾", new Color(0.9f, 0.55f, 0.2f), new Vector3(3, 0, 2));
-            Character(Ids.Npc.Xiaochuan, "小川", new Color(0.3f, 0.6f, 0.35f), new Vector3(0, 0, 4));
+            Character(Ids.Npc.Amu, "布伦", new Color(0.55f, 0.35f, 0.2f), new Vector3(-3, 0, 2));
+            Character(Ids.Npc.Ahe, "梅芙", new Color(0.9f, 0.55f, 0.2f), new Vector3(3, 0, 2));
+            Character(Ids.Npc.Xiaochuan, "芬恩", new Color(0.3f, 0.6f, 0.35f), new Vector3(0, 0, 4));
             var player = Character(Ids.Player, "你", new Color(0.25f, 0.45f, 0.9f), new Vector3(0, 0, -4));
             UnityEngine.Object.DestroyImmediate(player.GetComponent<NpcAgent>());
             player.AddComponent<PlayerClickMover>();
@@ -152,21 +154,21 @@ namespace Town.Editor
             floor.GetComponent<Renderer>().sharedMaterial = Mat("Plaza", new Color(0.8f, 0.78f, 0.72f));
 
             var bench = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            bench.name = "Prop_坏长凳";
+            bench.name = "Prop_灯节拱门";
             bench.transform.SetParent(root.transform);
-            bench.transform.position = new Vector3(0, 0.3f, 0);
-            bench.transform.localScale = new Vector3(3, 0.6f, 0.8f);
+            bench.transform.position = new Vector3(0, 1.4f, 1.5f);
+            bench.transform.localScale = new Vector3(4f, 2.8f, 0.5f);
             bench.GetComponent<Renderer>().sharedMaterial = Mat("Bench", new Color(0.5f, 0.35f, 0.25f));
-            Label(bench.transform, "坏长凳", new Vector3(0, 1.6f, 0), 0.12f, scaleCompensate: true);
+            Label(bench.transform, "灯节拱门", new Vector3(0, 0.7f, 0), 0.12f, scaleCompensate: true);
 
             var marker = new GameObject($"Marker_{Ids.Loc.Plaza}").AddComponent<LocationMarker>();
             marker.transform.SetParent(root.transform);
             marker.transform.position = new Vector3(0, 0, -1.5f);
             marker.transform.rotation = Quaternion.LookRotation(Vector3.back);
             marker.locationId = Ids.Loc.Plaza;
-            marker.displayName = "中央广场";
+            marker.displayName = "灯节广场";
 
-            Label(root.transform, "中央广场", new Vector3(0, 0.1f, -5), 0.25f);
+            Label(root.transform, "灯节广场", new Vector3(0, 0.1f, -5), 0.25f);
         }
 
         private static GameObject Character(string id, string name, Color color, Vector3 pos)
