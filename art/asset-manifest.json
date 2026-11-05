@@ -4,8 +4,46 @@
   "stage": "greybox",
   "assets": [
     {
+      "id": "shader_sketch_ink",
+      "name": "草稿/墨线/上色着色器（_Ink 0—1）+ 外描边",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "sketch",
+        "ink_line",
+        "colored"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Shaders",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "tex_paper_hatching",
+      "name": "纸张纹理、铅笔排线、水彩晕染与噪声纹理",
+      "quantity": 8,
+      "priority": "P0",
+      "states": [],
+      "target_directory": "unity/Assets/Town.Content/Textures",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
       "id": "char_player",
-      "name": "玩家：外乡信使",
+      "name": "玩家：读者（现实世界装束）",
       "quantity": 1,
       "priority": "P0",
       "states": [
@@ -23,11 +61,11 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "char_residents",
-      "name": "布伦（矮人符文铁匠）、梅芙（旅店老板娘）、芬恩（半精灵跑腿）",
+      "name": "布伦（矮人符文铁匠）、梅芙（旅店老板娘、说书人）、芬恩（只写了一半的少年，半边铅笔稿由着色器实现）",
       "quantity": 3,
       "priority": "P0",
       "states": [
@@ -48,12 +86,12 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "anim_humanoid",
       "name": "共用人形动画",
-      "quantity": 8,
+      "quantity": 6,
       "priority": "P0",
       "states": [
         "idle",
@@ -61,9 +99,7 @@
         "talk",
         "give",
         "hammering",
-        "scared",
-        "cheer",
-        "sad"
+        "surprised_sad"
       ],
       "target_directory": "unity/Assets/Town.Content/Characters",
       "status": "planned",
@@ -74,11 +110,11 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "env_landmarks",
-      "name": "钟楼、铁匠铺、旅店、旧哨塔石亭、旧井、灯节拱门、民居",
+      "name": "钟楼（墨钟）、铁匠铺、旅店、石亭、废稿井、灯节拱门、民居",
       "quantity": 7,
       "priority": "P0",
       "states": [
@@ -95,12 +131,12 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "env_nature",
-      "name": "树、石、地面、篱笆",
-      "quantity": 10,
+      "name": "树、石、灌木（地面用纸纹与着色器绘制）",
+      "quantity": 6,
       "priority": "P0",
       "states": [
         "static"
@@ -114,7 +150,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "prop_rune_hammer",
@@ -134,12 +170,12 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "prop_misc",
-      "name": "收纳箱、铁砧、锻造炉、灯笼、摊位、酒桶、长椅、彩旗、石板底座等",
-      "quantity": 20,
+      "name": "收纳箱、铁砧、锻造炉、灯笼、钟楼石板（摊开的大书）、酒桶、长椅、彩旗、摊位",
+      "quantity": 12,
       "priority": "P0",
       "states": [
         "static",
@@ -157,11 +193,11 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "vfx_core",
-      "name": "灯灵、恶灵、显化光效、钟声波纹、炉火、窃贼印记、守护灵光",
+      "name": "墨雨、描边上色扩散、橡皮擦淡、红墨水字、灯灵/恶灵（墨烟）、钟声波纹、窃贼红墨印",
       "quantity": 7,
       "priority": "P0",
       "states": [
@@ -177,11 +213,11 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "ui_fantasy",
-      "name": "奇幻 UI 框体、回音石板、信使手账、结局卡、约 20 个图标",
+      "name": "书页风格 UI、读者手记、钟楼石板、第七章标题页、约 20 个手绘图标",
       "quantity": 1,
       "priority": "P0",
       "states": [
@@ -196,11 +232,11 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "font_cjk",
-      "name": "中文标题字体 + 正文字体",
+      "name": "中文手写体（作者字迹/红墨水）+ 书籍正文体",
       "quantity": 2,
       "priority": "P0",
       "states": [
@@ -215,12 +251,12 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "audio_sfx",
-      "name": "钟声、锤击、炉火、环境、脚步、UI、灯灵/恶灵、魔法",
-      "quantity": 15,
+      "name": "墨钟钟声、翻页/书写/橡皮擦、墨滴、锤击、环境、脚步、灯灵/恶灵、UI",
+      "quantity": 14,
       "priority": "P0",
       "states": [
         "oneshot",
@@ -235,11 +271,11 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     },
     {
       "id": "audio_music",
-      "name": "白天、黄昏紧张、钟响结局",
+      "name": "白天、黄昏墨色洇开、落墨结局",
       "quantity": 3,
       "priority": "P0",
       "states": [
@@ -254,7 +290,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v2 需求条目；正式素材尚未准备，见 docs/素材清单_回音镇_v2.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
     }
   ]
 }
