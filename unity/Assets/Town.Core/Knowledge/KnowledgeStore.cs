@@ -50,6 +50,9 @@ namespace Town.Core.Knowledge
             return belief;
         }
 
+        /// <summary>按 ID 查找认知；规则层用于核对引用来源，不提供给提示组装。</summary>
+        public Belief Find(string beliefId) => _beliefs.FirstOrDefault(b => b.Id == beliefId);
+
         public NpcPerceptionView ViewFor(string npcId) => new NpcPerceptionView(npcId, this);
 
         internal IEnumerable<Belief> ActiveFor(string npcId, string propositionId = null) =>

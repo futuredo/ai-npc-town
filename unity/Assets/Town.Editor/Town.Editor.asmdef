@@ -4,6 +4,7 @@
     "references": [
         "Town.Core",
         "Town.Unity",
+        "Town.OpenAI",
         "Unity.AI.Navigation"
     ],
     "includePlatforms": [

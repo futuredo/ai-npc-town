@@ -12,9 +12,24 @@ namespace Town.Unity
 
         private void Awake() => _agent = GetComponent<NavMeshAgent>();
 
+        public void ResetPosition(Vector3 position)
+        {
+            if (_agent == null) _agent = GetComponent<NavMeshAgent>();
+            if (_agent.isOnNavMesh) _agent.ResetPath();
+            _agent.Warp(position);
+        }
+
         private void Update()
         {
-            if (TownGame.Instance != null && TownGame.Instance.InputBlocked) return;
+            var game = TownGame.Instance;
+            if (game != null)
+            {
+                if (!_agent.isOnNavMesh) return;
+                _agent.isStopped = game.InputBlocked || game.Runtime.IsDialoguePending || game.Paused;
+                if (_agent.isStopped) return;
+                game.ReportPlayerPosition(transform.position);
+                if (game.IsPointerOverPanel(Input.mousePosition)) return;
+            }
             if (!Input.GetMouseButtonDown(0)) return;
             if (_cam == null) _cam = Camera.main;
             if (_cam == null) return;

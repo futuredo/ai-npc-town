@@ -27,3 +27,5 @@ dotnet/TestResults/
 *.pfx
 .DS_Store
 .unity-*.log
+.unity-*.xml
+.local/

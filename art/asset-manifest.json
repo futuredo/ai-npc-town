@@ -1,0 +1,296 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-11-05",
+  "stage": "greybox",
+  "assets": [
+    {
+      "id": "shader_sketch_ink",
+      "name": "草稿/墨线/上色着色器（_Ink 0—1）+ 外描边",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "sketch",
+        "ink_line",
+        "colored"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Shaders",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "tex_paper_hatching",
+      "name": "纸张纹理、铅笔排线、水彩晕染与噪声纹理",
+      "quantity": 8,
+      "priority": "P0",
+      "states": [],
+      "target_directory": "unity/Assets/Town.Content/Textures",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "char_player",
+      "name": "玩家：读者（现实世界装束）",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "idle",
+        "walk",
+        "talk",
+        "give"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "char_residents",
+      "name": "布伦（矮人符文铁匠）、梅芙（旅店老板娘、说书人）、芬恩（只写了一半的少年，半边铅笔稿由着色器实现）",
+      "quantity": 3,
+      "priority": "P0",
+      "states": [
+        "idle",
+        "walk",
+        "talk",
+        "give",
+        "hammering",
+        "sad",
+        "cheer"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "anim_humanoid",
+      "name": "共用人形动画",
+      "quantity": 6,
+      "priority": "P0",
+      "states": [
+        "idle",
+        "walk",
+        "talk",
+        "give",
+        "hammering",
+        "surprised_sad"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "env_landmarks",
+      "name": "钟楼（墨钟）、铁匠铺、旅店、石亭、废稿井、灯节拱门、民居",
+      "quantity": 7,
+      "priority": "P0",
+      "states": [
+        "static",
+        "arch_off",
+        "arch_on"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "env_nature",
+      "name": "树、石、灌木（地面用纸纹与着色器绘制）",
+      "quantity": 6,
+      "priority": "P0",
+      "states": [
+        "static"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "prop_rune_hammer",
+      "name": "符文锤",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "placed",
+        "held"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "prop_misc",
+      "name": "收纳箱、铁砧、锻造炉、灯笼、钟楼石板（摊开的大书）、酒桶、长椅、彩旗、摊位",
+      "quantity": 12,
+      "priority": "P0",
+      "states": [
+        "static",
+        "open",
+        "closed",
+        "lit",
+        "unlit"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "vfx_core",
+      "name": "墨雨、描边上色扩散、橡皮擦淡、红墨水字、灯灵/恶灵（墨烟）、钟声波纹、窃贼红墨印",
+      "quantity": 7,
+      "priority": "P0",
+      "states": [
+        "loop",
+        "burst"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Prefabs",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "ui_fantasy",
+      "name": "书页风格 UI、读者手记、钟楼石板、第七章标题页、约 20 个手绘图标",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "static"
+      ],
+      "target_directory": "unity/Assets/Town.Content/UI",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "font_cjk",
+      "name": "中文手写体（作者字迹/红墨水）+ 书籍正文体",
+      "quantity": 2,
+      "priority": "P0",
+      "states": [
+        "static"
+      ],
+      "target_directory": "unity/Assets/Town.Content/UI",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "audio_sfx",
+      "name": "墨钟钟声、翻页/书写/橡皮擦、墨滴、锤击、环境、脚步、灯灵/恶灵、UI",
+      "quantity": 14,
+      "priority": "P0",
+      "states": [
+        "oneshot",
+        "loop"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Audio",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    },
+    {
+      "id": "audio_music",
+      "name": "白天、黄昏墨色洇开、落墨结局",
+      "quantity": 3,
+      "priority": "P0",
+      "states": [
+        "loop"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Audio",
+      "status": "planned",
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+    }
+  ]
+}

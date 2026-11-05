@@ -21,8 +21,16 @@ namespace Town.Core.World
     {
         public string Id;
         public string DisplayName;
+        /// <summary>当前所在地点；在路上时为 null。</summary>
         public string LocationId;
         public string CurrentTaskId;
+        /// <summary>正在前往的地点；未移动时为 null。到达由 Core 按游戏时间判定。</summary>
+        public string TravelTo;
+        public GameTime? ArriveAt;
+        /// <summary>当前在做什么（日程或任务给出的短描述，供界面显示）。</summary>
+        public string Activity;
+
+        public bool IsTravelling => TravelTo != null;
     }
 
     /// <summary>

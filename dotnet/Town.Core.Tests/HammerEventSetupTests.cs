@@ -15,7 +15,7 @@ namespace Town.Core.Tests
         public void SetUp() => _s = HammerEventSetup.Create();
 
         [Test]
-        public void 锤子真实位置在雨棚()
+        public void 锤子真实位置在旧哨塔石亭()
         {
             var hammer = _s.World.Items[Ids.Item.Hammer];
             Assert.AreEqual(Ids.Loc.Shelter, hammer.LocationId);
@@ -47,11 +47,12 @@ namespace Town.Core.Tests
         }
 
         [Test]
-        public void 阿禾对偷窃只是低把握怀疑()
+        public void 梅芙对偷窃只是推断_刚好够她传出去()
         {
             var b = _s.Knowledge.ViewFor(Ids.Npc.Ahe).Current(P.Stole);
             Assert.IsTrue(b.Stance);
-            Assert.Less(b.Confidence, 0.5f);
+            Assert.AreEqual(SourceType.Inferred, b.Source);
+            Assert.LessOrEqual(b.Confidence, 0.5f);
         }
     }
 }
