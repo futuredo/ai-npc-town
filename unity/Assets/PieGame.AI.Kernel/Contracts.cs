@@ -110,11 +110,14 @@ namespace PieGame.AI.Kernel
         public string Id { get; }
         public long Generation { get; }
         public string Kind { get; }
+        public string HostRulesVersion { get; }
         public FrozenPayload Payload { get; }
         public string BeforeDigest { get; }
-        internal Request(object owner, string id, long generation, string kind, FrozenPayload payload, string before, ITaskHandler handler)
+        internal Request(object owner, string id, long generation, string kind, string hostRulesVersion,
+            FrozenPayload payload, string before, ITaskHandler handler)
         {
             Owner = owner; Id = id; Generation = generation; Kind = kind; Payload = payload; Before = before; Handler = handler;
+            HostRulesVersion = hostRulesVersion;
             BeforeDigest = Protocol.Hash(before);
         }
     }

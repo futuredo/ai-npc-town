@@ -9,6 +9,7 @@ namespace PieGame.AI.Kernel
     {
         private readonly object _gate = new object();
         private readonly IStatePort _port;
+        private readonly string _hostRulesVersion;
         private readonly Dictionary<string, ITaskHandler> _tasks = new Dictionary<string, ITaskHandler>(StringComparer.Ordinal);
         private readonly Dictionary<string, Request> _requests = new Dictionary<string, Request>(StringComparer.Ordinal);
         private readonly Dictionary<string, Receipt> _committed = new Dictionary<string, Receipt>(StringComparer.Ordinal);
@@ -19,7 +20,12 @@ namespace PieGame.AI.Kernel
         private long _generation;
         public event Action<Receipt> Completed;
 
-        public Kernel(IStatePort port) { _port = port ?? throw new ArgumentNullException(nameof(port)); }
+        public Kernel(IStatePort port, string hostRulesVersion)
+        {
+            _port = port ?? throw new ArgumentNullException(nameof(port));
+            if (string.IsNullOrWhiteSpace(hostRulesVersion)) throw new ArgumentException(nameof(hostRulesVersion));
+            _hostRulesVersion = hostRulesVersion;
+        }
 
         public void Register(string kind, ITaskHandler handler)
         {
@@ -39,7 +45,8 @@ namespace PieGame.AI.Kernel
                 if (string.IsNullOrWhiteSpace(id)) throw new ArgumentException(nameof(id));
                 if (_requests.ContainsKey(id) || _committed.ContainsKey(id)) throw new InvalidOperationException("request_conflict");
                 if (!_tasks.TryGetValue(kind, out var handler)) throw new InvalidOperationException("task_unknown");
-                var request = new Request(this, id, _generation, kind, payload ?? throw new ArgumentNullException(nameof(payload)), Read(), handler);
+                var request = new Request(this, id, _generation, kind, _hostRulesVersion,
+                    payload ?? throw new ArgumentNullException(nameof(payload)), Read(), handler);
                 _requests.Add(id, request);
                 return request;
             }
@@ -95,6 +102,24 @@ namespace PieGame.AI.Kernel
             }
             catch (FormatException) { return Failed(request, "parse_failed", cancellation); }
             catch (HostRejection) { return Failed(request, "host_rejected", cancellation); }
+        }
+
+        /// <summary>The trusted digest must be retained independently of the recording being verified.</summary>
+        public async Task<Preparation> PrepareReplayAsync(Request request, ReplayFrame frame, string trustedDigest,
+            CancellationToken cancellation = default)
+        {
+            if (request == null || !ReferenceEquals(request.Owner, this)) throw new ArgumentException(nameof(request));
+            if (cancellation.IsCancellationRequested) return Failed(request, "cancelled", cancellation);
+            lock (_gate)
+            {
+                CheckReentry();
+                if (request.Generation != _generation || frame == null || !frame.Matches(request, trustedDigest) ||
+                    Protocol.Hash(Read()) != frame.BeforeDigest)
+                    return Failed(request, "replay_mismatch", cancellation);
+            }
+            var prepared = await PrepareAsync(request, new RecordedProvider(frame), cancellation).ConfigureAwait(false);
+            if (prepared.Receipt.Code == "cancelled" || prepared.Receipt.Code == "late_after_cancel") return prepared;
+            return frame.Matches(prepared) ? prepared : Failed(request, "replay_mismatch", cancellation);
         }
 
         /// <summary>Returns an opaque capability for this exact preparation, or null if it is no longer eligible.</summary>

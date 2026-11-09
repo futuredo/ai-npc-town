@@ -95,7 +95,7 @@ namespace PieGame.AI.Kernel.Tests
         public const string Rules = "warehouse-1";
         public static Kernel Create(WarehousePort port)
         {
-            var kernel = new Kernel(port);
+            var kernel = new Kernel(port, Rules);
             kernel.Register("repair", new RepairTask());
             return kernel;
         }
