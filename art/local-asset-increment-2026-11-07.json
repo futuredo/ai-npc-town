@@ -1,0 +1,1591 @@
+{
+  "schema_version": 1,
+  "date": "2026-11-07",
+  "purpose": "Incremental audit after initial import 015 and URP migration 016",
+  "source_root": "/Volumes/ExternalSSD/ai小镇奇幻",
+  "snapshot_note": "Downloads change during audit; incomplete files are never imported.",
+  "inventory": [
+    {
+      "name": "0264-3Dmax3D模型FBX中世纪NPC女皇修女魔法师佣兵铁匠骨骼绑定动画PBR",
+      "file_count": 6,
+      "bytes_at_snapshot": 753417350,
+      "incomplete_files": []
+    },
+    {
+      "name": "1361.TL 中世纪 NPC 商人 小孩 老人 平民",
+      "file_count": 8,
+      "bytes_at_snapshot": 729189005,
+      "incomplete_files": []
+    },
+    {
+      "name": "1387.TL 中世纪 NPC 船长 水手 行商",
+      "file_count": 7,
+      "bytes_at_snapshot": 706273673,
+      "incomplete_files": []
+    },
+    {
+      "name": "14-unity3d 古代杀手剑客武士 人物角色模型带动画 游戏资源素材",
+      "file_count": 3,
+      "bytes_at_snapshot": 135848624,
+      "incomplete_files": []
+    },
+    {
+      "name": "20239新",
+      "file_count": 19,
+      "bytes_at_snapshot": 21932739854,
+      "incomplete_files": []
+    },
+    {
+      "name": "AFS - Ultimate Workshops and Crafting v1.0.unitypackage.baiduyun.p.downloading",
+      "file_count": 1,
+      "bytes_at_snapshot": 740294656,
+      "incomplete_files": [
+        "AFS - Ultimate Workshops and Crafting v1.0.unitypackage.baiduyun.p.downloading"
+      ]
+    },
+    {
+      "name": "FantasyHordeVillagers_中世纪村民角色_v2.2.zip",
+      "file_count": 1,
+      "bytes_at_snapshot": 519268386,
+      "incomplete_files": []
+    },
+    {
+      "name": "Medieval Kingdom Castle Town Village_Unity中世纪王国城堡场景",
+      "file_count": 1,
+      "bytes_at_snapshot": 4063244621,
+      "incomplete_files": []
+    },
+    {
+      "name": "Modular Medieval NPC Metahuman",
+      "file_count": 1,
+      "bytes_at_snapshot": 1509949440,
+      "incomplete_files": [
+        "Modular Medieval NPC Metahuman/ModularMedievalNPC.rar.baiduyun.p.downloading"
+      ]
+    },
+    {
+      "name": "Stronghold Village_Unity中世纪城堡要塞村庄场景",
+      "file_count": 1,
+      "bytes_at_snapshot": 314572800,
+      "incomplete_files": [
+        "Stronghold Village_Unity中世纪城堡要塞村庄场景/Stronghold Village v1.9.6 (10 Jul 2025).unitypackage.baiduyun.p.downloading"
+      ]
+    },
+    {
+      "name": "Stylized Fantasy Dragons Pack v1.1.1.unitypackage",
+      "file_count": 1,
+      "bytes_at_snapshot": 410506370,
+      "incomplete_files": []
+    },
+    {
+      "name": "Unity 卡通风格化幻想世界奇幻遗迹Fantasy Worlds Stylized",
+      "file_count": 1,
+      "bytes_at_snapshot": 2733739571,
+      "incomplete_files": []
+    },
+    {
+      "name": "Unity 卡通风格化王国奇幻城堡村庄环境包KINGDOM Stylized",
+      "file_count": 1,
+      "bytes_at_snapshot": 2624245158,
+      "incomplete_files": []
+    },
+    {
+      "name": "Unity3D Frozen Fortress - Environment 中世纪城堡堡垒古堡城墙场景",
+      "file_count": 1,
+      "bytes_at_snapshot": 874603347,
+      "incomplete_files": []
+    },
+    {
+      "name": "Unity3D_HEROIC FANTASY CREATURES_V2.51_科幻怪物角色动画合集",
+      "file_count": 4,
+      "bytes_at_snapshot": 6201278755,
+      "incomplete_files": [
+        "Unity3D_HEROIC FANTASY CREATURES_V2.51_科幻怪物角色动画合集/HEROIC FANTASY CREATURES v2.51.unitypackage.baiduyun.p.downloading",
+        "Unity3D_HEROIC FANTASY CREATURES_V2.51_科幻怪物角色动画合集/HEROIC FANTASY CREATURES FULL PACK Volume 1.unitypackage.baiduyun.p.downloading"
+      ]
+    },
+    {
+      "name": "Unity3D_Medieval_NPC_Pack_v2_V1.0_农民男女人物角色模型",
+      "file_count": 3,
+      "bytes_at_snapshot": 2014735029,
+      "incomplete_files": []
+    },
+    {
+      "name": "动作库合集",
+      "file_count": 7,
+      "bytes_at_snapshot": 98228219,
+      "incomplete_files": [
+        "动作库合集/1BIP-bvh动作库/bip全职业格斗动作库.rar.baiduyun.p.downloading"
+      ]
+    }
+  ],
+  "deferred_static_checks": [
+    {
+      "name": "MedievalKingdom",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/Medieval Kingdom Castle Town Village_Unity中世纪王国城堡场景/Medieval Kingdom Medieval Castle Medieval Town Medieval Village Castle.unitypackage",
+      "bytes": 4063244621,
+      "entry_count": 1423,
+      "extensions": {
+        "": 93,
+        ".shadergraph": 7,
+        ".png": 266,
+        ".fbx": 447,
+        ".mat": 88,
+        ".prefab": 496,
+        ".terrainlayer": 5,
+        ".asset": 3,
+        ".tga": 4,
+        ".shadersubgraph": 4,
+        ".unity": 2,
+        ".exr": 6,
+        ".txt": 2
+      },
+      "decision": "Default HDRP content; the URP directory contains an external-download note, not the URP assets. No import.",
+      "imported": false,
+      "license_verified": false
+    },
+    {
+      "name": "FrozenFortress",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/Unity3D Frozen Fortress - Environment 中世纪城堡堡垒古堡城墙场景/Frozen Fortress - Environment 1.0.unitypackage",
+      "bytes": 874603347,
+      "entry_count": 535,
+      "extensions": {
+        ".prefab": 146,
+        ".fbx": 45,
+        ".tga": 55,
+        ".mat": 59,
+        ".png": 171,
+        ".asset": 2,
+        ".tif": 3,
+        "": 34,
+        ".exr": 10,
+        ".shader": 4,
+        ".unity": 2,
+        ".cs": 2,
+        ".txt": 1,
+        ".psd": 1
+      },
+      "decision": "Archive structure inspected only. Snow-fortress theme is not needed for the current small slice; URP/materials/scripts remain unverified. No import.",
+      "imported": false,
+      "license_verified": false
+    }
+  ],
+  "packages": [
+    {
+      "name": "FantasyHorde",
+      "source": {
+        "path": "/Volumes/ExternalSSD/ai小镇奇幻/FantasyHordeVillagers_中世纪村民角色_v2.2.zip",
+        "bytes": 519268386,
+        "sha256": "d6eaa9fe93845e637c29b907c7cde9edcdd81aaaa882a202f2f44f49468c3e93"
+      },
+      "selected_roots": [
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Props/Weapons/Staff_curved.prefab",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX"
+      ],
+      "files": [
+        {
+          "guid": "0083147044c0ff14685d17440a2d3b0c",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/hair-brown.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/hair-brown.tga",
+          "bytes": 16777260,
+          "source_asset_sha256": "3a9903ee6181e83770b2582dd5d92e509184e268a11a8feb625e6731132402cc",
+          "imported_asset_sha256": "3a9903ee6181e83770b2582dd5d92e509184e268a11a8feb625e6731132402cc"
+        },
+        {
+          "guid": "00adca5d6f0ce894e8d65ca5b7fdb501",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Male_03.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Male_03.mat",
+          "bytes": 5296,
+          "source_asset_sha256": "976e337573f8b6309c4fb19c9c46bb8718623bb547c86758d69b87728ac4aae0",
+          "imported_asset_sha256": "96b8ef2cec3d709ab34d832a5dcd6716a1dc265949d9e3dccfa205f84a829c67"
+        },
+        {
+          "guid": "01ded34fe24c25346a2a5bad59b8289b",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Skin Forward.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Skin Forward.shader",
+          "bytes": 71890,
+          "source_asset_sha256": "6ece2de6779a8779f69cc8040e269b766067d7efc72153a4b20c81347410aa0a",
+          "imported_asset_sha256": "6ece2de6779a8779f69cc8040e269b766067d7efc72153a4b20c81347410aa0a"
+        },
+        {
+          "guid": "03484ad5b33a66049a6d940189452fc4",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_01_MR.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_01_MR.tga",
+          "bytes": 16777260,
+          "source_asset_sha256": "4d89e626b54de80e50aaaa265b12255a01850067df5067542d3d00b62d6cc979",
+          "imported_asset_sha256": "4d89e626b54de80e50aaaa265b12255a01850067df5067542d3d00b62d6cc979"
+        },
+        {
+          "guid": "0a106dfee8eff6b459588b616897c3f2",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+          "bytes": 46783,
+          "source_asset_sha256": "0a63a2b5657473665f1657ffb8842d0c39974f8bc892f6e61b0c3696bc48ba21",
+          "imported_asset_sha256": "0a63a2b5657473665f1657ffb8842d0c39974f8bc892f6e61b0c3696bc48ba21"
+        },
+        {
+          "guid": "0b3f3f08eb23c264a848553fbf33aa28",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+          "bytes": 1029328,
+          "source_asset_sha256": "c07313552b9c007c41f1d5f6fecdd67fd3b97fe32c632fe7a36e26aef2e42fb7",
+          "imported_asset_sha256": "c07313552b9c007c41f1d5f6fecdd67fd3b97fe32c632fe7a36e26aef2e42fb7"
+        },
+        {
+          "guid": "0e1cd78d04e791e4bab837b4e8ca4bc5",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Male.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Male.FBX",
+          "bytes": 1684057,
+          "source_asset_sha256": "cddb1404971587e7df2e11a877c20078f3eb4eab4362bdcae76972788bbfd9e1",
+          "imported_asset_sha256": "cddb1404971587e7df2e11a877c20078f3eb4eab4362bdcae76972788bbfd9e1"
+        },
+        {
+          "guid": "172e1b96b275ed64a8b3ca6a04577fa8",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-SkinCutout Forward Specular DoubleSided.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-SkinCutout Forward Specular DoubleSided.shader",
+          "bytes": 72708,
+          "source_asset_sha256": "07bbb64b06b1eae3d8161c6b2918936b983c9233608613fc7eadd036dbabe3ac",
+          "imported_asset_sha256": "07bbb64b06b1eae3d8161c6b2918936b983c9233608613fc7eadd036dbabe3ac"
+        },
+        {
+          "guid": "17353b9225d78f740bd7d0b765a4c426",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Props/Weapons/Source/Staff_curved.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Props/Weapons/Source/Staff_curved.FBX",
+          "bytes": 117408,
+          "source_asset_sha256": "28b18c8d1ee3285b792dddc61ce81f459323486282739cca2bbe5cc1cf464dd2",
+          "imported_asset_sha256": "28b18c8d1ee3285b792dddc61ce81f459323486282739cca2bbe5cc1cf464dd2"
+        },
+        {
+          "guid": "183b944825eb95f4dbee9b3e10f98d36",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_01.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_01.tga",
+          "bytes": 12582956,
+          "source_asset_sha256": "02d65c9ad4b1a59114ada184e2f35554a64c0dee9ca4f4885c744e0cca84fef8",
+          "imported_asset_sha256": "02d65c9ad4b1a59114ada184e2f35554a64c0dee9ca4f4885c744e0cca84fef8"
+        },
+        {
+          "guid": "19d4179abc0e9d748912812dfc6b8b87",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown.mat",
+          "bytes": 5640,
+          "source_asset_sha256": "c1104dab0a48e6f49d3294b884f3b57172df06a96e8a7ab2e8b22f169521ddec",
+          "imported_asset_sha256": "97d45148f2631068bccfc769fe7477f0577d805965356148906884531ee86217"
+        },
+        {
+          "guid": "1b0f2427605e9cb49af752696e3ed25c",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+          "bytes": 844656,
+          "source_asset_sha256": "55faa96f3dfd66923b7246af3664d1eb6a5bb926de89bfe68c6c12c54cb8ca36",
+          "imported_asset_sha256": "55faa96f3dfd66923b7246af3664d1eb6a5bb926de89bfe68c6c12c54cb8ca36"
+        },
+        {
+          "guid": "1f6f19f584890324c9e2e45821eb779b",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Male_01.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Male_01.mat",
+          "bytes": 5296,
+          "source_asset_sha256": "dceb1884d1f3d9f6021435868f6865d1de2d0b1e9ffd44b04cb2c7353c277ecb",
+          "imported_asset_sha256": "f8897face324d720f0660cf42840226aa5946edd5f2a16d12c8a9d8d1729cb67"
+        },
+        {
+          "guid": "2679197bc53f0214fa0e99af9728cda3",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Source/PolygonmakerRig.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Source/PolygonmakerRig.FBX",
+          "bytes": 197856,
+          "source_asset_sha256": "af06f255061a998641a035e67361d9d3a2e9ca4aa4b1762430440a41f1c3bceb",
+          "imported_asset_sha256": "af06f255061a998641a035e67361d9d3a2e9ca4aa4b1762430440a41f1c3bceb"
+        },
+        {
+          "guid": "29992b5347fb795499330015605f0903",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+          "bytes": 1084992,
+          "source_asset_sha256": "a766d57fbe953d2352243223d765cf460a39c3e40b79e300430e5ec13057bd94",
+          "imported_asset_sha256": "a766d57fbe953d2352243223d765cf460a39c3e40b79e300430e5ec13057bd94"
+        },
+        {
+          "guid": "2e21eeadd62d66d4aae0c916d564a751",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Child.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Child.FBX",
+          "bytes": 512160,
+          "source_asset_sha256": "3120df91cc7685ce5cdde1b5f15b6500cbf91e037b721519db6715d01cc7f89a",
+          "imported_asset_sha256": "3120df91cc7685ce5cdde1b5f15b6500cbf91e037b721519db6715d01cc7f89a"
+        },
+        {
+          "guid": "3d46854d65e177040ae2c50d18640e44",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-SkinCutout Defered DoubleSided.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-SkinCutout Defered DoubleSided.shader",
+          "bytes": 72588,
+          "source_asset_sha256": "17a0283302cfcb9426f2b0940a7104cd0ae92646a91496c94350a1981fc28453",
+          "imported_asset_sha256": "17a0283302cfcb9426f2b0940a7104cd0ae92646a91496c94350a1981fc28453"
+        },
+        {
+          "guid": "414928e3eb990e14c8de0cd625f63a75",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+          "bytes": 1023344,
+          "source_asset_sha256": "00c1cc43249bf866e7b482fea89944f0a3d1589417362d12fd3796b6931775fd",
+          "imported_asset_sha256": "00c1cc43249bf866e7b482fea89944f0a3d1589417362d12fd3796b6931775fd"
+        },
+        {
+          "guid": "4ad418c5ea9c77a42be8f483130a8cd2",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+          "bytes": 878912,
+          "source_asset_sha256": "e9e2817defa4b5f2d36510ec850cf3885dc1b83b1c656ac4552380bac644ffc0",
+          "imported_asset_sha256": "e9e2817defa4b5f2d36510ec850cf3885dc1b83b1c656ac4552380bac644ffc0"
+        },
+        {
+          "guid": "4f6ed89d05b22434c91d28dfb965076a",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+          "bytes": 1344464,
+          "source_asset_sha256": "11cd8c64f6641c6d675d723658d3b60cb4c43e36b96e42ceaa4af9a9410795fa",
+          "imported_asset_sha256": "11cd8c64f6641c6d675d723658d3b60cb4c43e36b96e42ceaa4af9a9410795fa"
+        },
+        {
+          "guid": "523a844d802b0e44682de0ffde9f7c55",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Monk.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Monk.FBX",
+          "bytes": 708912,
+          "source_asset_sha256": "696d0b113b109aac8042b7156874bee5628000a57585253c673552847986f101",
+          "imported_asset_sha256": "696d0b113b109aac8042b7156874bee5628000a57585253c673552847986f101"
+        },
+        {
+          "guid": "53cc4d721f1db854bb4862ab51962561",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Female_01.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Female_01.mat",
+          "bytes": 5300,
+          "source_asset_sha256": "1a568117c18fd37edf608f017d8609567d6a18fa1caaba2ee84743bc21ce863c",
+          "imported_asset_sha256": "b2cdd805a2603a22f8cc2b874dc0767f2666d3a6e8e0488f475ba234f5e0346f"
+        },
+        {
+          "guid": "62ed7c2a706fabd4a90c55ea3b8ce48e",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Materials/hair.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Materials/hair.mat",
+          "bytes": 5024,
+          "source_asset_sha256": "15cf8388d9de20f7a36ebe671091f003112c1b7dd798005d4489077a9cd5dfaf",
+          "imported_asset_sha256": "fcbe51f493746320371944bec8a09a0fb967b4d9be012a3bd7f8723a2b871f50"
+        },
+        {
+          "guid": "6584c386554c11d48ab699eaf91e6671",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Monk_01.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Monk_01.tga",
+          "bytes": 12582956,
+          "source_asset_sha256": "cf5f80963c1303739ca5f9095e7a7878caaa6f33cbb825b6cfb76dae618a25b2",
+          "imported_asset_sha256": "cf5f80963c1303739ca5f9095e7a7878caaa6f33cbb825b6cfb76dae618a25b2"
+        },
+        {
+          "guid": "6699dfaf55a1b184197d71398774a53c",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Glass.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Glass.shader",
+          "bytes": 65386,
+          "source_asset_sha256": "875869e36fbde1d405a221ffc1f9e1ef0c2e7b456026140ca08a8fb7853cd911",
+          "imported_asset_sha256": "875869e36fbde1d405a221ffc1f9e1ef0c2e7b456026140ca08a8fb7853cd911"
+        },
+        {
+          "guid": "66a4e969f17af674e96a9d1478f38acf",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/child_1.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/child_1.tga",
+          "bytes": 4194348,
+          "source_asset_sha256": "6f508e434030df2a7d5be8566004b7cc1a3f3b6cf50aa117475375a9bac1fb90",
+          "imported_asset_sha256": "6f508e434030df2a7d5be8566004b7cc1a3f3b6cf50aa117475375a9bac1fb90"
+        },
+        {
+          "guid": "77f46aadff0b97348acebc5d097af368",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+          "bytes": 777104,
+          "source_asset_sha256": "b1b2c525daaaf26522f05b9e2a2373f86640248da419f250eddad039488646e6",
+          "imported_asset_sha256": "b1b2c525daaaf26522f05b9e2a2373f86640248da419f250eddad039488646e6"
+        },
+        {
+          "guid": "786f7666da41df042a408c128bce6f77",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+          "bytes": 26196,
+          "source_asset_sha256": "539585060bc990c8364f972c2f398673cb6d078f873d352a4ed1c90068e69906",
+          "imported_asset_sha256": "5d79ab63bce8d4dd5db9d2ea578cc98f0d4867f6f8a2df03fb869425181b1031"
+        },
+        {
+          "guid": "78dfd3ef823eb6546ab063ccc9f83b4c",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-SkinCutout Forward DoubleSided.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-SkinCutout Forward DoubleSided.shader",
+          "bytes": 73145,
+          "source_asset_sha256": "65ae0b40a9053740e9cdda979a1f7c65ea731d15a8a9c706a472aa3ced925db2",
+          "imported_asset_sha256": "65ae0b40a9053740e9cdda979a1f7c65ea731d15a8a9c706a472aa3ced925db2"
+        },
+        {
+          "guid": "7c1cc4b77a2491546b20444f2605b865",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Monk_01_MR.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Monk_01_MR.tga",
+          "bytes": 16777260,
+          "source_asset_sha256": "ff8fae1fae88bf8fee19c69ef0a394fc4433efee5e21f47e863e2df2ade65e67",
+          "imported_asset_sha256": "ff8fae1fae88bf8fee19c69ef0a394fc4433efee5e21f47e863e2df2ade65e67"
+        },
+        {
+          "guid": "8af7c8bdcd1e6c548bda65ab13c4c394",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Ice.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Ice.shader",
+          "bytes": 67681,
+          "source_asset_sha256": "93bdadbbc120913048455c1309bbce4f9968a567c167f474fa77038f9e4edf47",
+          "imported_asset_sha256": "93bdadbbc120913048455c1309bbce4f9968a567c167f474fa77038f9e4edf47"
+        },
+        {
+          "guid": "8b55d21d426f4ff469ac6a1e5a8424ee",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+          "bytes": 782960,
+          "source_asset_sha256": "0ec4422788d9eb3f20f615adea99bf1d4bbbd56d3b004e9221e911258236c2d1",
+          "imported_asset_sha256": "0ec4422788d9eb3f20f615adea99bf1d4bbbd56d3b004e9221e911258236c2d1"
+        },
+        {
+          "guid": "901cb4d38cc5df3478328f726618464c",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-BasicPBR.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-BasicPBR.shader",
+          "bytes": 68880,
+          "source_asset_sha256": "2dae60492702d2651180fadc4d02f1fe9f75f49f850e2fec5b2ee725f064d8fa",
+          "imported_asset_sha256": "2dae60492702d2651180fadc4d02f1fe9f75f49f850e2fec5b2ee725f064d8fa"
+        },
+        {
+          "guid": "912bc7d5f3d71ae47b79d1625076eea9",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/hair_N.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/hair_N.tga",
+          "bytes": 12582956,
+          "source_asset_sha256": "78b61b392e2b79cbf166143425de9608f2da9663822b06a724989c4141b25a86",
+          "imported_asset_sha256": "78b61b392e2b79cbf166143425de9608f2da9663822b06a724989c4141b25a86"
+        },
+        {
+          "guid": "949e03561d8788348bec41d777c6df5b",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Female.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Female.FBX",
+          "bytes": 1317628,
+          "source_asset_sha256": "07f36947c03d28b1c8b22a72ab2aa56f1ba954f5df2a5d9076181b066f64e84e",
+          "imported_asset_sha256": "07f36947c03d28b1c8b22a72ab2aa56f1ba954f5df2a5d9076181b066f64e84e"
+        },
+        {
+          "guid": "98ac548a8a04c8247bf6f4dad1e12c4b",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Props/Weapons/Staff_curved.prefab",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Props/Weapons/Staff_curved.prefab",
+          "bytes": 4804,
+          "source_asset_sha256": "092d992a9b2b6270cd5be30d7a0e57610785a6b965f55af4d67945f430fbade1",
+          "imported_asset_sha256": "30b1767f2636d73989f3b5aa5d88f5a5f20d71c4919d78e1f593385934bd3886"
+        },
+        {
+          "guid": "9992ec96d8068b94d81d78adcaa35f10",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+          "bytes": 27880,
+          "source_asset_sha256": "1572dde304067beb32ea20f82ef08203059a099c3ae2a5dc44bc9c919808f6c5",
+          "imported_asset_sha256": "00983bc34d1ec26782db5364be7aca344fc59d60ee0ff51373d1f3bc2d05062c"
+        },
+        {
+          "guid": "99e457372829e9b45aaf595408b91e8a",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Monk_01.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Monk_01.mat",
+          "bytes": 5296,
+          "source_asset_sha256": "b34bcfa460d3d7dd29970b38f51898c4fc12a146a90bb332d24ef96e1990c98c",
+          "imported_asset_sha256": "cc8294e012a09e9e3ead5611d4caa8001e27f925be1e3eece1338fcee8d0027b"
+        },
+        {
+          "guid": "9bd1bb41afd88c047a02d6a9b8cf394f",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+          "bytes": 1030272,
+          "source_asset_sha256": "5f75ff277ab8804767e0c2c1edd165fbc3cc2221a9b468408c1afa4e34e2f27d",
+          "imported_asset_sha256": "5f75ff277ab8804767e0c2c1edd165fbc3cc2221a9b468408c1afa4e34e2f27d"
+        },
+        {
+          "guid": "b5ed196b2f788ff47ab88e3ac97729d9",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/hair-black.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/hair-black.tga",
+          "bytes": 16777260,
+          "source_asset_sha256": "811a3ac6ebd9e1d25f906bb8186fa4decb9f5d653eada8c830e88cd35e83db79",
+          "imported_asset_sha256": "811a3ac6ebd9e1d25f906bb8186fa4decb9f5d653eada8c830e88cd35e83db79"
+        },
+        {
+          "guid": "be11aab0a05a8204bb80c5081025de93",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_03.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_03.tga",
+          "bytes": 12582956,
+          "source_asset_sha256": "e98b941220966539dbfaa43097665709f355b3934b793ff15af861d6eaa80df0",
+          "imported_asset_sha256": "e98b941220966539dbfaa43097665709f355b3934b793ff15af861d6eaa80df0"
+        },
+        {
+          "guid": "bee9aa95508eca3429d6c571e5e8fad6",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Polygonmaker - Shader/Shaders/Polygonmaker-AS-BasicPBR_Cutout.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Polygonmaker - Shader/Shaders/Polygonmaker-AS-BasicPBR_Cutout.shader",
+          "bytes": 12435,
+          "source_asset_sha256": "6cb7c6d49e36e3985ae2e5f0447640f0b88528b85d17888e79bb93ebf6a12a15",
+          "imported_asset_sha256": "6cb7c6d49e36e3985ae2e5f0447640f0b88528b85d17888e79bb93ebf6a12a15"
+        },
+        {
+          "guid": "c186e1d7768935048bd810460575c8a3",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Female_01_MR.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Female_01_MR.tga",
+          "bytes": 16777260,
+          "source_asset_sha256": "59c06fd20ad41fb9cd96d73cf2993a4b719a06f21b7e2e7b3bca4e6fb6ae7be0",
+          "imported_asset_sha256": "59c06fd20ad41fb9cd96d73cf2993a4b719a06f21b7e2e7b3bca4e6fb6ae7be0"
+        },
+        {
+          "guid": "c61b7ac2fabfaee4098b1988d4f184fd",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-black.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-black.mat",
+          "bytes": 5568,
+          "source_asset_sha256": "c816aa62405d28f85fe92d171aa7ed5b3caf661b07b2431f124ee59cb6b3dd8a",
+          "imported_asset_sha256": "ee3745155bc70ea1093aa14524f1797155371d6ad85276ed21c4fa04912f4c1f"
+        },
+        {
+          "guid": "c8860462bd60d1d4f868af7b3b6241a9",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+          "bytes": 26832,
+          "source_asset_sha256": "f7aab0275b073bf6e0c02e5c85cc952ce951e22a39bfb1eabca902eded241aa7",
+          "imported_asset_sha256": "3bc44de171f17a9f6943315e0128e04d2806da9ce6745fd6783ef15991fdd191"
+        },
+        {
+          "guid": "d180488d3826ce046a389d769fc3003a",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/child_1.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/child_1.mat",
+          "bytes": 5520,
+          "source_asset_sha256": "8e0ad9cb5dd93723d7ff6afbe5c892ea2816bed9cbb0cd7a9e2768fb88c36777",
+          "imported_asset_sha256": "0af67271574293d3741474c24fdd0150b93e78a50ad47a2c57a21b86c2d10429"
+        },
+        {
+          "guid": "d340fcb74c944e046b0860161abc4821",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Polygonmaker - Shader/Textures/Default Gray(A).tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Polygonmaker - Shader/Textures/Default Gray(A).tga",
+          "bytes": 4140,
+          "source_asset_sha256": "b1d8be7eac9e994cf1bc11719e126d035feae7338de7fc6734c848832c767284",
+          "imported_asset_sha256": "b1d8be7eac9e994cf1bc11719e126d035feae7338de7fc6734c848832c767284"
+        },
+        {
+          "guid": "d3ffe69deaa224247ae18852d62dae7c",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+          "bytes": 1029328,
+          "source_asset_sha256": "31144ffe33a680e303da588145d1061e19bbec00179f555bc963413ae8beb677",
+          "imported_asset_sha256": "31144ffe33a680e303da588145d1061e19bbec00179f555bc963413ae8beb677"
+        },
+        {
+          "guid": "d429806a7c48aed4499e84d6864feeb2",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Polygonmaker - Shader/Textures/Default Mettalic(A).tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Polygonmaker - Shader/Textures/Default Mettalic(A).tga",
+          "bytes": 4140,
+          "source_asset_sha256": "7c66fa2128d489e3517631ad706c03e070d1660b8e16c78c8d3ee43265074ff0",
+          "imported_asset_sha256": "7c66fa2128d489e3517631ad706c03e070d1660b8e16c78c8d3ee43265074ff0"
+        },
+        {
+          "guid": "db1d0bcbe968ffd48afd15cf9d39f48b",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Female_01.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Female_01.tga",
+          "bytes": 12582956,
+          "source_asset_sha256": "12aaeac381c06c65c43a5894a03922f8def9238670e3ff90c0177defaafb3d1e",
+          "imported_asset_sha256": "12aaeac381c06c65c43a5894a03922f8def9238670e3ff90c0177defaafb3d1e"
+        },
+        {
+          "guid": "e355e261c0526b34c98ea929d5788ae5",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_03_MR.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/Male_03_MR.tga",
+          "bytes": 16777260,
+          "source_asset_sha256": "1299c420ebab44de8e4d20ce90c5befcd32398ae0057697bf536c1f579c87def",
+          "imported_asset_sha256": "1299c420ebab44de8e4d20ce90c5befcd32398ae0057697bf536c1f579c87def"
+        },
+        {
+          "guid": "e9bc656ed42671c45be3d8395ec235bc",
+          "source_path": "Assets/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Skin Defered.shader",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Polygonmaker - Shader/Shaders/Polygonmaker-AS-Skin Defered.shader",
+          "bytes": 71876,
+          "source_asset_sha256": "c42e373f8010bab51f14a54d932a79899c853c5501c3c94d0b9ff7e9b2e443ff",
+          "imported_asset_sha256": "c42e373f8010bab51f14a54d932a79899c853c5501c3c94d0b9ff7e9b2e443ff"
+        },
+        {
+          "guid": "fc33c879ea1ad2e4183fe9c103ec7d62",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/child_1_specular.tga",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Textures/child_1_specular.tga",
+          "bytes": 4194348,
+          "source_asset_sha256": "a023e59fcdd043d19e29710998de8770ae8d30a51d22e7d1c23545ea7ae049ed",
+          "imported_asset_sha256": "a023e59fcdd043d19e29710998de8770ae8d30a51d22e7d1c23545ea7ae049ed"
+        },
+        {
+          "guid": "ff6ac73a85ecd4e46a0ff5631ed6c1f9",
+          "source_path": "Assets/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown_alpha.mat",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown_alpha.mat",
+          "bytes": 5644,
+          "source_asset_sha256": "9d0e5e0983e4de3dcb051cfe4ba47628fedda7d37fdfbc508fa23919c0d014ee",
+          "imported_asset_sha256": "706cdbcf4ce31a4065764f69b848a8d95f3ab012a3c2a754919db90861e0fc16"
+        }
+      ],
+      "excluded_vendor_scripts": [],
+      "loaded_main_assets": 54,
+      "file_count": 54,
+      "bytes_before_material_conversion": 187096365,
+      "model_count": 16,
+      "clip_count": 10,
+      "materials": [
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Male_03.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Polygonmaker/Basic-PBR",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Universal Render Pipeline/Lit",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Male_01.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Polygonmaker/Basic-PBR",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Female_01.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Polygonmaker/Basic-PBR",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Materials/hair.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Universal Render Pipeline/Lit",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/Monk_01.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Polygonmaker/Basic-PBR",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-black.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Universal Render Pipeline/Lit",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/child_1.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Universal Render Pipeline/Lit",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        },
+        {
+          "package": "FantasyHorde",
+          "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown_alpha.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Universal Render Pipeline/Lit",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        }
+      ],
+      "license": null,
+      "license_status": "unverified_user_download",
+      "import_verified": false,
+      "in_game_approved": false,
+      "verification_boundary": "Import/URP/pose sampling only; no manual visual, full locomotion or release acceptance."
+    },
+    {
+      "name": "Arashi",
+      "source": {
+        "path": "/Volumes/ExternalSSD/ai小镇奇幻/14-unity3d 古代杀手剑客武士 人物角色模型带动画 游戏资源素材/Arashi Character 1.0.unitypackage",
+        "bytes": 135848400,
+        "sha256": "ba35ddcee065e30c5c9e10559d7fc99bfe9300852d27a0f3dd9f98165e686f34"
+      },
+      "selected_roots": [
+        "Assets/Arashi_Character/Prefab/Character_Color_01.prefab"
+      ],
+      "files": [
+        {
+          "guid": "01cd5a4d943bb4347957cdb0e15d5e1d",
+          "source_path": "Assets/Arashi_Character/Animation/Player.controller",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Animation/Player.controller",
+          "bytes": 17368,
+          "source_asset_sha256": "dbf68a87e4bbd6cd4d675df66096b11f69521cf3516de2cff63b979a010a5c19",
+          "imported_asset_sha256": "80a954132c999cbdaa7435172e4bb0da275782463ad075e3a08a18f67ded764e"
+        },
+        {
+          "guid": "1335b229b47ee35438b87b9a168c94bb",
+          "source_path": "Assets/Arashi_Character/Meshes/SM_Bearded.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Bearded.fbx",
+          "bytes": 30432,
+          "source_asset_sha256": "f2d243d3605d88af8eebd6fcc24886558a5a64a2c3ee45e37fb982fd9dd17cca",
+          "imported_asset_sha256": "f2d243d3605d88af8eebd6fcc24886558a5a64a2c3ee45e37fb982fd9dd17cca"
+        },
+        {
+          "guid": "1a0930b912e43784793e2df262eb7498",
+          "source_path": "Assets/Arashi_Character/Textures/Arashi_Metallic.tga",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Textures/Arashi_Metallic.tga",
+          "bytes": 67108882,
+          "source_asset_sha256": "f5da0573b9accb62b6b7f1d80402e95b7bd94f7600fd7002965a2e0067521d44",
+          "imported_asset_sha256": "f5da0573b9accb62b6b7f1d80402e95b7bd94f7600fd7002965a2e0067521d44"
+        },
+        {
+          "guid": "306fb7611a2cdf742b5a2cbc60e88661",
+          "source_path": "Assets/Arashi_Character/Meshes/SM_Hat.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Hat.fbx",
+          "bytes": 28672,
+          "source_asset_sha256": "abb7c14cdc29bb55459743c9d5841ff07e1f32caf2d49d14b9caaca942ffa0b8",
+          "imported_asset_sha256": "abb7c14cdc29bb55459743c9d5841ff07e1f32caf2d49d14b9caaca942ffa0b8"
+        },
+        {
+          "guid": "3a81b62bc88955846bd4357fa82861db",
+          "source_path": "Assets/Arashi_Character/Textures/Arashi_Normal.tga",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Textures/Arashi_Normal.tga",
+          "bytes": 50331666,
+          "source_asset_sha256": "f928920e4f83352808c79bc8778dac67e4ee91e7bff9db61633c54d16d04250f",
+          "imported_asset_sha256": "f928920e4f83352808c79bc8778dac67e4ee91e7bff9db61633c54d16d04250f"
+        },
+        {
+          "guid": "405959723b49d424ca9d1e14a18aeb47",
+          "source_path": "Assets/Arashi_Character/Meshes/SM_BottleWine.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SM_BottleWine.fbx",
+          "bytes": 27680,
+          "source_asset_sha256": "ed68f89bffa3a0b25e9f4d1762d9a2d82d655188a243c5f22089bcfc1aa539ee",
+          "imported_asset_sha256": "ed68f89bffa3a0b25e9f4d1762d9a2d82d655188a243c5f22089bcfc1aa539ee"
+        },
+        {
+          "guid": "67d303b1c043ecd4ea5b1ba6ceab4348",
+          "source_path": "Assets/Arashi_Character/Prefab/Character_Color_01.prefab",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+          "bytes": 52756,
+          "source_asset_sha256": "aa720002d27e41d4f6cfc2dedb3cf497edafb2d8ad95795447fa7113d29effd4",
+          "imported_asset_sha256": "aa720002d27e41d4f6cfc2dedb3cf497edafb2d8ad95795447fa7113d29effd4"
+        },
+        {
+          "guid": "72aa895e120882744b0c33ed62bb37c3",
+          "source_path": "Assets/Arashi_Character/Meshes/SM_Tail.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Tail.fbx",
+          "bytes": 28944,
+          "source_asset_sha256": "a1d1abb23e0d9304aa4f128aeea0e08939943aa25c92fee52a182ba16b49bbd6",
+          "imported_asset_sha256": "a1d1abb23e0d9304aa4f128aeea0e08939943aa25c92fee52a182ba16b49bbd6"
+        },
+        {
+          "guid": "94585d30e6da6e045b5c1531b0660650",
+          "source_path": "Assets/Arashi_Character/Meshes/SM_Katana_2.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Katana_2.fbx",
+          "bytes": 29088,
+          "source_asset_sha256": "6266407f2525b02402b9cb32aa12d6f4b4439a4c60730ca7740b733e718928db",
+          "imported_asset_sha256": "6266407f2525b02402b9cb32aa12d6f4b4439a4c60730ca7740b733e718928db"
+        },
+        {
+          "guid": "c3a4da02b80957b47b2c1d7f67c7c76e",
+          "source_path": "Assets/Arashi_Character/Meshes/SM_Katana.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Katana.fbx",
+          "bytes": 27504,
+          "source_asset_sha256": "aabb77d7b6cc6f457acd7a67a2ca3a55b0f8de20b0b5d1a3ff3d2a5c0936f662",
+          "imported_asset_sha256": "aabb77d7b6cc6f457acd7a67a2ca3a55b0f8de20b0b5d1a3ff3d2a5c0936f662"
+        },
+        {
+          "guid": "c40d92f8332552e42a6e70868c4233b1",
+          "source_path": "Assets/Arashi_Character/Textures/Arashi_Albedo.tga",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Textures/Arashi_Albedo.tga",
+          "bytes": 67108882,
+          "source_asset_sha256": "e6f453bdff31d6401bb07b1c39b022325cb86517a3ebc9472224d676280f9fe9",
+          "imported_asset_sha256": "e6f453bdff31d6401bb07b1c39b022325cb86517a3ebc9472224d676280f9fe9"
+        },
+        {
+          "guid": "cf3919c703bee124db95a9e6dbc11e6e",
+          "source_path": "Assets/Arashi_Character/Meshes/SK_Arashi.fbx",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Meshes/SK_Arashi.fbx",
+          "bytes": 64630720,
+          "source_asset_sha256": "1765d1cb4c968fbb63a95bf70448e38e276b430fba50961bbf287c4162d192a6",
+          "imported_asset_sha256": "1765d1cb4c968fbb63a95bf70448e38e276b430fba50961bbf287c4162d192a6"
+        },
+        {
+          "guid": "d172b4d2e7fbfde4c97147a555f3bc09",
+          "source_path": "Assets/Arashi_Character/Materials/Arashi_BaseColor.mat",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Materials/Arashi_BaseColor.mat",
+          "bytes": 5056,
+          "source_asset_sha256": "96bf67c1d4e3fc1e28fa832a40a1b1fb4b1567fca014f428a70f42d4eade62e6",
+          "imported_asset_sha256": "2e91ff488d4af6e973c30aa921f8e7379edb3be4ae6462417c0c247eba4f5eb1"
+        },
+        {
+          "guid": "e0f6b4a42c9e5514db295609c70f6083",
+          "source_path": "Assets/Arashi_Character/Textures/Arashi_Occlusion.tga",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Textures/Arashi_Occlusion.tga",
+          "bytes": 50331666,
+          "source_asset_sha256": "95eabaa2045fca9b5a5d2f2e34e33c8e277bc4fe54f128593bbb3117143ab8c8",
+          "imported_asset_sha256": "95eabaa2045fca9b5a5d2f2e34e33c8e277bc4fe54f128593bbb3117143ab8c8"
+        }
+      ],
+      "excluded_vendor_scripts": [
+        "Assets/Arashi_Character/Scrip/ChanceWeapon.cs",
+        "Assets/Arashi_Character/Scrip/Player.cs"
+      ],
+      "loaded_main_assets": 14,
+      "file_count": 14,
+      "bytes_before_material_conversion": 299759316,
+      "model_count": 7,
+      "clip_count": 46,
+      "materials": [
+        {
+          "package": "Arashi",
+          "path": "Assets/LocalThirdParty/Arashi_Character/Materials/Arashi_BaseColor.mat",
+          "loaded": true,
+          "type": "Material",
+          "animationType": null,
+          "avatars": [],
+          "clips": [],
+          "shader": "Universal Render Pipeline/Lit",
+          "supported": true,
+          "tag": "UniversalPipeline",
+          "shaderErrors": [],
+          "missingScripts": 0,
+          "missingMaterialSlots": 0
+        }
+      ],
+      "license": null,
+      "license_status": "unverified_user_download",
+      "import_verified": false,
+      "in_game_approved": false,
+      "verification_boundary": "Import/URP/pose sampling only; no manual visual, full locomotion or release acceptance."
+    }
+  ],
+  "material_conversions": [
+    {
+      "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown.mat",
+      "from": "Polygonmaker/Basic-PBR (Cutout Single Side)",
+      "to": "Universal Render Pipeline/Lit"
+    },
+    {
+      "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Materials/hair.mat",
+      "from": "Standard",
+      "to": "Universal Render Pipeline/Lit"
+    },
+    {
+      "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-black.mat",
+      "from": "Polygonmaker/Basic-PBR (Cutout Single Side)",
+      "to": "Universal Render Pipeline/Lit"
+    },
+    {
+      "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/child_1.mat",
+      "from": "Polygonmaker/Basic-PBR (Cutout Single Side)",
+      "to": "Universal Render Pipeline/Lit"
+    },
+    {
+      "path": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Materials/hair-brown_alpha.mat",
+      "from": "Polygonmaker/Basic-PBR (Cutout Single Side)",
+      "to": "Universal Render Pipeline/Lit"
+    },
+    {
+      "path": "Assets/LocalThirdParty/Arashi_Character/Materials/Arashi_BaseColor.mat",
+      "from": "Standard",
+      "to": "Universal Render Pipeline/Lit"
+    }
+  ],
+  "retarget_verification": {
+    "mode": "Manual PlayableGraph evaluation in isolated Unity preview scene",
+    "clip_count": 10,
+    "target_count": 6,
+    "sample_pairs": 60,
+    "pose_changed_pairs": 60,
+    "minimum_max_bone_angle_degrees": 11.1859264,
+    "results": [
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "clip": "idle",
+        "bones": 42,
+        "maxBoneAngle": 13.5342426,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "clip": "walk_inplace",
+        "bones": 42,
+        "maxBoneAngle": 41.9125366,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "clip": "decline",
+        "bones": 42,
+        "maxBoneAngle": 34.70866,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "clip": "idle",
+        "bones": 42,
+        "maxBoneAngle": 15.1777372,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "clip": "idlebreak1",
+        "bones": 42,
+        "maxBoneAngle": 32.4738922,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "clip": "talk",
+        "bones": 42,
+        "maxBoneAngle": 29.59371,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "clip": "comemoration",
+        "bones": 42,
+        "maxBoneAngle": 97.19291,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "clip": "idle",
+        "bones": 42,
+        "maxBoneAngle": 11.1859264,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "clip": "idlebreak",
+        "bones": 42,
+        "maxBoneAngle": 28.69313,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Child_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+        "clip": "talk",
+        "bones": 42,
+        "maxBoneAngle": 21.5017033,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 13.5341845,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "clip": "walk_inplace",
+        "bones": 55,
+        "maxBoneAngle": 41.9125175,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "clip": "decline",
+        "bones": 55,
+        "maxBoneAngle": 34.7086372,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 15.1776333,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "clip": "idlebreak1",
+        "bones": 55,
+        "maxBoneAngle": 40.5928955,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "clip": "talk",
+        "bones": 55,
+        "maxBoneAngle": 29.59371,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "clip": "comemoration",
+        "bones": 55,
+        "maxBoneAngle": 97.192894,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 11.1859961,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "clip": "idlebreak",
+        "bones": 55,
+        "maxBoneAngle": 28.6931572,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Female_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+        "clip": "talk",
+        "bones": 55,
+        "maxBoneAngle": 21.5016689,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 13.5341845,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "clip": "walk_inplace",
+        "bones": 55,
+        "maxBoneAngle": 41.9125366,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "clip": "decline",
+        "bones": 55,
+        "maxBoneAngle": 34.7086372,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 15.1776848,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "clip": "idlebreak1",
+        "bones": 55,
+        "maxBoneAngle": 40.5928955,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "clip": "talk",
+        "bones": 55,
+        "maxBoneAngle": 29.59371,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "clip": "comemoration",
+        "bones": 55,
+        "maxBoneAngle": 97.19289,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 11.1860666,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "clip": "idlebreak",
+        "bones": 55,
+        "maxBoneAngle": 28.6931572,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Male_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+        "clip": "talk",
+        "bones": 55,
+        "maxBoneAngle": 21.50163,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 13.5342426,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "clip": "walk_inplace",
+        "bones": 55,
+        "maxBoneAngle": 41.9125175,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "clip": "decline",
+        "bones": 55,
+        "maxBoneAngle": 34.70866,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 15.1776333,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "clip": "idlebreak1",
+        "bones": 55,
+        "maxBoneAngle": 40.59292,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "clip": "talk",
+        "bones": 55,
+        "maxBoneAngle": 29.5937386,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "clip": "comemoration",
+        "bones": 55,
+        "maxBoneAngle": 97.192894,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "clip": "idle",
+        "bones": 55,
+        "maxBoneAngle": 11.1860666,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "clip": "idlebreak",
+        "bones": 55,
+        "maxBoneAngle": 28.6931572,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Characters/Monk_1.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+        "clip": "talk",
+        "bones": 55,
+        "maxBoneAngle": 21.5017414,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "clip": "idle",
+        "bones": 52,
+        "maxBoneAngle": 13.5341845,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "clip": "walk_inplace",
+        "bones": 52,
+        "maxBoneAngle": 41.9125366,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "clip": "decline",
+        "bones": 52,
+        "maxBoneAngle": 34.7086372,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "clip": "idle",
+        "bones": 52,
+        "maxBoneAngle": 15.1777372,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "clip": "idlebreak1",
+        "bones": 52,
+        "maxBoneAngle": 40.59292,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "clip": "talk",
+        "bones": 52,
+        "maxBoneAngle": 29.5937386,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "clip": "comemoration",
+        "bones": 52,
+        "maxBoneAngle": 97.19292,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "clip": "idle",
+        "bones": 52,
+        "maxBoneAngle": 11.1859961,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "clip": "idlebreak",
+        "bones": 52,
+        "maxBoneAngle": 28.69313,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+        "clip": "talk",
+        "bones": 52,
+        "maxBoneAngle": 21.5017033,
+        "poseChanged": true,
+        "avatarBoundForReview": true
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX",
+        "clip": "idle",
+        "bones": 51,
+        "maxBoneAngle": 13.5341845,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX",
+        "clip": "walk_inplace",
+        "bones": 51,
+        "maxBoneAngle": 41.9125175,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX",
+        "clip": "decline",
+        "bones": 51,
+        "maxBoneAngle": 34.70866,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX",
+        "clip": "idle",
+        "bones": 51,
+        "maxBoneAngle": 15.1777372,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX",
+        "clip": "idlebreak1",
+        "bones": 51,
+        "maxBoneAngle": 40.59292,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX",
+        "clip": "talk",
+        "bones": 51,
+        "maxBoneAngle": 29.59371,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX",
+        "clip": "comemoration",
+        "bones": 51,
+        "maxBoneAngle": 97.192894,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX",
+        "clip": "idle",
+        "bones": 51,
+        "maxBoneAngle": 11.1859264,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX",
+        "clip": "idlebreak",
+        "bones": 51,
+        "maxBoneAngle": 28.69313,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      },
+      {
+        "target": "Assets/LocalThirdParty/Arashi_Character/Prefab/Character_Color_01.prefab",
+        "source": "Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX",
+        "clip": "talk",
+        "bones": 51,
+        "maxBoneAngle": 21.5017033,
+        "poseChanged": true,
+        "avatarBoundForReview": false
+      }
+    ],
+    "limits": "Three sampled times per clip/target, no foot contact, clothing penetration, transition or root-motion approval."
+  },
+  "review": {
+    "adapters": [
+      {
+        "path": "Assets/LocalThirdParty/Review/Incremental/Female_1_Review.prefab",
+        "missingScripts": 0,
+        "avatarValid": true,
+        "controller": "Assets/LocalThirdParty/Review/Incremental/SharedIdle.controller",
+        "missingMaterials": 0,
+        "triangles": 5270
+      },
+      {
+        "path": "Assets/LocalThirdParty/Review/Incremental/Male_1_Review.prefab",
+        "missingScripts": 0,
+        "avatarValid": true,
+        "controller": "Assets/LocalThirdParty/Review/Incremental/SharedIdle.controller",
+        "missingMaterials": 0,
+        "triangles": 5338
+      },
+      {
+        "path": "Assets/LocalThirdParty/Review/Incremental/Arashi_Review.prefab",
+        "missingScripts": 0,
+        "avatarValid": true,
+        "controller": "Assets/LocalThirdParty/Review/Incremental/SharedIdle.controller",
+        "missingMaterials": 0,
+        "triangles": 3636
+      },
+      {
+        "path": "Assets/LocalThirdParty/Review/Incremental/Child_1_Review.prefab",
+        "missingScripts": 0,
+        "avatarValid": true,
+        "controller": "Assets/LocalThirdParty/Review/Incremental/SharedIdle.controller",
+        "missingMaterials": 0,
+        "triangles": 2032
+      },
+      {
+        "path": "Assets/LocalThirdParty/Review/Incremental/Monk_1_Review.prefab",
+        "missingScripts": 0,
+        "avatarValid": true,
+        "controller": "Assets/LocalThirdParty/Review/Incremental/SharedIdle.controller",
+        "missingMaterials": 0,
+        "triangles": 6356
+      }
+    ],
+    "shaderErrors": [],
+    "scenes": [
+      {
+        "path": "Assets/LocalThirdParty/Review/PreservedUntitled_4022208d3c9440639eafd6253a92ae4e.unity",
+        "isDirty": false
+      },
+      {
+        "path": "Assets/LocalThirdParty/Review/AssetReview.unity",
+        "isDirty": false
+      }
+    ],
+    "compiling": false,
+    "playing": false
+  },
+  "regression": {
+    "core_passed": 100,
+    "playmode": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "inconclusive": 0
+    }
+  },
+  "local_evidence_directory": ".local/asset-increment-20261107",
+  "vendor_scripts_imported": false,
+  "real_model_requests": 0
+}

@@ -1,7 +1,7 @@
 {
-  "schema_version": 1,
-  "updated_at": "2026-11-05",
-  "stage": "greybox",
+  "schema_version": 2,
+  "updated_at": "2026-11-08",
+  "stage": "native_village_offline_rescue_demo_integrated_pending_live_ai_visual_performance_and_license_validation",
   "assets": [
     {
       "id": "shader_sketch_ink",
@@ -14,7 +14,7 @@
         "colored"
       ],
       "target_directory": "unity/Assets/Town.Content/Shaders",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -22,7 +22,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "tex_paper_hatching",
@@ -31,7 +32,7 @@
       "priority": "P0",
       "states": [],
       "target_directory": "unity/Assets/Town.Content/Textures",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -39,7 +40,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "char_player",
@@ -53,7 +55,7 @@
         "give"
       ],
       "target_directory": "unity/Assets/Town.Content/Characters",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -61,7 +63,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "char_residents",
@@ -78,7 +81,7 @@
         "cheer"
       ],
       "target_directory": "unity/Assets/Town.Content/Characters",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -86,7 +89,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "anim_humanoid",
@@ -102,7 +106,7 @@
         "surprised_sad"
       ],
       "target_directory": "unity/Assets/Town.Content/Characters",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -110,7 +114,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "env_landmarks",
@@ -123,7 +128,7 @@
         "arch_on"
       ],
       "target_directory": "unity/Assets/Town.Content/Environment",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -131,7 +136,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "env_nature",
@@ -142,7 +148,7 @@
         "static"
       ],
       "target_directory": "unity/Assets/Town.Content/Environment",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -150,7 +156,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "prop_rune_hammer",
@@ -162,7 +169,7 @@
         "held"
       ],
       "target_directory": "unity/Assets/Town.Content/Props",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -170,7 +177,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "prop_misc",
@@ -185,7 +193,7 @@
         "unlit"
       ],
       "target_directory": "unity/Assets/Town.Content/Props",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -193,7 +201,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "vfx_core",
@@ -205,7 +214,7 @@
         "burst"
       ],
       "target_directory": "unity/Assets/Town.Content/Prefabs",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -213,7 +222,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "ui_fantasy",
@@ -224,7 +234,7 @@
         "static"
       ],
       "target_directory": "unity/Assets/Town.Content/UI",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -232,7 +242,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "font_cjk",
@@ -243,7 +254,7 @@
         "static"
       ],
       "target_directory": "unity/Assets/Town.Content/UI",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -251,7 +262,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "audio_sfx",
@@ -263,7 +275,7 @@
         "loop"
       ],
       "target_directory": "unity/Assets/Town.Content/Audio",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -271,7 +283,8 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
     },
     {
       "id": "audio_music",
@@ -282,7 +295,7 @@
         "loop"
       ],
       "target_directory": "unity/Assets/Town.Content/Audio",
-      "status": "planned",
+      "status": "suspended_legacy",
       "source": null,
       "author": null,
       "license": null,
@@ -290,7 +303,1722 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。"
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "scope": "v3_legacy"
+    },
+    {
+      "id": "v4_env_workshop",
+      "name": "月光工坊模块与桌面道具",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "static"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "U01",
+        "F01"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "两包二选一，先单工作台与月灯代理"
+    },
+    {
+      "id": "v4_env_dragon",
+      "name": "白龙奥洛远景头颈角翼",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "sleeping",
+        "breathing"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "U02",
+        "F04"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "来源睡眠呼吸动作未核实；龙背关卡独立"
+    },
+    {
+      "id": "v4_env_scales",
+      "name": "断鳞步道与安全月台",
+      "quantity": 3,
+      "priority": "P0",
+      "states": [
+        "stable",
+        "folding",
+        "erased"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "F05"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "可走鳞片优先自制；浮石仅代理"
+    },
+    {
+      "id": "v4_char_finn",
+      "name": "芬恩：半影少年",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "idle",
+        "walk",
+        "point",
+        "hold_lamp",
+        "fade"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "Q01",
+        "Q02"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "需衣装与独立半影表现"
+    },
+    {
+      "id": "v4_char_maeve",
+      "name": "梅芙：缝影女巫",
+      "quantity": 1,
+      "priority": "P1",
+      "states": [
+        "idle",
+        "walk",
+        "stitch_shadow",
+        "give"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "F02",
+        "U04",
+        "Q02"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "身体、蛾斗篷和群体代理分层"
+    },
+    {
+      "id": "v4_char_thyrn",
+      "name": "瑟恩：断角鹿骨骑士",
+      "quantity": 1,
+      "priority": "P1",
+      "states": [
+        "idle",
+        "walk",
+        "guard",
+        "refract"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "U03",
+        "F07"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "四足与直立造型未锁定，先剪影对照"
+    },
+    {
+      "id": "v4_char_horace",
+      "name": "霍勒斯：玻璃眼守钟鸮",
+      "quantity": 1,
+      "priority": "P1",
+      "states": [
+        "idle",
+        "blink",
+        "talk"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "F08",
+        "F09"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "加玻璃眼与钟轮；不引入完整飞行系统"
+    },
+    {
+      "id": "v4_char_player",
+      "name": "读者玩家外形代理",
+      "quantity": 1,
+      "priority": "P1",
+      "states": [
+        "idle",
+        "walk",
+        "interact"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "Q01",
+        "U05",
+        "Q02"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "现实来客与镇民区分；正式服装待设计"
+    },
+    {
+      "id": "v4_glass_moths",
+      "name": "玻璃蛾近景与群体代理",
+      "quantity": 2,
+      "priority": "P1",
+      "states": [
+        "idle",
+        "fly",
+        "land"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Characters",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "F03",
+        "F10"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "近景与群体两个等级，不能全用高配角色复制"
+    },
+    {
+      "id": "v4_moon_construction",
+      "name": "月灯、漂流灯与造物组件",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "unlit",
+        "lit",
+        "low_energy",
+        "assembled",
+        "detached"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Props",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "U01",
+        "F01"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "灯核灯罩支架接点纸骨架需专门建模，不等于包内现有"
+    },
+    {
+      "id": "v4_magic_visuals",
+      "name": "书签、有限影桥、月焰与白潮退墨",
+      "quantity": 1,
+      "priority": "P0",
+      "states": [
+        "preview",
+        "active",
+        "cancelled",
+        "expired"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Prefabs",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "U06",
+        "U07",
+        "A01"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "专属状态效果自制，不能当作商店已提供完整玩法"
+    },
+    {
+      "id": "v4_ui",
+      "name": "配方、约定与执行结果UI",
+      "quantity": 1,
+      "priority": "P1",
+      "states": [
+        "preview",
+        "confirmed",
+        "failed"
+      ],
+      "target_directory": "unity/Assets/Town.Content/UI",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "A01",
+        "A02",
+        "A03"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "自制布局；中文动态输入及九宫格验收"
+    },
+    {
+      "id": "v4_audio",
+      "name": "UI占位与待制作奇幻音景",
+      "quantity": 1,
+      "priority": "P2",
+      "states": [
+        "oneshot",
+        "loop"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Audio",
+      "status": "candidate_research",
+      "scope": "v4_demo",
+      "candidate_ids": [
+        "A04"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "龙息折鳞纸声月焰尚无选定来源，音乐待试听筛选"
+    },
+    {
+      "id": "v4_future_moon_platform",
+      "name": "角下月台扩展构件",
+      "quantity": 1,
+      "priority": "P2",
+      "states": [
+        "static"
+      ],
+      "target_directory": "unity/Assets/Town.Content/Environment",
+      "status": "candidate_research",
+      "scope": "v4_future_chapter",
+      "candidate_ids": [
+        "F06"
+      ],
+      "source": null,
+      "author": null,
+      "license": null,
+      "attribution": null,
+      "modifications": [],
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "整章扩展，首轮不采购完整寺庙"
+    },
+    {
+      "id": "local_dragons",
+      "name": "Stylized Fantasy Dragons Pack v1.1.1.unitypackage",
+      "scope": "local_ai_native_evaluation",
+      "status": "local_imported_partial_validation",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/Stylized Fantasy Dragons Pack v1.1.1.unitypackage",
+      "author": null,
+      "license": null,
+      "license_status": "unverified_user_download",
+      "attribution": null,
+      "quantity": 2,
+      "selected_roots": [
+        "Assets/StylizedDragonPack/Prefabs/URP/Dragon/Dragon_Bl.prefab",
+        "Assets/StylizedDragonPack/Prefabs/URP/DragonWhelp/DragonWhelp_Bl.prefab"
+      ],
+      "imported_file_count": 22,
+      "imported_bytes": 465841408,
+      "target_directory": "unity/Assets/LocalThirdParty",
+      "import_verified": false,
+      "in_game_approved": false,
+      "gameplay_integration": {
+        "updated_at": "2026-11-08",
+        "scenes": [
+          "Assets/LocalThirdParty/Gameplay/Moonlight_Rescue.unity",
+          "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity"
+        ],
+        "role": "Dragon_Bl远景符号；非完整龙背地形或自主AI",
+        "notes": "场景集成不等于63/25片段逐段播放、呼吸/翻身动作或视觉质量验收；初次Built-in导入记录保留为历史"
+      },
+      "technical_verification": {
+        "phase": "initial_import_before_urp_migration",
+        "models_loaded": 2,
+        "models_total": 2,
+        "clips_read": 88,
+        "material_error_shader_count": 4,
+        "pipeline": "Built-in",
+        "notes": "模型导入和静态替代材质预览通过；原始材质/URP/动作重定向/玩法未验收"
+      },
+      "modifications": [
+        "选择根资源并保留GUID与依赖",
+        "排除源代码/演示场景/第三方测试动作",
+        "替代材质只作用独立Review场景",
+        "2026-11-07 URP迁移：保留原生URP材质，Review恢复Prefab源材质；见render_migration"
+      ]
+    },
+    {
+      "id": "local_fantasy_worlds",
+      "name": "Fantasy Worlds - Forests Meadows Dungeons - Stylized 3D Environment.unitypackage",
+      "scope": "local_ai_native_evaluation",
+      "status": "local_imported_partial_validation",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/Unity 卡通风格化幻想世界奇幻遗迹Fantasy Worlds Stylized/Fantasy Worlds - Forests Meadows Dungeons - Stylized 3D Environment.unitypackage",
+      "author": null,
+      "license": null,
+      "license_status": "unverified_user_download",
+      "attribution": null,
+      "quantity": 5,
+      "selected_roots": [
+        "Assets/TriForge Assets/Fantasy Worlds - Forest/Prefabs/Doodads/P_FW01_Chest_B_01.prefab",
+        "Assets/TriForge Assets/Fantasy Worlds - Forest/Prefabs/Doodads/P_FW01_CampProp_Pot_B_Handle_01.prefab",
+        "Assets/TriForge Assets/Fantasy Worlds - Forest/Prefabs/Doodads/P_FW01_Barrel_B_01.prefab",
+        "Assets/TriForge Assets/Fantasy Worlds - Forest/Prefabs/Rocks/P_fwOF_Rock_01.prefab",
+        "Assets/TriForge Assets/Fantasy Worlds - Forest/Prefabs/Trees/Summer/P_FW01_Tree_B_01.prefab"
+      ],
+      "imported_file_count": 64,
+      "imported_bytes": 201860301,
+      "target_directory": "unity/Assets/LocalThirdParty",
+      "import_verified": false,
+      "in_game_approved": false,
+      "technical_verification": {
+        "phase": "initial_import_before_urp_migration",
+        "models_loaded": 6,
+        "models_total": 6,
+        "clips_read": 0,
+        "material_error_shader_count": 0,
+        "pipeline": "Built-in",
+        "notes": "模型导入和静态替代材质预览通过；原始材质/URP/动作重定向/玩法未验收"
+      },
+      "modifications": [
+        "选择根资源并保留GUID与依赖",
+        "排除源代码/演示场景/第三方测试动作",
+        "替代材质只作用独立Review场景",
+        "2026-11-07 URP迁移：转换Standard/Autodesk材质，保留TriForge原生混合/植被Shader；见render_migration"
+      ]
+    },
+    {
+      "id": "local_medieval_npc",
+      "name": "Medieval_NPC_Pack_v2 v1.0.unitypackage",
+      "scope": "local_ai_native_evaluation",
+      "status": "local_imported_partial_validation",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/Unity3D_Medieval_NPC_Pack_v2_V1.0_农民男女人物角色模型/Medieval_NPC_Pack_v2 v1.0.unitypackage",
+      "author": null,
+      "license": null,
+      "license_status": "unverified_user_download",
+      "attribution": null,
+      "quantity": 5,
+      "selected_roots": [
+        "Assets/Medieval_NPC_Pack_2/Cook/Prefab/SK_Cook_Skin1.prefab",
+        "Assets/Medieval_NPC_Pack_2/Merchant/Prefab/SK_Merchant.prefab",
+        "Assets/Medieval_NPC_Pack_2/Peasant_man/Prefab/Character/Peasant_man_skin1.prefab",
+        "Assets/Medieval_NPC_Pack_2/Peasant_woman/Prefab/SK_Peasant_woman skin1.prefab",
+        "Assets/Medieval_NPC_Pack_2/Merchant/Animation/Anim_Suitcase_Open.fbx"
+      ],
+      "imported_file_count": 189,
+      "imported_bytes": 1565708914,
+      "target_directory": "unity/Assets/LocalThirdParty",
+      "import_verified": false,
+      "in_game_approved": false,
+      "technical_verification": {
+        "phase": "initial_import_before_urp_migration",
+        "models_loaded": 5,
+        "models_total": 5,
+        "clips_read": 1,
+        "material_error_shader_count": 0,
+        "pipeline": "Built-in",
+        "notes": "模型导入和静态替代材质预览通过；原始材质/URP/动作重定向/玩法未验收"
+      },
+      "modifications": [
+        "选择根资源并保留GUID与依赖",
+        "排除源代码/演示场景/第三方测试动作",
+        "替代材质只作用独立Review场景",
+        "2026-11-07 URP迁移：32个2Side材质保留双面/透明设置并转换粗糙度，生成21张MetallicSmoothness派生贴图；原贴图不改，许可状态不变"
+      ]
+    },
+    {
+      "id": "local_kingdom",
+      "name": "KINGDOM Stylized Modular Castle Environment.unitypackage",
+      "scope": "local_ai_native_evaluation",
+      "status": "native_exterior_scene_integrated_in_local_offline_demo",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/Unity 卡通风格化王国奇幻城堡村庄环境包KINGDOM Stylized/KINGDOM Stylized Modular Castle Environment.unitypackage",
+      "author": null,
+      "license": null,
+      "license_status": "unverified_user_download",
+      "attribution": null,
+      "quantity": 3,
+      "selected_roots": [
+        "Assets/Polyart/PolyartStudio/DreamscapeCastle/Prefabs/Props/Exterior/Prefab_Table_Exterior_Round.prefab",
+        "Assets/Polyart/PolyartStudio/DreamscapeCastle/Prefabs/BuildingsFull/PF_CastleHouse_01.prefab",
+        "Assets/Polyart/PolyartStudio/DreamscapeCastle/Prefabs/Props/Exterior/Prefab_Barrel.prefab"
+      ],
+      "imported_file_count": 245,
+      "imported_bytes": 240755875,
+      "target_directory": "unity/Assets/LocalThirdParty",
+      "import_verified": false,
+      "in_game_approved": false,
+      "technical_verification": {
+        "phase": "initial_import_before_urp_migration",
+        "models_loaded": 64,
+        "models_total": 64,
+        "clips_read": 0,
+        "material_error_shader_count": 26,
+        "pipeline": "Built-in",
+        "notes": "模型导入和静态替代材质预览通过；原始材质/URP/动作重定向/玩法未验收"
+      },
+      "modifications": [
+        "选择根资源并保留GUID与依赖",
+        "排除源代码/演示场景/第三方测试动作",
+        "替代材质只作用独立Review场景",
+        "2026-11-07 URP迁移：保留Polyart原生Shader Graph并恢复Review源材质；见render_migration",
+        "2026-11-08 导入完整 DemoExterior 及依赖，1737新文件、237复用；原生场景另存为Moonlight_Village，不覆盖源布局",
+        "选取原包嵌入的官方URP适配材质/Shader/子图；先备份再按GUID路径应用，子图就绪后重新导入叶片/树干Graph",
+        "水面/瀑布泡沫仅做透明Lit兼容，旧粒子在副本停用；未宣称保留原水波效果，天空保留Skybox/Cubemap"
+      ],
+      "gameplay_integration_2026_11_08": {
+        "source_sha256": "53973e9f6f55c4fee74a3745093db0131897ff8323c6cb4b02a1a36f17e3b531",
+        "native_scene": "Assets/LocalThirdParty/Polyart/PolyartStudio/DreamscapeCastle/Scenes/DemoExterior.unity",
+        "gameplay_scene": "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity",
+        "native_layout_preserved_in_copy": true,
+        "local_navmesh": "Assets/LocalThirdParty/Gameplay/VillageNavMesh.asset",
+        "world_origin": [
+          310,
+          6.5,
+          470
+        ],
+        "new_files": 1737,
+        "reused_files": 237,
+        "note": "旧technical_verification保留首轮导入历史；当前技术验证不改变许可与发布状态",
+        "audit": "art/local-asset-gameplay-2026-11-08.json"
+      }
+    },
+    {
+      "id": "local_alcazar_characters",
+      "name": "Song of Alcazar角色FBX与贴图",
+      "scope": "local_ai_native_evaluation",
+      "status": "local_imported_needs_retargeting",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/20239新/FBX+OBJ/Characters.zip",
+      "author": null,
+      "license": null,
+      "license_status": "unverified_user_download",
+      "quantity": 2,
+      "target_directory": "unity/Assets/LocalThirdParty/SongOfAlcazar",
+      "import_verified": false,
+      "in_game_approved": false,
+      "modifications": [
+        "只提取FBX和贴图；未导入整套UE工程或插件",
+        "2026-11-07 URP迁移：生成材质随Standard升级为URP；正确贴图连接、重定向与动作仍待验收"
+      ],
+      "notes": "Characters_pose:41网格约945161三角面，无动画；Characters_rig:9网格约50382三角面，无动画；当前Generic需人形映射，非33个动作。"
+    },
+    {
+      "id": "local_fantasy_horde_villagers",
+      "name": "Fantasy Horde Villagers v2.2 增量小样",
+      "scope": "local_ai_native_evaluation",
+      "status": "four_character_visuals_with_third_person_reader_and_idle_walk_in_village",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/FantasyHordeVillagers_中世纪村民角色_v2.2.zip",
+      "source_sha256": "d6eaa9fe93845e637c29b907c7cde9edcdd81aaaa882a202f2f44f49468c3e93",
+      "author": "Polygonmaker（包内路径标识，许可另核）",
+      "license": null,
+      "license_status": "unverified_user_download",
+      "attribution": null,
+      "quantity": 4,
+      "selected_characters": [
+        "Child_1",
+        "Female_1",
+        "Male_1",
+        "Monk_1"
+      ],
+      "target_directory": "unity/Assets/LocalThirdParty/Polygonmaker",
+      "imported_file_count": 54,
+      "imported_bytes_before_material_conversion": 187096365,
+      "import_verified": false,
+      "in_game_approved": false,
+      "technical_verification": {
+        "main_assets_loaded": 54,
+        "models_loaded": 16,
+        "valid_humanoid_avatars": 5,
+        "social_and_locomotion_clips": 10,
+        "materials_checked": 9,
+        "non_urp_materials_after_conversion": 0,
+        "retarget_clip_target_pairs": 60,
+        "pose_changed_pairs": 60,
+        "target_count": 6,
+        "mode": "isolated_preview_scene_manual_PlayableGraph_three_sample_times",
+        "notes": "六目标包含本包四角色、既有商人和Arashi；商人在临时实例上显式绑定唯一依赖Avatar。不是接触/穿插/根运动/过渡或完整玩法验收。"
+      },
+      "modifications": [
+        "保留GUID，二进制Prefab/材质引用和meta依赖闭包；不覆盖旧资源，不导厂商脚本或演示场景",
+        "使用包内嵌URP Shader版本；四个中性染色Cutout材质按原贴图/UV/裁剪阈值转换为URP Lit，另一个Standard转换",
+        "独立生成四个Review适配Prefab和共享Idle Controller；外盘原包不改"
+      ],
+      "gameplay_integration_2026_11_08": {
+        "characters": {
+          "Child_1": "Finn",
+          "Female_1": "Maeve",
+          "Monk_1": "Sern"
+        },
+        "animation": "PlayableGraph idle/walk blend; actual NavMesh velocity; root motion disabled",
+        "scenes": [
+          "Assets/LocalThirdParty/Gameplay/Moonlight_Rescue.unity",
+          "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity"
+        ],
+        "note": "只有芬恩有本轮实际护送任务，梅芙/瑟恩为待机视觉，不是三个自主AI；全动作质量仍未验收"
+      },
+      "third_person_integration_2026_11_08": {
+        "scene": "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity",
+        "character": "Male_1",
+        "role": "player_controlled_reader_not_an_additional_ai",
+        "animation": "existing_idle_and_walk_clips_driven_by_actual_character_controller_displacement_root_motion_disabled",
+        "modifications": "Only gameplay-copy instances: normalize reader height to 1.7m, CharacterController collision, actor visual layer 28; original source prefabs untouched",
+        "technical_verification": "Three new 3C PlayMode tests; final full suite 19 passed; valid humanoid, grounded, root motion disabled",
+        "limitations": "No new animation assets; fast walk is not a validated running cycle. Foot IK, contact, clothing and human playfeel review pending",
+        "log": "docs/开发日志/2026-11-08_021_第三人称3C重做.md"
+      },
+      "audit": "art/local-asset-increment-2026-11-07.json"
+    },
+    {
+      "id": "local_arashi_character",
+      "name": "Arashi Character 1.0 可选角色/动作样本",
+      "scope": "local_ai_native_evaluation",
+      "status": "local_imported_optional_style_candidate",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/14-unity3d 古代杀手剑客武士 人物角色模型带动画 游戏资源素材/Arashi Character 1.0.unitypackage",
+      "source_sha256": "ba35ddcee065e30c5c9e10559d7fc99bfe9300852d27a0f3dd9f98165e686f34",
+      "author": null,
+      "license": null,
+      "license_status": "unverified_user_download",
+      "attribution": null,
+      "quantity": 1,
+      "target_directory": "unity/Assets/LocalThirdParty/Arashi_Character",
+      "imported_file_count": 14,
+      "imported_bytes_before_material_conversion": 299759316,
+      "import_verified": false,
+      "in_game_approved": false,
+      "technical_verification": {
+        "main_assets_loaded": 14,
+        "models_loaded": 7,
+        "valid_humanoid_avatars": 1,
+        "embedded_clips_read": 46,
+        "raw_prefab_missing_excluded_scripts": 2,
+        "clean_review_prefab_missing_scripts": 0,
+        "notes": "46段含大量战斗片段，仅完成读取；重定向采样验证的是本次选出的10段FantasyHorde动作在Arashi上的播放，不表示46段已逐段验收。"
+      },
+      "modifications": [
+        "选择一个配色Prefab及依赖；排除Player.cs和ChanceWeapon.cs，不执行厂商控制脚本",
+        "Standard材质升级URP Lit；另建移除缺脚本引用的Review适配Prefab，不改原Prefab",
+        "武士服装风格仅作为备选，不能因有战斗动作而将当前项目改成动作RPG"
+      ],
+      "audit": "art/local-asset-increment-2026-11-07.json"
+    },
+    {
+      "id": "local_afs_workshops",
+      "name": "AFS Ultimate Workshops and Crafting v1.0：成组附魔工作站与灯具",
+      "scope": "local_ai_native_demo_integration_not_redistribution",
+      "status": "complete_enchanter_station_and_lantern_followers_integrated",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/AFS - Ultimate Workshops and Crafting v1.0.unitypackage",
+      "source_sha256": "935017d92d6244e5db3e0dcc200dc3bb593506a2965dbb4a352d8dd07c18925d",
+      "source_bytes": 2222222116,
+      "author": "Aquarius Fantasy（包内标识，许可另核）",
+      "license": null,
+      "license_status": "user_reports_purchase_eula_and_distribution_evidence_pending",
+      "import_verified": false,
+      "in_game_approved": false,
+      "target_directory": "unity/Assets/LocalThirdParty/Aquarius Fantasy - Ultimate Workshops",
+      "selected_roots": [
+        "Fae_Lantern_1A1.prefab",
+        "Workshop_Table_1A1.prefab",
+        "Crystal_Blue_1A2.prefab",
+        "Book_Open_1A1.prefab",
+        "Enchanters_WorkStation_A.prefab"
+      ],
+      "batches": [
+        {
+          "new_files": 54,
+          "bytes_before_conversion": 342821342
+        },
+        {
+          "new_files": 106,
+          "reused_files": 34,
+          "bytes_before_conversion": 450711810
+        }
+      ],
+      "technical_verification": {
+        "urp_materials_converted": 28,
+        "runtime_lantern_followers": 3,
+        "full_station_layout_reused": true,
+        "notes": "灯具跟随和到达入玩法；工作站书/晶体等仍有纯视觉物件，未全部独立交互或变成生成造物"
+      },
+      "modifications": [
+        "保留GUID依赖闭包，复用已有转换资源，不执行厂商代码",
+        "只对新导入Standard/遗留材质适配URP，源包不改",
+        "完整成组工作台在原生场景副本复用，原Prefab不改"
+      ],
+      "audit": "art/local-asset-gameplay-2026-11-08.json"
+    },
+    {
+      "id": "local_medieval_kingdom_ui",
+      "name": "Medieval Kingdom UI 1.03 白金皮肤",
+      "scope": "local_ai_native_demo_integration_not_redistribution",
+      "status": "three_textures_bound_to_runtime_ui_toolkit_hud",
+      "source": "/Volumes/ExternalSSD/ai小镇奇幻/143.Medieval Kingdom UI 1.03  中世纪王国高质量UI界面PSD/Medieval Kingdom UI 1.03.unitypackage",
+      "source_sha256": "9811be1fcd67b4fcd75670d4908cc93389c3d47bd37452118c577cb3a846b82f",
+      "source_bytes": 2796968786,
+      "license": null,
+      "license_status": "user_reports_purchase_eula_and_distribution_evidence_pending",
+      "import_verified": false,
+      "in_game_approved": false,
+      "target_directory": "unity/Assets/LocalThirdParty/MedievalKingdomUI",
+      "imported_file_count": 3,
+      "imported_bytes": 8860683,
+      "selected_roots": [
+        "White_gold_Skin/UI_elements_W/Popup_window_paper 1.png",
+        "White_gold_Skin/Buttons_W/Button_middle_Fr.png",
+        "White_gold_Skin/UI_elements_W/Title_frame_long.png"
+      ],
+      "technical_verification": {
+        "runtime_bound_textures": 3,
+        "ui_button_navigation_submit_flow_tested": true,
+        "notes": "复用图像皮肤，交互由项目UI Toolkit实现；没有导入源演示代码/PSD/字体，跨平台中文字体与真人交互仍待验"
+      },
+      "audit": "art/local-asset-gameplay-2026-11-08.json"
+    },
+    {
+      "id": "dragonsleep_title_art_20261108",
+      "name": "龙眠镇母龙与暖灯小镇开场插画",
+      "quantity": 1,
+      "priority": "P1",
+      "target_directory": "unity/Assets/Town.Content/UI/Resources/Dragonsleep",
+      "status": "imported_runtime_review",
+      "source": "OpenAI 内置 image_gen；本会话原创生成，2026-11-08",
+      "author": "AI 生成；项目美术方向与提示设计",
+      "license": "AI-generated output; subject to applicable service terms; not third-party stock or CC0",
+      "attribution": "非外部素材包，未仿制指定在世艺术家；未承诺独占著作权",
+      "modifications": [
+        "原图非破坏性复制入库；Unity 无压缩、无 mipmap、双线性采样；文字独立渲染"
+      ],
+      "import_verified": true,
+      "in_game_approved": false,
+      "sha256": "8d29b82a18fcd85fc3479e120ffb3cd818df31f57d4c85f04b1441d848805e46",
+      "notes": "已在实际开场截图检查；等待用户美术反馈。技术预览/灰盒与正式发布批准分开。",
+      "scope": "dragonsleep_v6_art_pass"
     }
-  ]
+  ],
+  "technical_prototypes": [
+    {
+      "id": "moonlight_slice_technical_geometry",
+      "name": "月光工坊首个离线执行切片：平台、桥、角色代理、光束与符文",
+      "scope": "technical_prototype_not_production_art",
+      "status": "generated_in_editor_playmode_verified",
+      "source": "本项目 MoonWorkshopSceneBuilder 使用 Unity 内置几何和项目编写的 URP 材质生成；没有引用商业样板",
+      "author": "本项目",
+      "license": null,
+      "license_status": "project_authored_arrangement_using_unity_builtin_primitives_not_third_party_license_grant",
+      "attribution": "使用 Unity 内置几何，使用和分发仍遵循适用 Unity 条款；不标为 CC0 商业素材",
+      "target_directory": "unity/Assets/MoonlightSlice",
+      "scene": "unity/Assets/Scenes/Moonlight_Workshop.unity",
+      "import_verified": true,
+      "in_game_approved": false,
+      "modifications": [
+        "显式创建独立场景、四个 URP Lit 材质和单独导航数据；不覆盖旧灰盒与商业素材预览",
+        "静态圆柱平台改用贴合可见模型的 MeshCollider，修复默认胶囊碰撞体非等比缩放导致导航面悬空的问题"
+      ],
+      "technical_verification": {
+        "core_release_passed": 112,
+        "unity_playmode_passed": 10,
+        "new_scene_playmode_tests": 4,
+        "navmesh_triangles": 34,
+        "notes": "两方法实际经过不同路线、遮光/稳定供光、切光/重开、途中录制回放通过；非真实AI理解、正式人物动作或完整短局验收"
+      },
+      "audit": "docs/开发日志/2026-11-07_019_月光工坊执行闭环.md"
+    },
+    {
+      "id": "moonlight_rescue_native_scene_integration",
+      "name": "月光驿站：现成村落、附魔工作站与三灯护送短局",
+      "scope": "local_technical_gameplay_integration_not_release_approved",
+      "status": "offline_ui_flow_playmode_verified_pending_visual_performance_live_ai_and_license",
+      "source": "项目MoonRescueSceneBuilder/MoonVillageSceneBuilder组装已登记的KINGDOM、AFS、Horde、UI和Dragon资源；原场景不覆盖",
+      "author": "本项目组装；各商业资产作者与许可仍按各自条目核实",
+      "license": null,
+      "license_status": "mixed_purchased_sources_eula_pending_not_a_new_license_grant",
+      "target_directory": "unity/Assets/LocalThirdParty/Gameplay",
+      "scenes": [
+        "Assets/LocalThirdParty/Gameplay/Moonlight_Rescue.unity",
+        "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity"
+      ],
+      "import_verified": false,
+      "in_game_approved": false,
+      "modifications": [
+        "保原生环境布局，独立玩法副本和局部导航；去除副本缺失厂商脚本/原展示相机，停用旧内置粒子",
+        "项目Core按实际到达记录芬恩和三灯；世界坐标适配、失光区间结清、角色基本动画与UI Toolkit阶段流程",
+        "官方嵌入URP素材适配优先，保Shader Graph；两水效果透明Lit兼容降级，不宣称完整视觉恢复"
+      ],
+      "technical_verification": {
+        "core_release_passed": 115,
+        "unity_playmode_passed": 16,
+        "python_tool_tests_passed": 5,
+        "new_rescue_and_village_playmode_tests": 6,
+        "native_scene_materials_checked": 201,
+        "invalid_materials": 0,
+        "missing_scripts_in_gameplay_copy": 0,
+        "characters_with_valid_humanoid_avatar": 3,
+        "individually_tracked_lights": 3,
+        "real_model_requests": 0,
+        "notes": "真实UI按钮流程/上下路/失光补救/结尾/双确认；非真人画质/性能或六类AI验证；新短局完整磁盘存档未完成"
+      },
+      "audit": "art/local-asset-gameplay-2026-11-08.json",
+      "log": "docs/开发日志/2026-11-08_020_现成场景与资源落局.md"
+    },
+    {
+      "id": "moonlight_village_third_person_integration",
+      "name": "月光驿站第三人称读者、近场交互与镜头重做",
+      "scope": "local_gameplay_copy_control_and_presentation_not_release_approval",
+      "status": "automated_3c_checks_passed_human_playfeel_and_quality_review_pending",
+      "source": "Project MoonThreeCSetup and MoonVillageSceneBuilder reuse already registered Horde Male_1 and existing UI; no new external asset import",
+      "license": null,
+      "license_status": "underlying_commercial_asset_permissions_unchanged_not_a_license_grant",
+      "scene": "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity",
+      "import_verified": false,
+      "in_game_approved": false,
+      "modifications": [
+        "Third-person perspective camera and directly controlled CharacterController reader; existing source scene and prefabs preserved",
+        "Layer 28 excludes actor visuals from camera and interaction sight rays, not environment collision; add Finn capsule and approximate workstation box only in gameplay copy",
+        "Default compact objective and near-field prompt; purchased UI images remain in modal interaction, with pause/input restoration and new-session reset"
+      ],
+      "technical_verification": {
+        "core_release_passed": 115,
+        "unity_playmode_passed": 19,
+        "new_three_c_playmode_tests": 3,
+        "runtime_full_perspective_viewport": true,
+        "runtime_camera_fov": 55,
+        "runtime_spawn_camera_distance": 5.5,
+        "runtime_spawn_obstruction": null,
+        "runtime_player_grounded_and_valid_humanoid": true,
+        "runtime_player_root_motion": false,
+        "real_model_requests": 0,
+        "manual_visual_and_playfeel_review": false,
+        "evidence_directory": ".local/3c-rebuild-20261108"
+      },
+      "log": "docs/开发日志/2026-11-08_021_第三人称3C重做.md"
+    }
+  ],
+  "selection_policy": {
+    "story": "v4_white_dragon_moon_lamp",
+    "current_render_pipeline": "URP",
+    "target_render_pipeline": "URP",
+    "ue_source_conversion_allowed": true,
+    "pipeline_migrated": true,
+    "note": "2026-11-07已按用户要求独立完成URP迁移；接受UE素材提取转换。旧technical_verification为首轮导入历史，当前管线审计见render_migration。许可未核实，不能据此批准发布。"
+  },
+  "render_migration": {
+    "date": "2026-11-07",
+    "unity_version": "6000.3.23f1",
+    "package": "com.unity.render-pipelines.universal@17.3.0",
+    "pipeline_asset": "unity/Assets/Settings/Rendering/Town_URP.asset",
+    "renderer_asset": "unity/Assets/Settings/Rendering/Town_URP_Renderer.asset",
+    "graphics_and_all_quality_levels_configured": true,
+    "quality_levels": 6,
+    "converted_materials": {
+      "standard": 257,
+      "autodesk_interactive": 4,
+      "two_sided_roughness": 32,
+      "generated_metallic_smoothness_textures": 21
+    },
+    "final_main_material_audit": {
+      "total": 336,
+      "urp_lit": 298,
+      "urp_autodesk_masked": 4,
+      "polyart_shader_graph_retained": 31,
+      "triforge_shaders_retained": 3,
+      "missing_or_unsupported_shader": 0,
+      "remaining_standard_2side_autodesk_shaders": 0,
+      "reported_shader_errors": 0
+    },
+    "review_renderers_restored_to_prefab_materials": 485,
+    "core_tests_passed": 100,
+    "playmode_tests_passed": 6,
+    "evidence_directory": ".local/urp-migration-20261107",
+    "backup_directory": ".local/urp-migration-20261107/before",
+    "log": "docs/开发日志/2026-11-07_016_URP管线迁移.md",
+    "visual_acceptance": "not_manually_reviewed",
+    "notes": "已实际运行URP、保存渲染截图并做技术检查；不等于逐材质视觉、动作、性能或发布验收。商业资源与派生贴图仅在被忽略的LocalThirdParty中，未分发；原source/license与审批状态保留。"
+  },
+  "schema_notes": "assets是项目需求/已取得资产；candidates是商品页候选，不代表已获得授权。旧v3条目保留并暂停。候选通过candidate_ids引用，未取得前需求source/license仍为null。",
+  "candidates": [
+    {
+      "id": "U01",
+      "name": "STYLIZED The Alchemist's Workshop",
+      "author": "Daniel Mistage",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/props/interior/stylized-the-alchemist-s-workshop-low-poly-3d-art-252320",
+      "story_use": "月光工坊",
+      "decision": "优先样板A",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 40,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "作者声明Unity 6/URP；摆放、交互点与统一材质待做"
+    },
+    {
+      "id": "U02",
+      "name": "Stylized Fantasy Dragons Pack",
+      "author": "N-hance Studio",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/characters/creatures/stylized-fantasy-dragons-pack-284093",
+      "story_use": "白龙奥洛",
+      "decision": "主候选",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 42.49,
+      "price_note": "促销42.49，页面标价84.99；未含税",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "Unity 6 URP；白色皮肤、睡眠动作待核，龙背关卡另做"
+    },
+    {
+      "id": "U03",
+      "name": "Poly Art: Deer",
+      "author": "MalberS Animations",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/characters/animals/poly-art-deer-80357",
+      "story_use": "瑟恩四足底模",
+      "decision": "条件候选",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 24.99,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "只评估模型贴图动画；完整AC另售；四足/直立未锁定"
+    },
+    {
+      "id": "U04",
+      "name": "STYLIZED Fantasy Female Character: Hetalia",
+      "author": "Daniel Mistage",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/stylized-fantasy-female-character-hetalia-poly-3d-art-286970",
+      "story_use": "梅芙人形底模",
+      "decision": "备选",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 40,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "有绑定无动画无LOD；22k—48k三角面；服装和蛾斗篷另做"
+    },
+    {
+      "id": "U05",
+      "name": "STYLIZED Fantasy Male Character: Bastian",
+      "author": "Daniel Mistage",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/stylized-fantasy-male-character-bastian-poly-3d-art-293661",
+      "story_use": "玩家或人形代理",
+      "decision": "备选",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 40,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "有绑定无动画无LOD；17k—45k三角面；不优先充当少年"
+    },
+    {
+      "id": "U06",
+      "name": "MK Toon - Stylized Shader",
+      "author": "Michael Kremmel",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/vfx/shaders/mk-toon-stylized-shader-178415",
+      "story_use": "纸感与描边",
+      "decision": "样板候选",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 59.9,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "页面列URP；Unity 6000.3具体组合待验证；半影退墨另做"
+    },
+    {
+      "id": "U07",
+      "name": "Cartoon FX Remaster Free",
+      "author": "Jean Moreno",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/vfx/particles/cartoon-fx-remaster-free-109565",
+      "story_use": "月焰与反馈试验",
+      "decision": "免费样板",
+      "formats_claimed": [
+        "Unity"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "Standard Unity Asset Store EULA（具体档位待核）",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "作者列Built-in/URP；不保证包含完整专属光影效果"
+    },
+    {
+      "id": "F01",
+      "name": "Stylized Witch Interior",
+      "author": "Polypix Studios Inc",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/a46acfae-dc18-4e9b-9ac5-ad80c63b1fc7",
+      "story_use": "月光工坊",
+      "decision": "优先样板B",
+      "formats_claimed": [
+        "Unreal Engine"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "导出静态网格贴图；URP材质、碰撞、灯光重做；弱化恐怖摆件"
+    },
+    {
+      "id": "F02",
+      "name": "Animated Stylized Witch — Game-Ready 3D Character with 56 Animations",
+      "author": "IRONVALE",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/7f53befd-eb95-41be-b343-75ca0ee0312c",
+      "story_use": "梅芙",
+      "decision": "主候选",
+      "formats_claimed": [
+        "Blender",
+        "FBX",
+        "GLB",
+        "glTF",
+        "USDZ"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "页面标称56动画；骨架和文件待核；蛾斗篷、缝影动作另做"
+    },
+    {
+      "id": "F03",
+      "name": "Luna Moth",
+      "author": "WDallgraphics",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/d4acaadb-4372-4763-b509-28ce8cc22ca4",
+      "story_use": "近景玻璃蛾",
+      "decision": "主候选",
+      "formats_claimed": [
+        "Unreal Engine"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "5496三角面3材质；导出原地动作；玻璃材质和群体简化另做"
+    },
+    {
+      "id": "F04",
+      "name": "Stylized Dragon",
+      "author": "Focree",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/e660ffb6-4f98-404e-a9f6-0c7bac50e574",
+      "story_use": "白龙奥洛",
+      "decision": "备选",
+      "formats_claimed": [
+        "Unity",
+        "Unreal Engine",
+        "Blender",
+        "FBX"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "列跑走待机跳4类；睡眠翻身未列；宠物坐骑尺度需改造"
+    },
+    {
+      "id": "F05",
+      "name": "Stylized Floating Island Package",
+      "author": "COMA38",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/d9b9a3ce-a377-4fb3-9103-5f8aebf5122a",
+      "story_use": "断鳞地形代理与远景",
+      "decision": "备选",
+      "formats_claimed": [
+        "Unreal Engine"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "浮石不是龙鳞；导出重塑、枢轴和碰撞待做"
+    },
+    {
+      "id": "F06",
+      "name": "Moon Temple",
+      "author": "Fractal Noize",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/fe9d8455-fa9b-44eb-9478-f58060fd01b5",
+      "story_use": "角下月台",
+      "decision": "后续章节",
+      "formats_claimed": [
+        "Unreal Engine"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "模块和4K贴图；粒子Light Function与场景灯光重做"
+    },
+    {
+      "id": "F07",
+      "name": "Forest Spirit",
+      "author": "Novozhilov 3D",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/d51e3493-7f3c-4a9b-bbc1-d9d6d4659504",
+      "story_use": "直立瑟恩结构参考",
+      "decision": "条件候选",
+      "formats_claimed": [
+        "Unity",
+        "Unreal Engine",
+        "FBX"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "Epic人形骨架；偏恐怖需重塑；动作包含情况待核"
+    },
+    {
+      "id": "F08",
+      "name": "Stylized Animated Owl",
+      "author": "Frostydrop",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/c3fd9aa6-15fe-4886-88f8-6c6fcdcfcefc",
+      "story_use": "霍勒斯",
+      "decision": "主候选",
+      "formats_claimed": [
+        "Unreal Engine"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "自定义骨架动画与眨眼Morph；导出后重建Animator、材质和机械件"
+    },
+    {
+      "id": "F09",
+      "name": "Cartoon Owl Animated 3D Model",
+      "author": "3DDisco",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/919a8d7b-87f7-46d5-baf2-a31d58e4a87b",
+      "story_use": "霍勒斯",
+      "decision": "备选",
+      "formats_claimed": [
+        "Unity",
+        "Unreal Engine",
+        "FBX",
+        "glTF",
+        "OBJ"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "7动画；10916为polygons非三角面；机械眼钟轮另做"
+    },
+    {
+      "id": "F10",
+      "name": "Butterfly Insect Flock Animated Fly Animal Wing Butterflies",
+      "author": "OLEG SHULDIAKOV",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/8098dcf4-8ff0-4db7-b6ff-541b9eda2d30",
+      "story_use": "玻璃蛾群",
+      "decision": "备选",
+      "formats_claimed": [
+        "FBX",
+        "3ds Max",
+        "Maya"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "标称270三角面512贴图；动画片段待核；翅形触角需修改"
+    },
+    {
+      "id": "Q01",
+      "name": "Universal Base Characters",
+      "author": "Quaternius",
+      "platform": "作者官方页面",
+      "source_url": "https://quaternius.itch.io/universal-base-characters",
+      "story_use": "芬恩少年底模",
+      "decision": "免费样板",
+      "formats_claimed": [
+        "FBX",
+        "glTF"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "CC0-1.0",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "有Teen比例；标准版文件待核；衣装和半影另做；源码版收费"
+    },
+    {
+      "id": "Q02",
+      "name": "Universal Animation Library",
+      "author": "Quaternius",
+      "platform": "作者官方页面",
+      "source_url": "https://quaternius.itch.io/universal-animation-library",
+      "story_use": "人形基础动画",
+      "decision": "免费样板",
+      "formats_claimed": [
+        "FBX",
+        "GLB"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "CC0-1.0",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "只指Standard；不把全库120+当免费版数量；先核原地片段"
+    },
+    {
+      "id": "A01",
+      "name": "Paper 001",
+      "author": "ambientCG",
+      "platform": "作者官方页面",
+      "source_url": "https://ambientcg.com/view?id=Paper001",
+      "story_use": "纸纹",
+      "decision": "辅助候选",
+      "formats_claimed": [
+        "PBR textures"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "CC0-1.0",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "先1K；检查平铺与闪烁"
+    },
+    {
+      "id": "A02",
+      "name": "Fantasy UI Borders",
+      "author": "Kenney",
+      "platform": "作者官方页面",
+      "source_url": "https://kenney.nl/assets/fantasy-ui-borders",
+      "story_use": "临时UI边框",
+      "decision": "辅助候选",
+      "formats_claimed": [
+        "2D sprites"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "CC0-1.0",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "九宫格、实际分辨率和中文界面待验"
+    },
+    {
+      "id": "A03",
+      "name": "Noto CJK Sans",
+      "author": "Noto CJK contributors",
+      "platform": "作者官方页面",
+      "source_url": "https://github.com/notofonts/noto-cjk",
+      "story_use": "中文正文",
+      "decision": "辅助候选",
+      "formats_claimed": [
+        "Fonts"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "SIL OFL 1.1",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "SIL OFL 1.1；保留许可；字体图集缺字待验"
+    },
+    {
+      "id": "A04",
+      "name": "UI Audio",
+      "author": "Kenney",
+      "platform": "作者官方页面",
+      "source_url": "https://kenney.nl/assets/ui-audio",
+      "story_use": "UI反馈占位",
+      "decision": "辅助候选",
+      "formats_claimed": [
+        "Audio"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "CC0-1.0",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "尚未试听，不替代龙息纸声月焰专属音景"
+    },
+    {
+      "id": "R01",
+      "name": "Stylized Witch👻",
+      "author": "LapaModels",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/c2300c0d-42eb-4882-97b8-7e4ca1a4f699",
+      "story_use": "女巫",
+      "decision": "暂缓",
+      "formats_claimed": [
+        "GLB"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "页面明确未绑骨无LOD，T-pose不等于动画就绪"
+    },
+    {
+      "id": "R02",
+      "name": "Turquoise Forest Guardian - Fantasy Deer Sculpture",
+      "author": "MR.AnyCAD",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/5291bd3e-7033-411f-8303-c9291487af09",
+      "story_use": "鹿灵雕塑",
+      "decision": "暂缓",
+      "formats_claimed": [
+        "FBX",
+        "GLB",
+        "OBJ",
+        "USDZ"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "打印雕塑方向，未证实角色运行所需绑定与动画"
+    },
+    {
+      "id": "R03",
+      "name": "Stylized Floating Islands Sky - 10 Hand-Painted Seamless 4K Textures UE5 Game",
+      "author": "EL HASSAR",
+      "platform": "Fab",
+      "source_url": "https://www.fab.com/listings/47f50a74-3fb6-40fe-82d2-732de5160f08",
+      "story_use": "浮岛贴图",
+      "decision": "暂缓",
+      "formats_claimed": [
+        "Unreal Engine materials"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": null,
+      "price_note": "页面未读取到价格/许可选项",
+      "license_claimed": null,
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "商品明确只有2D PBR材质，没有浮岛/树木网格"
+    },
+    {
+      "id": "R04",
+      "name": "KayKit - Medieval Hexagon Pack",
+      "author": "Kay Lousberg",
+      "platform": "作者官方页面",
+      "source_url": "https://kaylousberg.itch.io/kaykit-medieval-hexagon",
+      "story_use": "城建代理",
+      "decision": "暂缓",
+      "formats_claimed": [
+        "FBX",
+        "glTF",
+        "OBJ"
+      ],
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "price_note": "未含税；免费版与付费版分开",
+      "license_claimed": "CC0-1.0",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "城建比例不适合作为近景工坊主包；只计免费版"
+    },
+    {
+      "id": "FREE_ANIM_BASIC",
+      "name": "Human Basic Motions FREE",
+      "author": "Kevin Iglesias",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/animations/human-basic-motions-free-154271",
+      "story_use": "动作：待机走跑转身交谈",
+      "decision": "免费优先候选",
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "license_claimed": "Standard Unity Asset Store EULA",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "详见docs/免费动作与UI候选清单.md；当前仅核查页面，免费版不等于完整付费包。"
+    },
+    {
+      "id": "FREE_ANIM_CRAFT",
+      "name": "Human Crafting Animations FREE",
+      "author": "Kevin Iglesias",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/3d/animations/human-crafting-animations-free-157920",
+      "story_use": "动作：采集和工作",
+      "decision": "免费优先候选",
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "license_claimed": "Standard Unity Asset Store EULA",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "详见docs/免费动作与UI候选清单.md；当前仅核查页面，免费版不等于完整付费包。"
+    },
+    {
+      "id": "FREE_UI_BUTTONS",
+      "name": "Simple Button Set 02",
+      "author": "That Witch Design",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/2d/gui/icons/simple-button-set-02-184903",
+      "story_use": "基础按钮输入框图形",
+      "decision": "免费优先候选",
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "license_claimed": "Standard Unity Asset Store EULA",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "详见docs/免费动作与UI候选清单.md；当前仅核查页面，免费版不等于完整付费包。"
+    },
+    {
+      "id": "FREE_UI_STARTER",
+      "name": "FANTASTIC UI STARTER PACK",
+      "author": "MyIndie.Games",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/2d/gui/icons/fantastic-ui-starter-pack-123733",
+      "story_use": "uGUI窗口对话提示框样例",
+      "decision": "免费优先候选",
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "license_claimed": "Standard Unity Asset Store EULA",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "详见docs/免费动作与UI候选清单.md；当前仅核查页面，免费版不等于完整付费包。"
+    },
+    {
+      "id": "FREE_UI_TOOLTIP",
+      "name": "Simple Tooltip",
+      "author": "Norb",
+      "platform": "Unity Asset Store",
+      "source_url": "https://assetstore.unity.com/packages/tools/gui/simple-tooltip-155804",
+      "story_use": "提示框备选",
+      "decision": "免费优先候选",
+      "page_checked_at": "2026-11-07",
+      "evidence_level": "product_page_only",
+      "price_usd_observed": 0,
+      "license_claimed": "Standard Unity Asset Store EULA",
+      "license_verified_for_acquired_files": false,
+      "acquired": false,
+      "import_verified": false,
+      "in_game_approved": false,
+      "notes": "详见docs/免费动作与UI候选清单.md；当前仅核查页面，免费版不等于完整付费包。"
+    }
+  ],
+  "local_import_policy": {
+    "purpose": "AI Native互动Demo优先，素材可反向调整故事与风格",
+    "directory": "unity/Assets/LocalThirdParty",
+    "git_distribution": "ignored_local_only",
+    "authorization": "来源为用户外置硬盘下载包；官方许可凭证尚未核实",
+    "pipeline": "URP 17.3.0；首轮Built-in状态保留为历史，迁移见render_migration",
+    "vendor_scripts_imported": false
+  },
+  "local_deferred_sources": [
+    {
+      "name": "TL NPC02",
+      "path": "/Volumes/ExternalSSD/ai小镇奇幻/1361.TL 中世纪 NPC 商人 小孩 老人 平民/NPC02.zip",
+      "reason": "疑似商业游戏提取；13角色FBX与211 PSA文件，权利未核实且需转换；未导入"
+    },
+    {
+      "name": "TL NPC01 / NPC05",
+      "reason": "新增两包分别含11个FBX/323个PSA与11个FBX/339个PSA；商业游戏提取来源和许可未核实，PSA/MAX需额外转换；不导入、不执行转换脚本"
+    },
+    {
+      "name": "Medieval Kingdom Castle Town Village",
+      "reason": "本轮下载完成，静态检查1423条目、496 Prefab、447 FBX；默认HDRP，URP目录只有外部下载说明，未取得对应URP内容。与已有环境重复，暂不导入整包或自动下载说明中的链接"
+    },
+    {
+      "name": "Frozen Fortress",
+      "reason": "本轮下载完成，静态遍历535条目、146 Prefab、45 FBX、59材质；未导入、未验证URP。雪地堡垒不属于当前小型光影互动样板的必要资源，保留为后续环境备选，不执行包内脚本"
+    },
+    {
+      "name": "仍下载中的素材与BIP动作合集",
+      "reason": "动态清单见art/local-asset-increment-2026-11-07.json；不导入.downloading。BIP合集的来源/许可与Max转换未核实，不当作现成Unity Humanoid动作"
+    }
+  ],
+  "dragonsleep_v6_imports": [
+    {
+      "date": "2026-11-08",
+      "source": "KINGDOM Stylized Modular Castle Environment",
+      "seeds": [
+        "Scenes/Interiors/CastleKeep_Interior.unity",
+        "Scenes/Interiors/Catacombs_Interior.unity",
+        "Scenes/Interiors/Cathedral_Interior.unity"
+      ],
+      "closure_files": 1724,
+      "new_files": 755,
+      "excluded": "厂商 .cs 脚本 6 个（第一人称控制器、场景出入口、飞行镜头等）",
+      "purpose": "王城/墓穴/大教堂室内区域",
+      "import_status": "已导入，未做视觉验收"
+    },
+    {
+      "date": "2026-11-08",
+      "source": "KINGDOM Stylized Modular Castle Environment",
+      "seeds": [
+        "T_Castle_Cobblestone_02_C/N/ORM",
+        "T_Castle_Dirt_01_ORM",
+        "T_Castle_Cliff_C/N",
+        "T_Castle_Dirt_02_C"
+      ],
+      "closure_files": 7,
+      "new_files": 7,
+      "purpose": "补齐 DemoExterior 地形层缺失贴图（旧场景湖底棋盘格的原因）",
+      "import_status": "已导入并在龙眠镇场景截图验收"
+    },
+    {
+      "date": "2026-11-08",
+      "source": "Fantasy Worlds - Forests Meadows Dungeons",
+      "seeds": [
+        "Scenes/S_FW01_Demo_Summer.unity"
+      ],
+      "closure_files": 1135,
+      "new_files": 1092,
+      "excluded": "TFFWFoliageController.cs",
+      "purpose": "镇外林地/偷猎者营地区域（M5）",
+      "import_status": "已导入，Standard 材质已批量转 URP，未做视觉验收"
+    },
+    {
+      "date": "2026-11-08",
+      "source": "Medieval_NPC_Pack_v2",
+      "seeds": [
+        "Peasant_woman skin2/3/4",
+        "Cook Skin2/3",
+        "Peasant_man skin2",
+        "SK_Suitcase"
+      ],
+      "closure_files": 238,
+      "new_files": 168,
+      "purpose": "维丝娜、言契师等主要角色换装",
+      "import_status": "已导入，材质转 URP，维丝娜/言契师已在场景截图验收"
+    },
+    {
+      "date": "2026-11-08",
+      "source": "Medieval Kingdom UI 1.03",
+      "seeds": "Artworks 下白金/经典皮肤、按钮、图标、人物头像、纹章、背景、设置元素 PNG",
+      "closure_files": 567,
+      "new_files": 564,
+      "purpose": "龙眠镇界面皮肤与对话头像",
+      "import_status": "已导入，12 张皮肤贴图 + 6 张头像已在 Play 截图验收；字体未导入（许可未核）"
+    }
+  ],
+  "dragonsleep_v6_selection": {
+    "decision": "风格化手绘童话为审美基线；主场景 KINGDOM，扩展区 Fantasy Worlds，核心生物 Stylized Dragons，工坊 AFS，UI Medieval Kingdom UI，主要角色 Medieval NPC Pack v2，背景人群 Fantasy Horde",
+    "region_candidates_need_port": [
+      "Frozen Fortress（自定义内置管线 Shader，需移植后可作雪峰龙巢区）",
+      "Stronghold Village（DLNK ASE 内置管线 Shader，需移植后可作外港要塞区）"
+    ],
+    "rejected": {
+      "Medieval Kingdom Castle Town Village": "仅 HDRP",
+      "HEROIC FANTASY CREATURES": "写实风格冲突，暂不入主线",
+      "TL NPC01/02/05": "疑似商业游戏提取，许可风险",
+      "Arashi": "题材不符"
+    },
+    "license": null,
+    "license_status": "用户自述已购买，逐包 EULA 未核对；仍不随 Git 分发"
+  }
 }

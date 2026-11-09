@@ -1,0 +1,24 @@
+package,model_path,animation_type,valid_humanoid_avatars,clip_count,clip_names
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idle.FBX,Human,0,1,idle
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Male.FBX,Human,1,0,
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Props/Weapons/Source/Staff_curved.FBX,None,0,0,
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@idlebreak.FBX,Human,0,1,idlebreak
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Source/PolygonmakerRig.FBX,Human,1,0,
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idle.FBX,Human,0,1,idle
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Child.FBX,Human,1,0,
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@idlebreak1.FBX,Human,0,1,idlebreak1
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@comemoration.FBX,Human,0,1,comemoration
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@talk.FBX,Human,0,1,talk
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Monk.FBX,Human,1,0,
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Sit@decline.FBX,Human,0,1,decline
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@walk_inplace.FBX,Human,0,1,walk_inplace
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Source/Mesh/Female.FBX,Human,1,0,
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Old@idle.FBX,Human,0,1,idle
+FantasyHorde,Assets/LocalThirdParty/Polygonmaker/Fantasy Horde Series/Fantasy Horde - Villagers/Animations/Anim_Warrior@talk.FBX,Human,0,1,talk
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Bearded.fbx,None,0,0,
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Hat.fbx,None,0,0,
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SM_BottleWine.fbx,None,0,0,
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Tail.fbx,None,0,0,
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Katana_2.fbx,None,0,0,
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SM_Katana.fbx,None,0,0,
+Arashi,Assets/LocalThirdParty/Arashi_Character/Meshes/SK_Arashi.fbx,Human,1,46,Idle_nonWeapon;Idle_Weapon;Attack_01;Attack_02;Attack_03;Dame_01;Dame_02;Death_01;Wak_Weapon;Strafe_B;Strafe_L;Strafe_R;Run_Weapon;Jump_Start;Jump_End;Attack_05;Attack_06;Attack_04;Attack_07;Death_02;Crouch;Crouch_move_F;Crouch_move_L;Crouch_move_R;Jump_Loop;Attack_08;Getup_Back;Getup_Front;Idle_Sit;Run_Back;Run_Left;Run_nonWeapon;Run_Right;ShortAttack_01;ShortAttack_02;ShortAttack_03;ShortAttack_04;ShortAttack_05;ShortAttack_06;ShortAttack_07;ShortAttack_08;Sit;Sit_Idle;Strafe_F;Walk_nonWeapon;T_pose
