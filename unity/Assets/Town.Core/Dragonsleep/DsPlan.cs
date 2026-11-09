@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Town.Core.Dragonsleep
 {
@@ -164,6 +163,7 @@ namespace Town.Core.Dragonsleep
         public bool Feasible;
         public string FailedStep;
         public string Reason = "";
+        public DsReason ReasonCode;
         public bool ReachesGoal;
         public string EndClock = "";
         public Dictionary<string, object> ToRecord() => new Dictionary<string, object>
@@ -263,20 +263,16 @@ namespace Town.Core.Dragonsleep
     /// </summary>
     public static class DsPlanValidator
     {
-        static readonly Regex ClockPattern = new Regex(@"^第([1-4])天·(清晨|正午|黄昏|深夜)$");
-
+        // 兼容现有调用者；时刻协议只由 DsMoment 解析和格式化。
         public static bool TryClock(string text, out int day, out DayPhase phase)
         {
-            day = 0; phase = DayPhase.Dawn;
-            var m = ClockPattern.Match(text ?? "");
-            if (!m.Success) return false;
-            day = int.Parse(m.Groups[1].Value);
-            string p = m.Groups[2].Value;
-            phase = p == "清晨" ? DayPhase.Dawn : p == "正午" ? DayPhase.Noon : p == "黄昏" ? DayPhase.Dusk : DayPhase.Night;
-            return true;
+            bool parsed = DsMoment.TryParse(text, out var moment);
+            day = moment.Day;
+            phase = moment.Phase;
+            return parsed;
         }
 
-        public static int TimeIndex(int day, DayPhase phase) => (day - 1) * 4 + (int)phase;
+        public static int TimeIndex(int day, DayPhase phase) => new DsMoment(day, phase).Index;
 
         public static DsPlanReport Validate(DsWorldSnapshot before, DsPlan plan)
         {
@@ -350,10 +346,11 @@ namespace Town.Core.Dragonsleep
             int spent = from.Spent, budget = from.PhaseBudget;
             foreach (var step in steps)
             {
-                string fail = SimulateStep(w, ref spent, budget, step);
+                string fail = SimulateStep(w, ref spent, budget, step, out var reasonCode);
                 if (fail != null)
                 {
                     branch.FailedStep = step.Id; branch.Reason = fail; branch.EndClock = w.ClockText;
+                    branch.ReasonCode = reasonCode;
                     branch.ReachesGoal = w.Whelp.WithMother;
                     return branch;
                 }
@@ -365,9 +362,11 @@ namespace Town.Core.Dragonsleep
             return branch;
         }
 
-        static string SimulateStep(DsWorld w, ref int spent, int budget, DsPlanStep step)
+        static string SimulateStep(DsWorld w, ref int spent, int budget, DsPlanStep step, out DsReason reasonCode)
         {
-            if (w.Whelp.WithMother) return "小烬已经与母亲团聚，后续步骤多余";
+            reasonCode = new DsReason("deadline_passed");
+            if (w.Whelp.WithMother)
+            { reasonCode = new DsReason("goal_already_reached"); return "小烬已经与母亲团聚，后续步骤多余"; }
             if (w.FinalDawn) return "第三个黎明已至，来不及执行";
             // 与实际执行一致：时间推进到深夜时先过完这一夜（居民行动在试运行中视为未知、不模拟）。
             if (w.Phase == DayPhase.Night) { spent = 0; PassNight(w); if (w.FinalDawn) return w.Whelp.WithMother ? null : "第三个黎明已至，来不及执行"; }
@@ -375,7 +374,8 @@ namespace Town.Core.Dragonsleep
             if (step.Place != "" && step.Place != w.PlayerPlace)
             {
                 DsRules.EnterPlace(w, step.Place, t);
-                if (t.FailureCode != null || t.Verdict.Kind != VerdictKind.Accepted) return "前往" + Name(w, step.Place) + "失败：" + t.Verdict.Reason;
+                if (t.FailureCode != null || t.Verdict.Kind != VerdictKind.Accepted)
+                { reasonCode = t.Verdict.ReasonCode; return "前往" + Name(w, step.Place) + "失败：" + t.Verdict.Reason; }
             }
             switch (step.Op)
             {
@@ -384,6 +384,7 @@ namespace Town.Core.Dragonsleep
                 {
                     var act = new AiTrace();
                     DsRules.Adjudicate(w, step.ToProposal(w.PlayerPlace), act);
+                    reasonCode = act.Verdict.ReasonCode;
                     if (act.FailureCode != null) return act.Verdict.Reason;
                     if (act.Verdict.Kind == VerdictKind.Rejected || (act.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide")) return act.Verdict.Reason;
                     int cost = DsExecutor.TimeCost(AiTaskKind.Adjudicate, step.Verb, w, act);
@@ -392,8 +393,9 @@ namespace Town.Core.Dragonsleep
                 }
                 default:
                 {
-                    TryClock(step.Until, out int day, out var phase);
-                    int target = TimeIndex(day, phase);
+                    DsMoment.TryParse(step.Until, out var until);
+                    int target = until.Index;
+                    reasonCode = new DsReason("wait_target_passed");
                     if (target < w.TimeIndex) return "等待的终点 " + step.Until + " 已经过去";
                     while (w.TimeIndex < target && !w.FinalDawn)
                     {

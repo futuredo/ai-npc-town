@@ -25,6 +25,7 @@ namespace Town.Core.Dragonsleep
         public string Status = "pending";
         public DsPlanFailure Failure;
         public string Reason = "";
+        public DsReason ReasonCode;
         public string Presented = "";
         public readonly List<string> RequestIds = new List<string>();
         public readonly List<DsExecutionReceipt> Receipts = new List<DsExecutionReceipt>();
@@ -41,6 +42,7 @@ namespace Town.Core.Dragonsleep
     public sealed class DsReplanRecord
     {
         public DsPlanFailure Failure;
+        public DsReason ReasonCode;
         public string Reason, FailedStep, OldPlan, NewPlan, NewRequestId, NewPlanVerdict;
         public bool NewPlanExecutable;
         /// <summary>pending / accepted / modified / abandoned / rejected（新计划本身不可行）。</summary>
@@ -69,6 +71,7 @@ namespace Town.Core.Dragonsleep
         public string Status { get; private set; } = "planning";
         public DsPlanFailure LastFailure { get; private set; }
         public string LastReason { get; private set; } = "";
+        public DsReason LastReasonCode { get; private set; }
         public readonly List<DsPlanStepResult> Results = new List<DsPlanStepResult>();
         public readonly List<DsReplanRecord> Replans = new List<DsReplanRecord>();
         public readonly List<AiTrace> PlanTraces = new List<AiTrace>();
@@ -192,8 +195,10 @@ namespace Town.Core.Dragonsleep
                 r.RequestIds.Add(ev.RequestId); r.Receipts.Add(ev.Receipt); Append(r, ev.Presented);
                 if (ev.FailureCode == "stale_state") return Fail(r, step, DsPlanFailure.Stale, "移动时世界已变", executed: false);
                 if (ev.WhelpCaptured) return Fail(r, step, DsPlanFailure.Dice, "前往" + Session.World.Places[step.Place] + "时，卫兵发现了小烬");
-                if (ev.FailureCode != null || ev.Verdict.Kind == VerdictKind.Rejected) return Fail(r, step, DsPlanFailure.Precondition, ev.Verdict.Reason, executed: false);
-                if (ev.Verdict.Kind == VerdictKind.Partial) return Fail(r, step, DsPlanFailure.Dice, ev.Verdict.Reason);
+                if (ev.FailureCode != null || ev.Verdict.Kind == VerdictKind.Rejected)
+                    return Fail(r, step, DsPlanFailure.Precondition, ev.Verdict.Reason, executed: false, reasonCode: ev.Verdict.ReasonCode);
+                if (ev.Verdict.Kind == VerdictKind.Partial)
+                    return Fail(r, step, DsPlanFailure.Dice, ev.Verdict.Reason, reasonCode: ev.Verdict.ReasonCode);
             }
 
             switch (step.Op)
@@ -204,23 +209,25 @@ namespace Town.Core.Dragonsleep
                     r.RequestIds.Add(t.RequestId); r.Receipts.Add(t.Receipt); Append(r, t.Presented);
                     if (t.FailureCode == "stale_state" || t.FailureCode == "stale_context")
                         return Fail(r, step, DsPlanFailure.Stale, t.Presented, executed: false);
-                    if (t.FailureCode != null) return Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, executed: false);
+                    if (t.FailureCode != null)
+                        return Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, executed: false, reasonCode: t.Verdict.ReasonCode);
                     if (t.Changes.Any(c => c.Path == "whelp.captured_by" && c.After == "osric" && c.Before != "osric"))
                         return Fail(r, step, DsPlanFailure.Dice, "换岗巡逻发现了小烬");
                     if (t.Verdict.Kind == VerdictKind.Rejected)
                     {
                         bool rolled = t.Verdict.Roll.HasValue && t.Verdict.Difficulty.HasValue && t.Verdict.Roll.Value < t.Verdict.Difficulty.Value;
-                        return rolled ? Fail(r, step, DsPlanFailure.Dice, t.Verdict.Reason)
-                                      : Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, executed: t.Receipt?.Applied == true);
+                        return rolled ? Fail(r, step, DsPlanFailure.Dice, t.Verdict.Reason, reasonCode: t.Verdict.ReasonCode)
+                                      : Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason,
+                                          executed: t.Receipt?.Applied == true, reasonCode: t.Verdict.ReasonCode);
                     }
                     if (t.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide")
-                        return Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason);
+                        return Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, reasonCode: t.Verdict.ReasonCode);
                     break;
                 }
                 case "wait":
                 {
-                    DsPlanValidator.TryClock(step.Until, out int day, out var phase);
-                    int target = DsPlanValidator.TimeIndex(day, phase);
+                    DsMoment.TryParse(step.Until, out var until);
+                    int target = until.Index;
                     while (Session.World.TimeIndex < target && !Session.World.FinalDawn)
                     {
                         var before = Session.CaptureState();
@@ -249,9 +256,11 @@ namespace Town.Core.Dragonsleep
         void FinishOrContinue()
         {
             if (!RequireHomecoming || Session.World.Whelp.WithMother) { Status = "completed"; return; }
-            if (Session.World.FinalDawn) { Status = "failed"; LastReason = "归巢期限已过，未能团聚"; return; }
+            if (Session.World.FinalDawn)
+            { Status = "failed"; LastReason = "归巢期限已过，未能团聚"; LastReasonCode = new DsReason("deadline_passed"); return; }
             LastFailure = DsPlanFailure.None;
             LastReason = "局部步骤已经完成，但归巢目标尚未达成，请从当前状态接续到团聚";
+            LastReasonCode = new DsReason("goal_not_reached");
             _failedStep = null;
             Status = "needs_replan";
         }
@@ -262,6 +271,7 @@ namespace Town.Core.Dragonsleep
             if (Status != "planning" || LatestPlanTrace == null || LatestPlanTrace.Provider?.Error != null)
                 throw new InvalidOperationException("当前没有可修正的语义提案");
             LastReason = "首个提案未通过校验，请根据拒绝反馈重新规划";
+            LastReasonCode = new DsReason("proposal_rejected");
             Status = "needs_replan";
             return ReplanAsync(ct);
         }
@@ -280,7 +290,7 @@ namespace Town.Core.Dragonsleep
             string reason = b?.Reason ?? t.FailureCode ?? "结构未通过校验";
             if (step != null && step.Target != "" && step.Place != "" && step.Place != Session.World.PlayerPlace &&
                 (Session.World.Actors.ContainsKey(step.Target) || step.Target == "whelp") &&
-                (reason.Contains("不在") || reason.Contains("没有雏龙") || reason.Contains("笼子") || reason.Contains("吓坏") || reason.Contains("还躲在")))
+                (b?.ReasonCode.MasksRemoteTarget ?? false))
                 reason = "该步骤不能保证目标在场；请依据已知线索或当前可见状态安排，不推断隐藏位置";
             if (reason.Length > 180) reason = reason.Substring(0, 180);
             return new Dictionary<string, object>
@@ -304,10 +314,10 @@ namespace Town.Core.Dragonsleep
                 ["objective"] = RequireHomecoming ? "homecoming" : "player_goal",
                 ["rejected_proposal"] = RejectedFeedback(),
             });
-            var t = await Session.PlanAsync(Goal, context, ct).ConfigureAwait(false);
+            var t = await Session.PlanWithLocalContextAsync(Goal, context, new DsPlanLocalContext(LastReasonCode), ct).ConfigureAwait(false);
             var record = new DsReplanRecord
             {
-                Failure = LastFailure, Reason = LastReason, FailedStep = _failedStep?.Id, OldPlan = Plan?.Brief(),
+                Failure = LastFailure, Reason = LastReason, ReasonCode = LastReasonCode, FailedStep = _failedStep?.Id, OldPlan = Plan?.Brief(),
                 NewPlan = t.PlanReport?.Plan?.Brief(), NewRequestId = t.RequestId, NewPlanVerdict = t.Presented,
                 NewPlanExecutable = MeetsObjective(t),
             };
@@ -328,15 +338,19 @@ namespace Town.Core.Dragonsleep
             }
         }
 
-        DsPlanStepResult Fail(DsPlanStepResult r, DsPlanStep step, DsPlanFailure failure, string reason, bool executed = true)
+        DsPlanStepResult Fail(DsPlanStepResult r, DsPlanStep step, DsPlanFailure failure, string reason,
+            bool executed = true, DsReason reasonCode = default)
         {
             // 世界已变而未执行的那一步记为作废；其余失败都记为失败（前置条件失败时世界未变）。
             r.Status = failure == DsPlanFailure.Stale && !executed ? "void" : "failed";
             r.Failure = failure; r.Reason = reason ?? "";
+            r.ReasonCode = reasonCode.Code == null ? new DsReason(failure == DsPlanFailure.Stale ? "world_changed" :
+                failure == DsPlanFailure.Dice ? "execution_failed" : "precondition") : reasonCode;
             Results.Add(r);
             foreach (var rest in _active.Skip(_next + 1))
                 Results.Add(new DsPlanStepResult { StepId = rest.Id, Op = rest.Op, Brief = rest.Brief(), Clock = Session.World.ClockText, Status = "void", Reason = "前面的步骤失败，未执行" });
             LastFailure = failure; LastReason = r.Reason; _failedStep = step;
+            LastReasonCode = r.ReasonCode;
             Status = "needs_replan";
             return r;
         }
@@ -345,6 +359,7 @@ namespace Town.Core.Dragonsleep
         {
             var step = _active.FirstOrDefault();
             LastFailure = DsPlanFailure.Stale; LastReason = reason; _failedStep = step;
+            LastReasonCode = new DsReason("world_changed");
             foreach (var s in _active)
                 Results.Add(new DsPlanStepResult { StepId = s.Id, Op = s.Op, Brief = s.Brief(), Clock = Session.World.ClockText, Status = "void", Failure = s == step ? DsPlanFailure.Stale : DsPlanFailure.None, Reason = s == step ? reason : "计划作废" });
             Status = "needs_replan";

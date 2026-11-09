@@ -8,7 +8,7 @@ namespace Town.Core.Dragonsleep
     /// <summary>
     /// 离线规则提供方：用关键词把开放输入转成与真实模型完全相同格式的 JSON。
     /// 它是“模拟模型”，用来零费用地跑通整条管线、做基线对比；trace 中标记 Simulated=true。
-    /// 它只读取提示词里的内容（与真实模型拿到的信息一致），不偷看世界真值。
+    /// 它只读取提示词及同一已呈现失败的本地原因码，不偷看世界真值。
     /// </summary>
     public sealed class RuleProvider : IAiProvider
     {
@@ -26,7 +26,7 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Adjudicate: reply = Adjudicate(perception, input); break;
                 case AiTaskKind.AgentPlan: reply = Agent(perception); break;
                 case AiTaskKind.Direct: reply = Direct(perception); break;
-                case AiTaskKind.Plan: reply = BaselinePlanner.Plan(perception, input); break;
+                case AiTaskKind.Plan: reply = BaselinePlanner.Plan(perception, input, packet.LocalPlanContext); break;
                 default: reply = Craft(perception, input); break;
             }
             string raw = MiniJson.Write(reply);
@@ -215,9 +215,9 @@ namespace Town.Core.Dragonsleep
         static Dictionary<string, object> Direct(Dictionary<string, object> per)
         {
             double tension = per.Num("tension") ?? 0.3;
-            string time = per.Str("time") ?? "";
+            DsMoment.TryParse(per.Str("time"), out var time);
             string ev; string reason;
-            if (time.StartsWith("第4天")) { ev = "mother_descends"; reason = "约定的黎明已到。"; }
+            if (time.Day == 4) { ev = "mother_descends"; reason = "约定的黎明已到。"; }
             else if (tension < 0.35) { ev = "omen_roar"; reason = "张力偏低，用一声龙吼提醒倒计时。"; }
             else if (tension > 0.7) { ev = "snowfall"; reason = "张力过高，给玩家一点喘息。"; }
             else { ev = "rumor_spreads"; reason = "中段用流言推动居民行动。"; }

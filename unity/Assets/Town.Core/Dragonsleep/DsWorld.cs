@@ -110,7 +110,8 @@ namespace Town.Core.Dragonsleep
         public bool KnowsLaw(string lawId) =>
             Laws.TryGetValue(lawId, out var law) && (law.Common || PlayerKnows.Contains("law:" + lawId));
 
-        public int TimeIndex => (Day - 1) * 4 + (int)Phase;
+        public DsMoment Moment => new DsMoment(Day, Phase);
+        public int TimeIndex => Moment.Index;
         public bool FinalDawn => Day >= 4;
 
         /// <summary>时间推进一个时段。返回是否进入夜晚（夜晚由多智能体轮次处理）。</summary>
@@ -134,9 +135,8 @@ namespace Town.Core.Dragonsleep
             }
         }
 
-        public static string PhaseName(DayPhase p) =>
-            p == DayPhase.Dawn ? "清晨" : p == DayPhase.Noon ? "正午" : p == DayPhase.Dusk ? "黄昏" : "深夜";
+        public static string PhaseName(DayPhase p) => DsMoment.PhaseName(p);
 
-        public string ClockText => $"第{Day}天·{PhaseName(Phase)}";
+        public string ClockText => Moment.ToString();
     }
 }

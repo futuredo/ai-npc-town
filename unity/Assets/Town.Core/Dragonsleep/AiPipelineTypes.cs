@@ -43,6 +43,8 @@ namespace Town.Core.Dragonsleep
         public NpcPerceptionView DialogueSnapshot { get; internal set; }
         public TaskPerceptionView TaskSnapshot { get; internal set; }
         public string OriginalPlayerInput { get; internal set; }
+        // 本地离线规划元数据；不属于模型协议，不参与 TotalChars、提示词指纹或回放记录。
+        internal DsPlanLocalContext LocalPlanContext { get; set; }
         public AiTaskKind Kind;
         public string ActorId;
         public string SchemaName;
@@ -94,6 +96,7 @@ namespace Town.Core.Dragonsleep
     {
         public VerdictKind Kind = VerdictKind.Rejected;
         public string Reason = "";
+        public DsReason ReasonCode;
         public double? Roll;
         public double? Difficulty;
         public readonly List<string> Notes = new List<string>();

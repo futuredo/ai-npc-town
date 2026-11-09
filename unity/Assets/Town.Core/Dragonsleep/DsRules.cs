@@ -105,9 +105,9 @@ namespace Town.Core.Dragonsleep
             string narration = p.Str("narration") ?? "";
             if (verb == null || laws == null) { Fail(t, "schema_invalid", "缺少 verb 或 laws"); return; }
             if (!ContextBuilder.AdjudicateVerbs.Contains(verb)) { Fail(t, "verb_not_allowed", "动词不在白名单：" + verb); return; }
-            if (verb == "unsupported") { Reject(t, "现有世界无法执行这个意图，请换一种可行办法"); return; }
+            if (verb == "unsupported") { Reject(t, "现有世界无法执行这个意图，请换一种可行办法", "intent_unsupported"); return; }
             if (place != "" && place != w.PlayerPlace)
-            { Reject(t, "你此刻在" + w.Places[w.PlayerPlace] + "，做不到发生在" + (w.Places.TryGetValue(place, out var pn) ? pn : place) + "的事"); return; }
+            { Reject(t, "你此刻在" + w.Places[w.PlayerPlace] + "，做不到发生在" + (w.Places.TryGetValue(place, out var pn) ? pn : place) + "的事", "place_mismatch", place); return; }
 
             DsItem item = null;
             if (itemId != "")
@@ -115,65 +115,67 @@ namespace Town.Core.Dragonsleep
                 if (!w.Items.TryGetValue(itemId, out item)) { Fail(t, "unknown_entity", "不存在的物件：" + itemId); return; }
                 bool reachable = item.Holder == "player" || item.Holder == "place:" + w.PlayerPlace ||
                                  (w.Actors.TryGetValue(item.Holder, out var holder) && holder.Place == w.PlayerPlace);
-                if (!reachable) { Reject(t, "你身边没有「" + item.Name + "」"); return; }
+                if (!reachable) { Reject(t, "你身边没有「" + item.Name + "」", "item_missing", item.Id); return; }
             }
             bool targetWhelp = target == "whelp";
             var wh = w.Whelp;
             if (verb == "rescue")
             {
-                if (!targetWhelp) { Reject(t, "救出只针对被关起来的雏龙"); return; }
-                if (wh.CapturedBy == null) { Reject(t, "小烬没有被关起来，用不着救"); return; }
-                if (wh.CapturedBy != "osric" || wh.Place != w.PlayerPlace) { Reject(t, "小烬不在这里的笼子里"); return; }
+                if (!targetWhelp) { Reject(t, "救出只针对被关起来的雏龙", "rescue_target_invalid"); return; }
+                if (wh.CapturedBy == null) { Reject(t, "小烬没有被关起来，用不着救", "rescue_not_needed"); return; }
+                if (wh.CapturedBy != "osric" || wh.Place != w.PlayerPlace) { Reject(t, "小烬不在这里的笼子里", "rescue_target_absent"); return; }
                 // 计划试运行不读取未来岗哨（玩家并不知道），这一条到真正执行时才检查。
-                if (!w.DryRun && DsGuards.IsWatched(w, w.PlayerPlace, out var guarded)) { Reject(t, guarded + "，现在下手等于自投罗网"); return; }
+                if (!w.DryRun && DsGuards.IsWatched(w, w.PlayerPlace, out var guarded)) { Reject(t, guarded + "，现在下手等于自投罗网", "place_guarded", w.PlayerPlace); return; }
             }
             else if (targetWhelp && (wh.Place != w.PlayerPlace || wh.CapturedBy != null))
             {
-                Reject(t, wh.CapturedBy == "osric" && wh.Place == w.PlayerPlace ? "小烬被锁在王城的铁笼里，得先把它救出来" : "这里没有雏龙的踪迹");
+                bool cagedHere = wh.CapturedBy == "osric" && wh.Place == w.PlayerPlace;
+                Reject(t, cagedHere ? "小烬被锁在王城的铁笼里，得先把它救出来" : "这里没有雏龙的踪迹",
+                    cagedHere ? "whelp_caged" : "whelp_absent");
                 return;
             }
             DsActor targetActor = null;
             if (!targetWhelp && target != "" && !w.Items.ContainsKey(target) && !w.Places.ContainsKey(target))
             {
                 if (!w.Actors.TryGetValue(target, out targetActor)) { Fail(t, "unknown_entity", "不存在的对象：" + target); return; }
-                if (targetActor.Place != w.PlayerPlace) { Reject(t, targetActor.Name + "不在这里"); return; }
+                if (targetActor.Place != w.PlayerPlace) { Reject(t, targetActor.Name + "不在这里", "actor_absent", targetActor.Id); return; }
             }
             if (verb == "buy" && (item == null || !w.Actors.ContainsKey(item.Holder)))
-            { Reject(t, "这里没有人卖那样东西"); return; }
+            { Reject(t, "这里没有人卖那样东西", "seller_absent", itemId); return; }
             if ((verb == "feed" || verb == "give" || verb == "show") && (item == null || item.Holder != "player"))
-            { Reject(t, "你得先持有要" + (verb == "show" ? "出示" : "给出") + "的东西"); return; }
+            { Reject(t, "你得先持有要" + (verb == "show" ? "出示" : "给出") + "的东西", "item_not_held", itemId); return; }
             if (verb == "feed" && (!targetWhelp || !item.Tags.Contains("food")))
-            { Reject(t, "需要用可食用的东西喂身边的雏龙"); return; }
+            { Reject(t, "需要用可食用的东西喂身边的雏龙", "food_required"); return; }
             if (verb == "lure" && (!targetWhelp || (item != null && item.Holder != "player")))
-            { Reject(t, "只能用自己持有的东西引诱身边的雏龙"); return; }
+            { Reject(t, "只能用自己持有的东西引诱身边的雏龙", "lure_target_or_item_invalid"); return; }
             if ((verb == "give" || verb == "show") && targetActor == null)
-            { Reject(t, "需要明确一位在场的接收者"); return; }
+            { Reject(t, "需要明确一位在场的接收者", "recipient_required"); return; }
             if (verb == "take" && (item == null || item.Holder == "player"))
-            { Reject(t, "需要明确一个尚未持有、能够拿取的物件"); return; }
+            { Reject(t, "需要明确一个尚未持有、能够拿取的物件", "take_item_invalid"); return; }
             if (verb == "hide" && !targetWhelp)
-            { Reject(t, "当前只能安排雏龙的藏身处"); return; }
+            { Reject(t, "当前只能安排雏龙的藏身处", "hide_target_invalid"); return; }
             if (verb == "hide" && wh.TrustPlayer < 0.3f)
-            { Reject(t, "遮盖需要雏龙信任至少0.3；先亲近再藏好"); return; }
+            { Reject(t, "遮盖需要雏龙信任至少0.3；先亲近再藏好", "whelp_trust_low"); return; }
             if (verb == "lead")
             {
-                if (!targetWhelp) { Reject(t, "只能带上身边的雏龙"); return; }
-                if (wh.Following) { Reject(t, "小烬已经跟着你了"); return; }
-                if (wh.Hidden && !w.Flags.ContainsKey("whelp_hidden_by_player")) { Reject(t, "小烬还躲在船屋深处，得先让它现身"); return; }
-                if (wh.TrustPlayer < 0.4f) { Reject(t, $"小烬还不够信任你（{wh.TrustPlayer:0.00}，至少要 0.40），不肯跟你走"); return; }
-                if (wh.Fear >= 0.85f) { Reject(t, "小烬吓坏了，缩成一团不肯动"); return; }
+                if (!targetWhelp) { Reject(t, "只能带上身边的雏龙", "lead_target_invalid"); return; }
+                if (wh.Following) { Reject(t, "小烬已经跟着你了", "whelp_already_following"); return; }
+                if (wh.Hidden && !w.Flags.ContainsKey("whelp_hidden_by_player")) { Reject(t, "小烬还躲在船屋深处，得先让它现身", "whelp_hidden"); return; }
+                if (wh.TrustPlayer < 0.4f) { Reject(t, $"小烬还不够信任你（{wh.TrustPlayer:0.00}，至少要 0.40），不肯跟你走", "whelp_trust_low"); return; }
+                if (wh.Fear >= 0.85f) { Reject(t, "小烬吓坏了，缩成一团不肯动", "whelp_scared"); return; }
             }
             if (verb == "confide" && (targetActor == null || targetWhelp))
-            { Reject(t, "需要明确一位在场的居民来托付"); return; }
+            { Reject(t, "需要明确一位在场的居民来托付", "confide_target_invalid"); return; }
             if (verb == "release" && (!targetWhelp || !wh.Following))
-            { Reject(t, "小烬并没有跟着你"); return; }
+            { Reject(t, "小烬并没有跟着你", "whelp_not_following"); return; }
             if (verb == "use" && (item == null || item.Holder != "player" || !item.Crafted))
-            { Reject(t, "需要持有一件已经织成的物件"); return; }
+            { Reject(t, "需要持有一件已经织成的物件", "crafted_item_required"); return; }
             if (verb == "use" && !item.Tags.Overlaps(new[] { "light", "quiet", "calm", "lure:dragon" }))
-            { Reject(t, "这件物件暂时没有能够主动使用的效果"); return; }
+            { Reject(t, "这件物件暂时没有能够主动使用的效果", "item_effect_unavailable"); return; }
             if (verb == "use" && !targetWhelp && !item.Tags.Contains("light") && !item.Tags.Contains("quiet"))
-            { Reject(t, "这种效果需要对身边的雏龙使用"); return; }
+            { Reject(t, "这种效果需要对身边的雏龙使用", "effect_target_invalid"); return; }
             if (verb == "use" && w.Flags.ContainsKey("used:" + item.Id + ":" + w.PlayerPlace + ":" + (targetWhelp ? "whelp" : targetActor?.Id ?? "")))
-            { Reject(t, "这件物件在这里的效果已经生效"); return; }
+            { Reject(t, "这件物件在这里的效果已经生效", "item_effect_already_used"); return; }
 
             // 规律引用：只能用已知的；支持/阻碍标签与物件、动词匹配才算数。
             var tags = new HashSet<string>(item?.Tags ?? new HashSet<string>()) { verb };
@@ -211,6 +213,7 @@ namespace Town.Core.Dragonsleep
             t.Verdict.Difficulty = final;
             t.Verdict.Roll = roll;
             t.Verdict.Kind = success ? VerdictKind.Accepted : VerdictKind.Rejected;
+            t.Verdict.ReasonCode = new DsReason(success ? "roll_succeeded" : "roll_failed");
             t.Verdict.Reason = success ? $"成功（掷骰 {roll:0.00} ≥ 难度 {final:0.00}）" : $"失败（掷骰 {roll:0.00} < 难度 {final:0.00}）";
 
             string outcome = Effects(w, verb, item, targetWhelp, targetActor, success, t);
@@ -226,10 +229,14 @@ namespace Town.Core.Dragonsleep
                 {
                     var seller = w.Actors[item.Holder];
                     var priceTag = item.Tags.FirstOrDefault(x => x.StartsWith("price:"));
-                    if (priceTag == null) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "不出售"; return seller.Name + "摇头：“这个不卖。”"; }
+                    if (priceTag == null)
+                    { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.ReasonCode = new DsReason("item_not_for_sale", item.Id);
+                        t.Verdict.Reason = "不出售"; return seller.Name + "摇头：“这个不卖。”"; }
                     int price = int.Parse(priceTag.Substring(6));
                     if (seller.Trust < 0.15f) price *= 2;
-                    if (w.Coins < price) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "银币不足"; return "你的银币不够（需要 " + price + " 枚）。"; }
+                    if (w.Coins < price)
+                    { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.ReasonCode = new DsReason("coins_insufficient");
+                        t.Verdict.Reason = "银币不足"; return "你的银币不够（需要 " + price + " 枚）。"; }
                     t.Changes.Add(new WorldChange { Path = "player.coins", Before = w.Coins.ToString(), After = (w.Coins - price).ToString() });
                     w.Coins -= price;
                     item.Tags.Remove(priceTag);
@@ -399,6 +406,7 @@ namespace Town.Core.Dragonsleep
                     }
                     t.Verdict.Kind = VerdictKind.Partial;
                     t.Verdict.Reason = "梅伦需要凭据才肯冒险";
+                    t.Verdict.ReasonCode = new DsReason("confide_evidence_required", actor.Id);
                     return "梅伦犹豫良久：“没有凭据，我不能拿教会的名誉冒险。”她记下了你的打算。";
                 case "pip":
                     if (wh.TrustPlayer >= 0.4f && wh.CapturedBy == null)
@@ -411,10 +419,12 @@ namespace Town.Core.Dragonsleep
                     }
                     t.Verdict.Kind = VerdictKind.Partial;
                     t.Verdict.Reason = "皮普不信任你";
+                    t.Verdict.ReasonCode = new DsReason("confide_trust_low", actor.Id);
                     return "皮普瞪着你：“小烬都还不信你，我凭什么信？”可他显然把话听进去了。";
                 default:
                     t.Verdict.Kind = VerdictKind.Partial;
                     t.Verdict.Reason = actor.Name + "只是记下了";
+                    t.Verdict.ReasonCode = new DsReason("confide_recorded_only", actor.Id);
                     return actor.Name + "听完，意味深长地看了你一眼。";
             }
         }
@@ -464,7 +474,7 @@ namespace Town.Core.Dragonsleep
                     break;
                 case "tell":
                     if (!w.Actors.TryGetValue(target, out var listener) || listener.Id == npcId) { Fail(t, "unknown_entity", "tell 的对象无效：" + target); return; }
-                    if (listener.Place != a.Place) { Reject(t, "交谈对象不在身边，需要先寻访"); return; }
+                    if (listener.Place != a.Place) { Reject(t, "交谈对象不在身边，需要先寻访", "actor_absent", listener.Id); return; }
                     var own = new HashSet<string>(w.BeliefsOf(npcId).Select(b => b.Id));
                     var valid = share.Where(own.Contains).ToList();
                     foreach (var bad in share.Except(valid)) t.ValidationIssues.Add("不能转述别人的认知：" + bad);
@@ -595,7 +605,7 @@ namespace Town.Core.Dragonsleep
 
         public static void Craft(DsWorld w, Dictionary<string, object> p, AiTrace t)
         {
-            if (w.PlayerPlace != "workshop") { Reject(t, "织言机在附魔工坊，你得先去那里"); return; }
+            if (w.PlayerPlace != "workshop") { Reject(t, "织言机在附魔工坊，你得先去那里", "craft_place_required"); return; }
             string name = p.Str("name"), look = p.Str("look") ?? "";
             var consume = p.StrList("consume");
             var tags = p.StrList("tags");
@@ -608,7 +618,7 @@ namespace Town.Core.Dragonsleep
                 { t.ValidationIssues.Add("不可用的材料：" + id); continue; }
                 mats.Add(it);
             }
-            if (mats.Count == 0) { Reject(t, "织言机需要至少一样可用材料"); return; }
+            if (mats.Count == 0) { Reject(t, "织言机需要至少一样可用材料", "craft_material_required"); return; }
             var matTags = new HashSet<string>(mats.SelectMany(m => m.Tags));
             var granted = new List<string>();
             foreach (var tag in tags.Distinct())
@@ -617,7 +627,7 @@ namespace Town.Core.Dragonsleep
                 if (!sources.Any(matTags.Contains)) { t.Verdict.Notes.Add("材料里没有能支撑「" + tag + "」的东西，已剔除"); continue; }
                 granted.Add(tag);
             }
-            if (granted.Count == 0) { Reject(t, "描述的效果没有一项能由这些材料织成"); return; }
+            if (granted.Count == 0) { Reject(t, "描述的效果没有一项能由这些材料织成", "craft_effect_unsupported"); return; }
             double cap = Math.Min(0.9, 0.2 + 0.2 * mats.Count);
             if (potency > cap) { t.Verdict.Notes.Add($"强度 {potency:0.00} 超过材料上限 {cap:0.00}，已压低"); potency = cap; }
             int n = w.Items.Values.Count(i => i.Crafted) + 1;
@@ -641,7 +651,7 @@ namespace Town.Core.Dragonsleep
         {
             t.Verdict.Kind = VerdictKind.Accepted;
             if (!w.Places.ContainsKey(place)) { Fail(t, "unknown_entity", "未知地点：" + place); return; }
-            if (w.FinalDawn) { Reject(t, "第三个黎明已至，一切交由苍穹之母裁决"); return; }
+            if (w.FinalDawn) { Reject(t, "第三个黎明已至，一切交由苍穹之母裁决", "deadline_passed"); return; }
             if (place == w.PlayerPlace) { t.Verdict.Reason = "仍在原地"; t.Presented = ""; return; }
             var wh = w.Whelp;
             var lines = new List<string>();
@@ -665,6 +675,7 @@ namespace Town.Core.Dragonsleep
                         w.Flags["whelp_fled"] = w.ClockText;
                         t.Verdict.Kind = VerdictKind.Partial;
                         t.Verdict.Reason = "雏龙受惊逃回码头";
+                        t.Verdict.ReasonCode = new DsReason("whelp_fled");
                         t.Presented = "小烬一看见奥斯里克就尖叫着挣脱，扑腾着朝码头逃去了。";
                         return;
                     }
@@ -716,14 +727,16 @@ namespace Town.Core.Dragonsleep
             t.FailureCode = code;
             t.Verdict.Kind = VerdictKind.Rejected;
             t.Verdict.Reason = detail;
+            t.Verdict.ReasonCode = new DsReason(code);
             t.ValidationIssues.Add(detail);
             t.Presented = "织言机没能理解这件事。（" + detail + "）";
         }
 
-        static void Reject(AiTrace t, string reason)
+        static void Reject(AiTrace t, string reason, string code = "precondition", string entity = null)
         {
             t.Verdict.Kind = VerdictKind.Rejected;
             t.Verdict.Reason = reason;
+            t.Verdict.ReasonCode = new DsReason(code, entity);
             t.Presented = reason + "。";
         }
 

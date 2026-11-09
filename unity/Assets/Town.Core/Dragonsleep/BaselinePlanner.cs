@@ -11,14 +11,15 @@ namespace Town.Core.Dragonsleep
     /// </summary>
     public static class BaselinePlanner
     {
-        const string DuskD3 = "第3天·黄昏";
-        const string FinalDawn = "第4天·清晨";
+        static readonly DsMoment DuskD3 = new DsMoment(3, DayPhase.Dusk);
+        static readonly DsMoment FinalDawn = new DsMoment(4, DayPhase.Dawn);
 
-        public static Dictionary<string, object> Plan(Dictionary<string, object> per, string input)
+        public static Dictionary<string, object> Plan(Dictionary<string, object> per, string input, DsPlanLocalContext local = null)
         {
             string here = (per.Str("where") ?? "").Split('（')[0];
-            DsPlanValidator.TryClock(per.Str("time"), out int day, out var phase);
-            int now = DsPlanValidator.TimeIndex(day, phase);
+            DsMoment.TryParse(per.Str("time"), out var moment);
+            int day = moment.Day, now = moment.Index;
+            var phase = moment.Phase;
             int left = (int)(per.Num("time_left_in_phase") ?? 4);
             string status = per.Str("whelp_status") ?? "rumor";
             double bond = per.Num("whelp_bond") ?? 0;
@@ -29,10 +30,10 @@ namespace Town.Core.Dragonsleep
             var facts = Ids(per, "known_facts");
             var laws = Ids(per, "known_laws");
             int coins = (int)(per.Num("coins") ?? 0);
-            // 重规划时读失败原因：要找的人不在常去的地方，就换她/他另一个常去处。
-            string replanReason = (per.TryGetValue("replan", out var rp) ? rp as Dictionary<string, object> : null)?.Str("reason") ?? "";
-            string marenAt = replanReason.Contains("梅伦修女不在这里") ? "catacombs" : "cathedral";
-            string pipAt = replanReason.Contains("皮普不在这里") ? "market" : "docks";
+            // 只读实际呈现给玩家的失败码，不读中文文案，也不读取静态试运行的异地真值。
+            var reason = local?.Reason ?? default;
+            string marenAt = reason.Is("actor_absent", "maren") ? "catacombs" : "cathedral";
+            string pipAt = reason.Is("actor_absent", "pip") ? "market" : "docks";
 
             var steps = new List<Dictionary<string, object>>();
             int acts = 0;
@@ -63,7 +64,8 @@ namespace Town.Core.Dragonsleep
                     if (phase != DayPhase.Dusk)
                     {
                         int nextDay = phase == DayPhase.Night ? day + 1 : day;
-                        Add("wait", place: "workshop", until: "第" + nextDay + "天·黄昏", cites: new[] { "law_guards_dusk", "obs_whelp" }, why: "等黄昏换岗");
+                        Add("wait", place: "workshop", until: new DsMoment(nextDay, DayPhase.Dusk).ToString(),
+                            cites: new[] { "law_guards_dusk", "obs_whelp" }, why: "等黄昏换岗");
                     }
                     Add("act", "rescue", "whelp", place: "castle", useLaws: new[] { "law_guards_dusk" }, cites: new[] { "law_guards_dusk", "obs_whelp" }, why: "趁换岗撬开铁笼");
                     exposedAfter = true;
@@ -120,9 +122,9 @@ namespace Town.Core.Dragonsleep
 
             // 路线：估算完成上述行动后的时刻；尽量少在外暴露，第3天黄昏换岗时上龙骨岗。
             int estimate = now + (4 - left + 2 * acts) / 4;
-            if (estimate < DsPlanValidator.TimeIndex(3, DayPhase.Dusk))
-                Add("wait", place: "workshop", until: DuskD3, cites: new[] { "obs_deadline", "law_guards_dusk" }, why: "在工坊躲到最后的黄昏");
-            Add("wait", place: "skull_hill", until: FinalDawn, cites: new[] { "obs_deadline" }, why: "在龙骨岗等母亲降临");
+            if (estimate < DuskD3.Index)
+                Add("wait", place: "workshop", until: DuskD3.ToString(), cites: new[] { "obs_deadline", "law_guards_dusk" }, why: "在工坊躲到最后的黄昏");
+            Add("wait", place: "skull_hill", until: FinalDawn.ToString(), cites: new[] { "obs_deadline" }, why: "在龙骨岗等母亲降临");
 
             var choice = status == "caged_castle" || status == "with_mother" ? null : new Dictionary<string, object>
             {

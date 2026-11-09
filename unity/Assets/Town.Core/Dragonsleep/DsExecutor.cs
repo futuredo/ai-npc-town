@@ -112,6 +112,7 @@ namespace Town.Core.Dragonsleep
             {
                 trial.Verdict.Kind = VerdictKind.Rejected;
                 trial.Verdict.Reason = "计划在步骤 " + def.FailedStep + " 不可行：" + def.Reason;
+                trial.Verdict.ReasonCode = def.ReasonCode;
                 trial.Presented = "这份计划走不通——" + def.FailedStep + "：" + def.Reason;
                 return;
             }
@@ -152,7 +153,10 @@ namespace Town.Core.Dragonsleep
         }
 
         static void Fail(AiTrace t, string code, string message)
-        { t.FailureCode = code; t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = message; t.ValidationIssues.Add(message); t.Presented = message; }
+        {
+            t.FailureCode = code; t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = message;
+            t.Verdict.ReasonCode = new DsReason(code); t.ValidationIssues.Add(message); t.Presented = message;
+        }
     }
 
     /// <summary>候选状态不暴露可变对象；调用者只能查看评估结果，不能修改待提交世界。</summary>

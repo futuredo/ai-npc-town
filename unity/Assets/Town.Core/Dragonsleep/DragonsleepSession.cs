@@ -197,6 +197,13 @@ namespace Town.Core.Dragonsleep
         public Task<AiTrace> PlanAsync(string goal, string planContext = null, CancellationToken ct = default) =>
             RunAsync(AiTaskKind.Plan, "player", goal, ct, planContext);
 
+        internal async Task<AiTrace> PlanWithLocalContextAsync(string goal, string context, DsPlanLocalContext local, CancellationToken ct)
+        {
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            try { return await RunLockedAsync(AiTaskKind.Plan, "player", goal, ct, null, context, local).ConfigureAwait(false); }
+            finally { _gate.Release(); }
+        }
+
         /// <summary>
         /// 执行已确认计划中的一步：结构化提案直接进入同一条管线（感知、校验、裁决、单次提交、回执），
         /// 不再调用模型。trace 中提供方标为“计划步骤”，回放与普通行动相同。
@@ -223,7 +230,7 @@ namespace Town.Core.Dragonsleep
         }
 
         async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
-            IAiProvider providerOverride = null, string planContext = null)
+            IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null)
         {
             var total = Stopwatch.StartNew();
             var w = World;
@@ -260,6 +267,7 @@ namespace Town.Core.Dragonsleep
                 t.Prompt = kind == AiTaskKind.Dialogue
                     ? ContextBuilder.BuildDialogue(NpcPerceptionView.Capture(w, actorId), playerText)
                     : ContextBuilder.BuildTask(TaskPerceptionView.Capture(w, kind, actorId, TimeLeftInPhase, planContext), playerText);
+                t.Prompt.LocalPlanContext = localPlanContext;
                 bool clipped = playerText != null && playerText.Length > ContextBuilder.MaxPlayerChars;
                 End(t, AiStage.Prompt, clipped ? StageStatus.Warn : StageStatus.Ok,
                     $"{t.Prompt.Sections.Count} 段，{t.Prompt.TotalChars} 字符{(clipped ? "；玩家输入已截断" : "")}", sw);
