@@ -47,7 +47,8 @@ namespace Town.Core.Dragonsleep
                         if (DsWorldSnapshot.Capture(candidate, nextSpent, phaseBudget).Hash != before.Hash) candidate.Version++;
                     }
                 }
-                catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is KeyNotFoundException || e is FormatException || e is OverflowException)
+                catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is KeyNotFoundException
+                    || e is FormatException || e is OverflowException)
                 { Fail(trial, "execution_error", "候选执行失败，未提交任何世界变化（" + e.GetType().Name + "）"); }
             }
             if (trial.FailureCode != null)
@@ -119,7 +120,9 @@ namespace Town.Core.Dragonsleep
             var bad = report.Branches.Skip(1).Where(b => !b.Feasible).ToList();
             trial.Verdict.Kind = bad.Count == 0 ? VerdictKind.Accepted : VerdictKind.Partial;
             trial.Verdict.Reason = def.Reason + (bad.Count == 0 ? "" : "；" + bad.Count + " 个备选不可行");
-            foreach (var b in bad) trial.Verdict.Notes.Add(string.Join(",", b.Selection.Select(x => x.Key + "=" + x.Value)) + " 在 " + b.FailedStep + " 不可行：" + b.Reason);
+            foreach (var b in bad)
+                trial.Verdict.Notes.Add(string.Join(",", b.Selection.Select(x => x.Key + "=" + x.Value))
+                    + " 在 " + b.FailedStep + " 不可行：" + b.Reason);
             trial.Presented = "计划：" + plan.Summary;
         }
 
@@ -211,9 +214,13 @@ namespace Town.Core.Dragonsleep
             string[] strings, arrays, numbers;
             switch (kind)
             {
-                case AiTaskKind.Dialogue: strings = new[] { "say", "action" }; arrays = new[] { "cites", "reveal", "persuaded_by" }; numbers = new[] { "trust_delta" }; break;
-                case AiTaskKind.Adjudicate: strings = new[] { "verb", "target", "item", "place", "narration" }; arrays = new[] { "laws" }; numbers = new[] { "difficulty" }; break;
-                case AiTaskKind.AgentPlan: strings = new[] { "verb", "place", "target", "reason" }; arrays = new[] { "share" }; numbers = Array.Empty<string>(); break;
+                case AiTaskKind.Dialogue:
+                    strings = new[] { "say", "action" }; arrays = new[] { "cites", "reveal", "persuaded_by" }; numbers = new[] { "trust_delta" }; break;
+                case AiTaskKind.Adjudicate:
+                    strings = new[] { "verb", "target", "item", "place", "narration" };
+                    arrays = new[] { "laws" }; numbers = new[] { "difficulty" }; break;
+                case AiTaskKind.AgentPlan:
+                    strings = new[] { "verb", "place", "target", "reason" }; arrays = new[] { "share" }; numbers = Array.Empty<string>(); break;
                 case AiTaskKind.Direct: strings = new[] { "event", "reason" }; arrays = Array.Empty<string>(); numbers = new[] { "intensity" }; break;
                 case AiTaskKind.Craft: strings = new[] { "name", "look" }; arrays = new[] { "consume", "tags" }; numbers = new[] { "potency" }; break;
                 case AiTaskKind.Plan: return DsPlan.TryParse(p, out _);
@@ -222,7 +229,8 @@ namespace Town.Core.Dragonsleep
             foreach (string key in strings)
                 if (!(p.TryGetValue(key, out var v) && v is string s && s.Length <= 1000)) return "字符串缺失、类型错误或过长：" + key;
             foreach (string key in arrays)
-                if (!(p.TryGetValue(key, out var v) && v is List<object> list && list.Count <= 24 && list.All(x => x is string s && s.Length <= 128))) return "数组缺失、类型错误或过长：" + key;
+                if (!(p.TryGetValue(key, out var v) && v is List<object> list && list.Count <= 24
+                    && list.All(x => x is string s && s.Length <= 128))) return "数组缺失、类型错误或过长：" + key;
             foreach (string key in numbers)
                 if (!(p.TryGetValue(key, out var v) && v is double n && !double.IsNaN(n) && !double.IsInfinity(n))) return "数值缺失或非法：" + key;
             var keys = new HashSet<string>(strings.Concat(arrays).Concat(numbers));

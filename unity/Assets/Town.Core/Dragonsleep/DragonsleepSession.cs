@@ -356,7 +356,8 @@ namespace Town.Core.Dragonsleep
                 }
                 if (t.Receipt.Applied) t.Changes.AddRange(plan.Evaluation.Changes);
                 End(t, AiStage.Commit, t.FailureCode != null ? StageStatus.Fail : t.Receipt.Applied ? StageStatus.Ok : StageStatus.Skipped,
-                    t.Receipt.Status + $"；实际 {t.Receipt.Effects.Count} 处状态差异，时间 {t.Receipt.TimeCost} 点，版本 {t.Receipt.VersionBefore}→{t.Receipt.VersionAfter}", sw);
+                    t.Receipt.Status + $"；实际 {t.Receipt.Effects.Count} 处状态差异，时间 {t.Receipt.TimeCost} 点，" +
+                    $"版本 {t.Receipt.VersionBefore}→{t.Receipt.VersionAfter}", sw);
                 return t;
             }
             finally

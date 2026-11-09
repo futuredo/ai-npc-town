@@ -98,7 +98,11 @@ namespace Town.Unity.Dragonsleep
             links.Add(SmallLink("J  手记", ShowJournal)); links.Add(SmallLink("M  地图", ShowMap)); links.Add(SmallLink("Tab  织言镜", ToggleLens));
             _shortcuts.Add(links);
             Button motion = null;
-            motion = SmallLink(DsUiMotion.Reduced ? "动效：简约" : "动效：完整", () => { DsUiMotion.Reduced = !DsUiMotion.Reduced; motion.text = DsUiMotion.Reduced ? "动效：简约" : "动效：完整"; });
+            motion = SmallLink(DsUiMotion.Reduced ? "动效：简约" : "动效：完整", () =>
+            {
+                DsUiMotion.Reduced = !DsUiMotion.Reduced;
+                motion.text = DsUiMotion.Reduced ? "动效：简约" : "动效：完整";
+            });
             _shortcuts.Add(motion); _root.Insert(_root.IndexOf(_modal), _shortcuts);
             _root.RegisterCallback<GeometryChangedEvent>(_ => FitLayout());
             SetMode(_mode);
@@ -163,20 +167,35 @@ namespace Town.Unity.Dragonsleep
         void BuildIllustratedIntro()
         {
             _modal.Clear(); _modal.style.display = DisplayStyle.Flex;
-            var card = new VisualElement { name = "introCard", style = { width = new Length(100, LengthUnit.Percent), height = new Length(100, LengthUnit.Percent), backgroundColor = Midnight } };
+            var card = new VisualElement
+            {
+                name = "introCard", style = { width = new Length(100, LengthUnit.Percent),
+                    height = new Length(100, LengthUnit.Percent), backgroundColor = Midnight }
+            };
             var art = Resources.Load<Texture2D>("Dragonsleep/TitleArt");
             if (art != null) { card.style.backgroundImage = art; card.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Cover); }
             Border(card, Edge, 0);
-            var wash = new VisualElement { pickingMode = PickingMode.Ignore, style = { position = Position.Absolute, left = 0, top = 0, right = 0, bottom = 0, backgroundColor = new Color(0.025f, 0.06f, 0.09f, 0.22f) } };
+            var wash = new VisualElement
+            {
+                pickingMode = PickingMode.Ignore, style = { position = Position.Absolute, left = 0, top = 0, right = 0, bottom = 0,
+                    backgroundColor = new Color(0.025f, 0.06f, 0.09f, 0.22f) }
+            };
             card.Add(wash);
-            var content = new VisualElement { style = { position = Position.Absolute, left = new Length(9, LengthUnit.Percent), top = new Length(10, LengthUnit.Percent), width = new Length(42, LengthUnit.Percent), bottom = new Length(10, LengthUnit.Percent), justifyContent = Justify.Center } };
+            var content = new VisualElement
+            {
+                style = { position = Position.Absolute, left = new Length(9, LengthUnit.Percent),
+                    top = new Length(10, LengthUnit.Percent), width = new Length(42, LengthUnit.Percent),
+                    bottom = new Length(10, LengthUnit.Percent), justifyContent = Justify.Center }
+            };
             var over = L("DRAGONSLEEP   /   言 契 师 的 手 记", 13, Gold); over.style.letterSpacing = 3; content.Add(over);
             var title = L("龙眠镇", 90, Paper); title.style.marginTop = 16; title.style.letterSpacing = 10; content.Add(title);
             var titleFont = FontAssetForTitle();
             if (titleFont != null) title.style.unityFontDefinition = FontDefinition.FromSDFFont(titleFont);
             var rule = new VisualElement { style = { height = 2, width = 56, backgroundColor = Gold, marginTop = 18, marginBottom = 24 } }; content.Add(rule);
             var subtitle = L("在第三个黎明之前，\n替小镇写下另一种命运。", 28, Paper); subtitle.style.whiteSpace = WhiteSpace.Normal; content.Add(subtitle);
-            var story = Wrap(L("龙蛋已经孵化。雏龙藏进了小镇，\n它的母亲正在雪峰上空等待。\n\n你是一位言契师。去倾听、探寻，\n让说出口的话，成为改变现实的丝线。", 20, new Color(0.79f, 0.83f, 0.82f))); story.style.marginTop = 20; content.Add(story);
+            var story = Wrap(L("龙蛋已经孵化。雏龙藏进了小镇，\n它的母亲正在雪峰上空等待。\n\n你是一位言契师。去倾听、探寻，\n让说出口的话，成为改变现实的丝线。",
+                20, new Color(0.79f, 0.83f, 0.82f)));
+            story.style.marginTop = 20; content.Add(story);
             var begin = CardButton("启程   →", CloseModal); begin.name = "beginJourney"; begin.style.width = 210; begin.style.marginTop = 28; content.Add(begin);
             var keys = Wrap(L("WASD 移动 · 右键转镜头\nEnter 交谈 · J 手记 · M 地图", 12, Paper)); keys.style.marginTop = 12; content.Add(keys);
             card.Add(content); _modal.Add(card); EnterMotion(card);
@@ -237,8 +256,16 @@ namespace Town.Unity.Dragonsleep
             b.style.backgroundImage = StyleKeyword.None; b.style.backgroundColor = primary ? Gold : Midnight;
             b.style.color = primary ? Ink : Paper; Border(b, Edge, 1);
             b.style.borderTopLeftRadius = 2; b.style.borderTopRightRadius = 2; b.style.borderBottomLeftRadius = 2; b.style.borderBottomRightRadius = 2;
-            b.RegisterCallback<PointerEnterEvent>(_ => { b.style.borderTopColor = Gold; b.style.borderLeftColor = Gold; b.style.borderRightColor = Gold; b.style.color = primary ? Ink : Gold; });
-            b.RegisterCallback<PointerLeaveEvent>(_ => { b.style.borderTopColor = Edge; b.style.borderLeftColor = Edge; b.style.borderRightColor = Edge; b.style.color = primary ? Ink : Paper; b.style.translate = new Translate(0, 0); });
+            b.RegisterCallback<PointerEnterEvent>(_ =>
+            {
+                b.style.borderTopColor = Gold; b.style.borderLeftColor = Gold; b.style.borderRightColor = Gold;
+                b.style.color = primary ? Ink : Gold;
+            });
+            b.RegisterCallback<PointerLeaveEvent>(_ =>
+            {
+                b.style.borderTopColor = Edge; b.style.borderLeftColor = Edge; b.style.borderRightColor = Edge;
+                b.style.color = primary ? Ink : Paper; b.style.translate = new Translate(0, 0);
+            });
             b.RegisterCallback<PointerDownEvent>(_ => { if (!DsUiMotion.Reduced) b.style.translate = new Translate(0, 1); });
             b.RegisterCallback<PointerUpEvent>(_ => b.style.translate = new Translate(0, 0));
             b.RegisterCallback<FocusInEvent>(_ => b.style.borderTopColor = Gold);

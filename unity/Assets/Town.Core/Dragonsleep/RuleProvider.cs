@@ -125,7 +125,8 @@ namespace Town.Core.Dragonsleep
         {
             string verb = Verbs.FirstOrDefault(v => v.words.Any(input.Contains)).verb ?? "observe";
             string place = (per.Str("where") ?? "").Split('（')[0];
-            string item = (verb == "buy" ? FindId(per["for_sale"] as List<object>, input) : null) ?? FindId(per["inventory"] as List<object>, input) ?? FindId(per["things_here"] as List<object>, input) ?? "";
+            string item = (verb == "buy" ? FindId(per["for_sale"] as List<object>, input) : null)
+                ?? FindId(per["inventory"] as List<object>, input) ?? FindId(per["things_here"] as List<object>, input) ?? "";
             string target = new[] { "龙", "小烬", "雏", "它" }.Any(input.Contains) ? "whelp" : "";
             if (target == "")
                 foreach (var p in (per["people_here"] as List<object>).Cast<string>())
@@ -134,7 +135,8 @@ namespace Town.Core.Dragonsleep
                     if (input.Contains(name.Substring(0, 2))) target = p.Split('：')[0];
                 }
             if (target == "" && (verb == "lead" || verb == "release" || verb == "rescue")) target = "whelp";
-            if (target == "" && (verb == "lure" || verb == "feed") && (per["things_here"] as List<object>).Cast<string>().Any(s => s.StartsWith("whelp"))) target = "whelp";
+            if (target == "" && (verb == "lure" || verb == "feed")
+                && (per["things_here"] as List<object>).Cast<string>().Any(s => s.StartsWith("whelp"))) target = "whelp";
             var laws = new List<object>();
             foreach (var l in (per["known_laws"] as List<object>).Cast<string>())
             {

@@ -67,7 +67,8 @@ namespace Town.Core.Dragonsleep
                         Add("wait", place: "workshop", until: new DsMoment(nextDay, DayPhase.Dusk).ToString(),
                             cites: new[] { "law_guards_dusk", "obs_whelp" }, why: "等黄昏换岗");
                     }
-                    Add("act", "rescue", "whelp", place: "castle", useLaws: new[] { "law_guards_dusk" }, cites: new[] { "law_guards_dusk", "obs_whelp" }, why: "趁换岗撬开铁笼");
+                    Add("act", "rescue", "whelp", place: "castle", useLaws: new[] { "law_guards_dusk" },
+                        cites: new[] { "law_guards_dusk", "obs_whelp" }, why: "趁换岗撬开铁笼");
                     exposedAfter = true;
                     break;
                 }
@@ -85,7 +86,8 @@ namespace Town.Core.Dragonsleep
                         if (food == null && items.Contains("smoked_fish") && coins >= 3)
                         { Add("act", "buy", item: "smoked_fish", place: "market", why: "买熏鱼引小烬"); food = "smoked_fish"; }
                         if (!hiddenByPlayer && status != "visible_here")
-                            Add("act", "lure", "whelp", food ?? "", place: at, useLaws: new[] { "law_whelp_fish", "law_fear_noise" }, cites: new[] { "b_pip_whelp_place", "b_pip_fish", "obs_whelp" }, why: "用气味引它现身");
+                            Add("act", "lure", "whelp", food ?? "", place: at, useLaws: new[] { "law_whelp_fish", "law_fear_noise" },
+                                cites: new[] { "b_pip_whelp_place", "b_pip_fish", "obs_whelp" }, why: "用气味引它现身");
                         if (food != null)
                             Add("act", "feed", "whelp", food, place: at, useLaws: new[] { "law_whelp_fish" }, cites: new[] { "b_pip_fish" }, why: "喂它建立信任");
                     }
@@ -115,7 +117,8 @@ namespace Town.Core.Dragonsleep
                 if (options.Any(o => o.id == "maren"))
                 {
                     if (!pactHeld) Add("act", "search", place: "catacombs", cites: new[] { "b_maren_page" }, when: "helper=maren", why: "找回契约页");
-                    Add("act", "show", "maren", "pact_page", place: marenAt, cites: new[] { "b_maren_pact", "b_maren_page" }, when: "helper=maren", why: "给梅伦看凭据");
+                    Add("act", "show", "maren", "pact_page", place: marenAt,
+                        cites: new[] { "b_maren_pact", "b_maren_page" }, when: "helper=maren", why: "给梅伦看凭据");
                     Add("act", "confide", "maren", place: marenAt, cites: new[] { "b_maren_pact" }, when: "helper=maren", why: "请梅伦同行");
                 }
             }
@@ -152,6 +155,7 @@ namespace Town.Core.Dragonsleep
             };
 
         static HashSet<string> Ids(Dictionary<string, object> per, string key) =>
-            new HashSet<string>(((per.TryGetValue(key, out var v) ? v as List<object> : null) ?? new List<object>()).Cast<string>().Select(x => x.Split('：')[0]));
+            new HashSet<string>(((per.TryGetValue(key, out var v) ? v as List<object> : null) ?? new List<object>())
+                .Cast<string>().Select(x => x.Split('：')[0]));
     }
 }

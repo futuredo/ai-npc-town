@@ -76,7 +76,11 @@ namespace Town.Unity.Dragonsleep
         static void ApplyFont(VisualElement root)
         {
             if (_font == null)
-                foreach (var face in new[] { ("Hiragino Sans GB", "W3"), ("PingFang SC", "Regular"), ("Microsoft YaHei", "Regular"), ("Noto Sans CJK SC", "Regular"), ("Songti SC", "Regular") })
+                foreach (var face in new[]
+                {
+                    ("Hiragino Sans GB", "W3"), ("PingFang SC", "Regular"), ("Microsoft YaHei", "Regular"),
+                    ("Noto Sans CJK SC", "Regular"), ("Songti SC", "Regular")
+                })
                 {
                     _font = FontAsset.CreateFontAsset(face.Item1, face.Item2, 64);
                     if (_font != null) break;
@@ -88,7 +92,10 @@ namespace Town.Unity.Dragonsleep
 
         void Build()
         {
-            _plates = new VisualElement { pickingMode = PickingMode.Ignore, style = { position = Position.Absolute, left = 0, right = 0, top = 0, bottom = 0 } };
+            _plates = new VisualElement
+            {
+                pickingMode = PickingMode.Ignore, style = { position = Position.Absolute, left = 0, right = 0, top = 0, bottom = 0 }
+            };
             _root.Add(_plates);
 
             // ---- 左上：时间牌 ----
@@ -99,7 +106,10 @@ namespace Town.Unity.Dragonsleep
             _clock = L("", 21, Paper, true);
             plate.Add(_clock);
             _root.Add(plate);
-            var under = new VisualElement { style = { position = Position.Absolute, left = 44, top = 98, flexDirection = FlexDirection.Row, alignItems = Align.Center } };
+            var under = new VisualElement
+            {
+                style = { position = Position.Absolute, left = 44, top = 98, flexDirection = FlexDirection.Row, alignItems = Align.Center }
+            };
             _pips = Row();
             under.name = "clockUnder";
             under.Add(_pips);
@@ -127,7 +137,11 @@ namespace Town.Unity.Dragonsleep
             _root.Add(_quest);
 
             // ---- 底部：对话框 ----
-            var bottom = new VisualElement { style = { position = Position.Absolute, left = new Length(20, LengthUnit.Percent), right = new Length(20, LengthUnit.Percent), bottom = 20 } };
+            var bottom = new VisualElement
+            {
+                style = { position = Position.Absolute, left = new Length(20, LengthUnit.Percent),
+                    right = new Length(20, LengthUnit.Percent), bottom = 20 }
+            };
             bottom.name = "conversationDock";
             _dialog = Sliced(Skin != null ? Skin.DarkPanel : null, 0.06f, 0.06f, 14);
             _dialog.style.flexDirection = FlexDirection.Row; _dialog.style.alignItems = Align.Center;
@@ -157,7 +171,8 @@ namespace Town.Unity.Dragonsleep
             foreach (var b in _modes) inputRow.Add(b);
             var field = Sliced(Skin != null ? Skin.NavyBar : null, 0.02f, 0.1f, 6);
             field.name = "inputFrame";
-            field.style.flexGrow = 1; field.style.height = 46; field.style.marginLeft = 8; field.style.justifyContent = Justify.Center; field.style.paddingLeft = 10; field.style.paddingRight = 10;
+            field.style.flexGrow = 1; field.style.height = 46; field.style.marginLeft = 8;
+            field.style.justifyContent = Justify.Center; field.style.paddingLeft = 10; field.style.paddingRight = 10;
             _input = new TextField { maxLength = 300 };
             StyleInput(_input);
             _input.RegisterCallback<KeyDownEvent>(e =>
@@ -217,11 +232,14 @@ namespace Town.Unity.Dragonsleep
 
             // ---- 预警、提示、模态 ----
             _warning = Img(Skin != null ? Skin.TitlePlateEpic : null, 640, 110);
-            _warning.style.position = Position.Absolute; _warning.style.top = 14; _warning.style.left = new Length(50, LengthUnit.Percent); _warning.style.marginLeft = -320;
-            _warning.style.alignItems = Align.Center; _warning.style.justifyContent = Justify.Center; _warning.style.paddingLeft = 80; _warning.style.paddingRight = 80; _warning.style.paddingTop = 16;
+            _warning.style.position = Position.Absolute; _warning.style.top = 14;
+            _warning.style.left = new Length(50, LengthUnit.Percent); _warning.style.marginLeft = -320;
+            _warning.style.alignItems = Align.Center; _warning.style.justifyContent = Justify.Center;
+            _warning.style.paddingLeft = 80; _warning.style.paddingRight = 80; _warning.style.paddingTop = 16;
             _warning.style.display = DisplayStyle.None;
             _root.Add(_warning);
-            _toast = new VisualElement { style = { position = Position.Absolute, bottom = 210, left = new Length(32, LengthUnit.Percent), right = new Length(32, LengthUnit.Percent),
+            _toast = new VisualElement { style = { position = Position.Absolute, bottom = 210,
+                left = new Length(32, LengthUnit.Percent), right = new Length(32, LengthUnit.Percent),
                 backgroundColor = Shade, paddingLeft = 14, paddingRight = 14, paddingTop = 8, paddingBottom = 8, display = DisplayStyle.None,
                 borderTopLeftRadius = 6, borderTopRightRadius = 6, borderBottomLeftRadius = 6, borderBottomRightRadius = 6 } };
             _root.Add(_toast);
@@ -249,7 +267,9 @@ namespace Town.Unity.Dragonsleep
             if (_lens.style.display == DisplayStyle.Flex)
             {
                 var m = Game.Session.Metrics();
-                _metrics.text = $"{Game.Session.Provider.Name}\n调用 {m["calls"]} · 接受 {m["accepted"]} · 部分 {m["partial"]} · 驳回 {m["rejected"]} · 失败 {m["failed"]} · 规则修正 {m["validation_issues"]} · 均 {m["avg_ms"]}ms · 估算 {(m["estimated_usd"] is decimal d ? "$" + d.ToString("0.0000") : "未知")}";
+                _metrics.text = $"{Game.Session.Provider.Name}\n调用 {m["calls"]} · 接受 {m["accepted"]} · 部分 {m["partial"]} · 驳回 {m["rejected"]}" +
+                    $" · 失败 {m["failed"]} · 规则修正 {m["validation_issues"]} · 均 {m["avg_ms"]}ms" +
+                    $" · 估算 {(m["estimated_usd"] is decimal d ? "$" + d.ToString("0.0000") : "未知")}";
             }
             if (ModalOpen) { if (Input.GetKeyDown(KeyCode.Escape)) CloseModal(); return; }
             if (Input.GetKeyDown(KeyCode.Escape) && _lens.style.display == DisplayStyle.Flex) { ToggleLens(); return; }
@@ -331,84 +351,6 @@ namespace Town.Unity.Dragonsleep
             _warning.style.display = DisplayStyle.Flex;
         }
 
-        // ================= 输入 =================
-
-        Button ModeButton(string text, LoomMode mode)
-        {
-            var b = SkinButton(text, () => SetMode(mode), Skin != null ? Skin.ButtonRound : null, 46, 46);
-            b.style.fontSize = 19; b.style.marginRight = 4;
-            b.tooltip = mode == LoomMode.Speak ? "言：对身边的人说话" : mode == LoomMode.Act ? "行：描述一个行动" : "造：在附魔工坊织造物件";
-            return b;
-        }
-
-        void SetMode(LoomMode mode)
-        {
-            _mode = mode;
-            for (int i = 0; i < _modes.Length; i++)
-            {
-                bool on = (int)mode == i;
-                var tex = Skin == null ? null : on ? Skin.ButtonRoundRed : Skin.ButtonRound;
-                _modes[i].style.backgroundImage = StyleKeyword.None;
-                _modes[i].style.backgroundColor = on ? new Color(0.26f, 0.31f, 0.32f) : new Color(0.06f, 0.10f, 0.13f, 0.94f);
-                _modes[i].style.color = on ? Gold : Muted;
-                _modes[i].style.borderBottomColor = on ? Gold : Color.clear;
-                _modes[i].style.borderBottomWidth = 2;
-            }
-            if (_input != null)
-                _input.textEdition.placeholder = mode == LoomMode.Speak ? "对身边的人说一句话……"
-                    : mode == LoomMode.Act ? "我想……（描述你要尝试的行动）"
-                    : "描述想织造的物件和要用的材料……";
-        }
-
-        void Send()
-        {
-            string text = _input.value;
-            if (string.IsNullOrWhiteSpace(text) || Game.Busy) return;
-            if (_mode == LoomMode.Speak && Game.NearestActorId == null) { Toast("身边没有人——已切换为【行】，再按一次 Enter 发送。"); SetMode(LoomMode.Act); return; }
-            _lastSubmitted = text;
-            _input.value = "";
-            _input.Blur();
-            FinishLine();
-            _line.text = "话语落进织机，丝线正在回应……";
-            RenderGems(null, pending: true);
-            Game.Submit(_mode, text);
-        }
-
-        // ================= 呈现 =================
-
-        public void Present(AiTrace t)
-        {
-            if (t.FailureCode != null && string.IsNullOrEmpty(_input.value)) _input.value = _lastSubmitted ?? "";
-            _conversationUntil = Time.unscaledTime + 22f;
-            EnterMotion(_dialog);
-            int split = t.Presented.IndexOf('：');
-            bool npc = t.Kind == AiTaskKind.Dialogue && split > 0 && t.FailureCode == null;
-            SetSpeaker(npc ? t.ActorId : "player", npc ? Game.ActorName(t.ActorId).Split('（')[0] : "言契师");
-            AnimateLine(npc ? t.Presented.Substring(split + 1) : t.Presented);
-            AddRow(t);
-            Select(t, animate: true);
-        }
-
-        public void PresentNight(List<AiTrace> traces)
-        {
-            _conversationUntil = Time.unscaledTime + 22f;
-            foreach (var t in traces) AddRow(t);
-            SetSpeaker(null, "夜里发生的事");
-            FinishLine();
-            _line.text = "夜里的回响已写入织言镜。天亮后，去看看小镇的变化。";
-            if (traces.Count > 0) Select(traces[traces.Count - 1], animate: true);
-        }
-
-        void SetSpeaker(string actorId, string name)
-        {
-            _speaker.text = name;
-            var img = _portrait.Q("img");
-            var tex = actorId != null && Skin != null ? Skin.PortraitOf(actorId) : null;
-            img.style.backgroundImage = tex;
-            img.style.backgroundColor = tex == null ? new Color(0.1f, 0.12f, 0.2f) : Color.clear;
-            _portrait.style.display = actorId == null ? DisplayStyle.None : DisplayStyle.Flex;
-        }
-
         void RenderGems(AiTrace t, bool pending = false)
         {
             _gems.Clear();
@@ -453,7 +395,12 @@ namespace Town.Unity.Dragonsleep
         VisualElement Card(float width)
         {
             _modal.Clear();
-            var card = new VisualElement { name = "storyCard", style = { width = width, maxWidth = new Length(92, LengthUnit.Percent), maxHeight = new Length(90, LengthUnit.Percent), paddingLeft = 44, paddingRight = 44, paddingTop = 34, paddingBottom = 28, alignItems = Align.Center, backgroundColor = new Color(0.90f, 0.88f, 0.81f) } };
+            var card = new VisualElement
+            {
+                name = "storyCard", style = { width = width, maxWidth = new Length(92, LengthUnit.Percent),
+                    maxHeight = new Length(90, LengthUnit.Percent), paddingLeft = 44, paddingRight = 44,
+                    paddingTop = 34, paddingBottom = 28, alignItems = Align.Center, backgroundColor = new Color(0.90f, 0.88f, 0.81f) }
+            };
             Border(card, Gold, 1);
             var crest = L("◇   龙 眠 镇   ◇", 13, InkSoft); crest.style.marginBottom = 16; card.Add(crest);
             _modal.Add(card);
@@ -492,58 +439,6 @@ namespace Town.Unity.Dragonsleep
 
         public void ShowIntro() => BuildIllustratedIntro();
 
-        void ShowJournal()
-        {
-            var w = Game.Session.World;
-            var card = Card(740);
-            card.Add(L("日　志", 32, Ink, true));
-            var list = new ScrollView { style = { alignSelf = Align.Stretch, marginTop = 12, maxHeight = 420 } };
-            list.verticalScrollerVisibility = ScrollerVisibility.Hidden;
-            foreach (var o in DsObjectives.DayOne(w))
-            {
-                var title = Wrap(L((o.Done ? "✓ " : "○ ") + o.Text, 18, o.Done ? new Color(0.18f, 0.35f, 0.12f) : Ink));
-                title.style.marginTop = 12; list.Add(title);
-                if (!o.Done) { var hint = Wrap(L(o.Hint, 14, InkSoft)); hint.style.marginTop = 4; list.Add(hint); }
-            }
-            var clues = w.PlayerKnows.Where(k => !k.StartsWith("law:")).Select(w.Belief).Where(b => b != null).ToList();
-            if (clues.Count > 0)
-            {
-                var h = L("听来的线索", 18, Ink, true); h.style.marginTop = 14; list.Add(h);
-                foreach (var b in clues) list.Add(Wrap(L("· " + w.Actors[b.Owner].Name.Split('（')[0] + "：" + b.Text, 16, InkSoft)));
-            }
-            var laws = w.Laws.Values.Where(l => w.KnowsLaw(l.Id)).ToList();
-            if (laws.Count > 0)
-            {
-                var h = L("已知的世界规律（可在【行】中利用）", 18, Ink, true); h.style.marginTop = 14; list.Add(h);
-                foreach (var l in laws) list.Add(Wrap(L("· " + l.Text, 16, InkSoft)));
-            }
-            card.Add(list);
-            card.Add(CardButton("合上", CloseModal));
-        }
-
-        void ShowMap()
-        {
-            var card = Card(660);
-            card.Add(L("龙 眠 镇", 30, Ink, true));
-            card.Add(L("快速前往（不消耗时间）", 14, InkSoft));
-            var grid = Row(); grid.style.flexWrap = UnityEngine.UIElements.Wrap.Wrap; grid.style.justifyContent = Justify.Center; grid.style.marginTop = 14;
-            foreach (var p in Game.TravelTargets)
-            {
-                string place = p;
-                string id = p == "castle_gate" ? "castle" : p == "dragon_skull" ? "skull_hill" : p;
-                string name = Game.Session.World.Places.TryGetValue(id, out var n) ? n : p;
-                var b = SkinButton(name, () => { Game.TravelTo(place); CloseModal(); }, Skin != null ? Skin.ButtonDark : null, 200, 52);
-                b.style.marginLeft = 6; b.style.marginRight = 6; b.style.marginTop = 6; b.style.marginBottom = 6;
-                grid.Add(b);
-            }
-            card.Add(grid);
-            var row = Row();
-            var end = CardButton("结束这一时段", () => { CloseModal(); Game.EndPhase(); }); end.style.marginRight = 12;
-            row.Add(end);
-            row.Add(CardButton("关闭", CloseModal));
-            card.Add(row);
-        }
-
         public void ShowDayRecap(DsObjectives.DayRecap r)
         {
             var card = Card(780);
@@ -576,200 +471,5 @@ namespace Town.Unity.Dragonsleep
             RenderGems(null);
         }
 
-        // ================= 织言镜详情 =================
-
-        void AddRow(AiTrace t)
-        {
-            if (_rows.TryGetValue(t, out var previous)) { previous.RemoveFromHierarchy(); _rows.Remove(t); }
-            var row = Row();
-            row.style.alignItems = Align.Center; row.style.paddingTop = 3; row.style.paddingBottom = 3; row.style.paddingLeft = 6;
-            var dot = Diamond(9, Color.clear); dot.style.backgroundColor = MechColor(t.Kind); dot.style.marginRight = 8;
-            row.Add(dot);
-            row.Add(L($"#{t.Sequence}  {AiTrace.MechanismLabel(t.Kind)} · {t.ActorName.Split('（')[0]} · {VerdictText(t)}", 13, t.FailureCode != null ? new Color(1f, 0.55f, 0.5f) : Paper));
-            row.RegisterCallback<ClickEvent>(_ => Select(t, animate: false));
-            _timeline.Add(row);
-            _rows[t] = row;
-            _timeline.schedule.Execute(() =>
-            {
-                var scroll = (ScrollView)_timeline;
-                if (scroll.contentContainer.Contains(row)) scroll.ScrollTo(row);
-            }).StartingIn(30);
-        }
-
-        void Select(AiTrace t, bool animate)
-        {
-            _selected = t;
-            foreach (var kv in _rows) kv.Value.style.backgroundColor = kv.Key == t ? new Color(1f, 1f, 1f, 0.1f) : Color.clear;
-            if (_reveal != null) StopCoroutine(_reveal);
-            if (animate && isActiveAndEnabled) _reveal = StartCoroutine(Reveal(t));
-            else { _revealed = 7; RenderGems(t); Render(t); }
-        }
-
-        IEnumerator Reveal(AiTrace t)
-        {
-            // 离线提供方几乎瞬时返回；逐颗点亮只是让七个阶段的顺序可读（真实耗时见织言镜各阶段 ms）。
-            for (_revealed = 0; _revealed <= 7; _revealed++)
-            {
-                RenderGems(t);
-                if (_lens.style.display == DisplayStyle.Flex) Render(t);
-                yield return new WaitForSecondsRealtime(DsUiMotion.Reduced ? 0f : StageRevealSeconds);
-            }
-            _revealed = 7;
-            RenderGems(t);
-            Render(t);
-            _reveal = null;
-        }
-
-        void Render(AiTrace t)
-        {
-            _stageRow.Clear();
-            for (int i = 0; i < t.Stages.Count; i++)
-            {
-                var s = t.Stages[i];
-                bool lit = i < _revealed;
-                _stageRow.Add(new Label((i + 1) + " " + AiTrace.StageLabel(s.Stage))
-                {
-                    style =
-                    {
-                        fontSize = 13, paddingLeft = 7, paddingRight = 7, paddingTop = 3, paddingBottom = 3, marginRight = 4, marginBottom = 4,
-                        backgroundColor = lit ? StatusColor(s.Status) : new Color(1, 1, 1, 0.06f),
-                        color = lit ? new Color(0.08f, 0.07f, 0.06f) : Muted,
-                    }
-                });
-            }
-            _detail.Clear();
-            Section($"{AiTrace.MechanismLabel(t.Kind)} · {t.ActorName} · {t.Clock} · {t.RequestId}", MechColor(t.Kind));
-            if (!string.IsNullOrEmpty(t.PlayerInput)) Body("玩家输入（作为不可信数据发送）：" + t.PlayerInput, new Color(1f, 0.85f, 0.6f));
-            for (int i = 0; i < t.Stages.Count && i < _revealed; i++)
-            {
-                var s = t.Stages[i];
-                Body($"{i + 1}. {AiTrace.StageLabel(s.Stage)}［{StatusText(s.Status)}］{s.Millis:0.0}ms　{s.Detail}", Color.Lerp(StatusColor(s.Status), Paper, 0.45f));
-                if (s.Stage == AiStage.Context && t.Perception != null) Code(Trim(MiniJson.Write(t.Perception, true), 900));
-                if (s.Stage == AiStage.Prompt && t.Prompt != null)
-                    foreach (var sec in t.Prompt.Sections) Body($"　▪ {sec.Name}　{sec.Text?.Length ?? 0} 字{(sec.Untrusted ? "　⚠ 不可信数据" : "")}", Muted);
-                if (s.Stage == AiStage.Provider && t.Provider?.RawText != null) Code(Trim(t.Provider.RawText, 700));
-                if (s.Stage == AiStage.Validate) foreach (var issue in t.ValidationIssues) Body("　⚠ " + issue, new Color(1f, 0.78f, 0.45f));
-                if (s.Stage == AiStage.Adjudicate && t.Verdict.Roll.HasValue && t.Verdict.Difficulty.HasValue) RollBar(t.Verdict.Roll.Value, t.Verdict.Difficulty.Value);
-                if (s.Stage == AiStage.Commit) foreach (var c in t.Changes) Body("　✎ " + c, new Color(0.62f, 0.95f, 0.7f));
-            }
-            if (_revealed >= 7) { Section("呈现给玩家", Gold); Body(t.Presented, Paper); }
-        }
-
-        void RollBar(double roll, double difficulty)
-        {
-            var bar = new VisualElement { style = { height = 12, marginLeft = 14, marginRight = 6, marginTop = 2, marginBottom = 4, backgroundColor = new Color(1, 1, 1, 0.08f) } };
-            bar.Add(new VisualElement { style = { position = Position.Absolute, left = 0, top = 0, bottom = 0, width = new Length((float)difficulty * 100f, LengthUnit.Percent), backgroundColor = new Color(0.85f, 0.35f, 0.3f, 0.55f) } });
-            bar.Add(new VisualElement { style = { position = Position.Absolute, top = -2, bottom = -2, width = 3, left = new Length((float)roll * 100f, LengthUnit.Percent), backgroundColor = Gold } });
-            _detail.Add(bar);
-            Body($"　难度（红）{difficulty:0.00} · 掷骰（金）{roll:0.00}", Muted);
-        }
-
-        void Section(string text, Color color) { var l = Wrap(L(text, 15, color, true)); l.style.marginTop = 8; l.style.marginBottom = 2; _detail.Add(l); }
-        void Body(string text, Color color) { var l = Wrap(L(text, 13, color)); l.style.marginBottom = 2; _detail.Add(l); }
-        void Code(string text)
-        {
-            var l = Wrap(L(text, 11, new Color(0.75f, 0.85f, 0.95f)));
-            l.style.backgroundColor = new Color(0, 0, 0, 0.35f);
-            l.style.paddingLeft = 8; l.style.paddingRight = 8; l.style.paddingTop = 5; l.style.paddingBottom = 5; l.style.marginLeft = 14; l.style.marginBottom = 4;
-            _detail.Add(l);
-        }
-
-        // ================= 小工具 =================
-
-        static string Trim(string s, int n) => s.Length <= n ? s : s.Substring(0, n) + " …";
-        static VisualElement Row() => new VisualElement { style = { flexDirection = FlexDirection.Row } };
-        static Label Wrap(Label l) { l.style.whiteSpace = WhiteSpace.Normal; return l; }
-        static Label Tiny(string text, Color c) { var l = L(text, 12, c); l.style.marginTop = 6; return l; }
-
-        static VisualElement Diamond(float size, Color border)
-        {
-            var d = new VisualElement { style = { width = size, height = size, marginRight = 6, rotate = new Rotate(45) } };
-            d.style.borderTopWidth = 1; d.style.borderBottomWidth = 1; d.style.borderLeftWidth = 1; d.style.borderRightWidth = 1;
-            d.style.borderTopColor = border; d.style.borderBottomColor = border; d.style.borderLeftColor = border; d.style.borderRightColor = border;
-            return d;
-        }
-
-        static Label L(string text, int size, Color color, bool bold = false)
-        {
-            var l = new Label(text) { style = { fontSize = size, color = color, marginLeft = 0, marginRight = 0, paddingLeft = 0, paddingRight = 0 } };
-            if (bold) l.style.unityFontStyleAndWeight = FontStyle.Bold;
-            return l;
-        }
-
-        /// <summary>按贴图原比例显示（标题牌、头像框这类不能拉伸的装饰）。</summary>
-        static VisualElement Img(Texture2D tex, float w, float h)
-        {
-            var v = new VisualElement { style = { width = w, height = h } };
-            if (tex != null) { v.style.backgroundImage = tex; v.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain); }
-            return v;
-        }
-
-        /// <summary>九宫格：边框按贴图比例切，再缩放到目标像素宽，内容区可任意伸缩。</summary>
-        static VisualElement Sliced(Texture2D tex, float fx, float fy, float borderPx)
-        {
-            var v = new VisualElement();
-            if (tex == null) { v.style.backgroundColor = Shade; return v; }
-            v.style.backgroundImage = tex;
-            int sx = Mathf.Max(1, Mathf.RoundToInt(tex.width * fx)), sy = Mathf.Max(1, Mathf.RoundToInt(tex.height * fy));
-            v.style.unitySliceLeft = sx; v.style.unitySliceRight = sx; v.style.unitySliceTop = sy; v.style.unitySliceBottom = sy;
-            v.style.unitySliceScale = borderPx / Mathf.Max(sx, sy);
-            return v;
-        }
-
-        static Button SkinButton(string text, System.Action onClick, Texture2D tex, float w, float h)
-        {
-            var b = new Button(onClick) { text = text };
-            b.style.width = w; b.style.height = h;
-            b.style.color = Paper; b.style.fontSize = 16;
-            b.style.backgroundColor = tex == null ? Shade : Color.clear;
-            if (tex != null) { b.style.backgroundImage = tex; b.style.backgroundSize = new BackgroundSize(BackgroundSizeType.Contain); }
-            b.style.borderTopWidth = 0; b.style.borderBottomWidth = 0; b.style.borderLeftWidth = 0; b.style.borderRightWidth = 0;
-            b.style.marginLeft = 0; b.style.marginRight = 0;
-            DressButton(b, tex != null && tex.name.ToLowerInvariant().Contains("red"));
-            return b;
-        }
-
-        static void StyleInput(TextField f)
-        {
-            f.style.marginLeft = 0; f.style.marginRight = 0;
-            f.style.fontSize = 17;
-            var inner = f.Q(TextField.textInputUssName);
-            if (inner != null)
-            {
-                inner.style.backgroundColor = Color.clear;
-                inner.style.borderTopWidth = 0; inner.style.borderBottomWidth = 0; inner.style.borderLeftWidth = 0; inner.style.borderRightWidth = 0;
-                inner.style.color = Paper;
-            }
-        }
-
-        static Color MechColor(AiTaskKind k)
-        {
-            switch (k)
-            {
-                case AiTaskKind.Dialogue: return new Color(0.44f, 0.70f, 1f);
-                case AiTaskKind.Adjudicate: return new Color(0.95f, 0.65f, 0.35f);
-                case AiTaskKind.AgentPlan: return new Color(0.48f, 0.83f, 0.54f);
-                case AiTaskKind.Direct: return new Color(0.78f, 0.57f, 0.92f);
-                default: return new Color(0.37f, 0.84f, 0.82f);
-            }
-        }
-
-        static Color StatusColor(StageStatus s)
-        {
-            switch (s)
-            {
-                case StageStatus.Ok: return new Color(0.55f, 0.85f, 0.6f);
-                case StageStatus.Warn: return new Color(0.98f, 0.78f, 0.38f);
-                case StageStatus.Fail: return new Color(0.95f, 0.45f, 0.42f);
-                case StageStatus.Skipped: return new Color(0.5f, 0.5f, 0.52f);
-                default: return new Color(0.35f, 0.35f, 0.38f);
-            }
-        }
-
-        static string StatusText(StageStatus s) =>
-            s == StageStatus.Ok ? "通过" : s == StageStatus.Warn ? "修正" : s == StageStatus.Fail ? "失败" : s == StageStatus.Skipped ? "跳过" : "等待";
-
-        static string VerdictText(AiTrace t) =>
-            t.FailureCode != null ? "失败 " + t.FailureCode : t.Verdict.Kind == VerdictKind.Accepted ? "接受" : t.Verdict.Kind == VerdictKind.Partial ? "部分接受" : "驳回";
     }
 }

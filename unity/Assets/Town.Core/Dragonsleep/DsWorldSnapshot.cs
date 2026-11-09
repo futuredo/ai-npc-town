@@ -42,7 +42,10 @@ namespace Town.Core.Dragonsleep
                 ["laws"] = w.Laws.Values.OrderBy(x => x.Id, StringComparer.Ordinal).Select(l => (object)new Dictionary<string, object>
                 { ["id"] = l.Id, ["text"] = l.Text, ["support"] = l.SupportTags, ["hinder"] = l.HinderTags, ["common"] = l.Common }).ToList(),
                 ["items"] = w.Items.Values.OrderBy(x => x.Id, StringComparer.Ordinal).Select(i => (object)new Dictionary<string, object>
-                { ["id"] = i.Id, ["name"] = i.Name, ["holder"] = i.Holder, ["tags"] = i.Tags.OrderBy(x => x, StringComparer.Ordinal).ToArray(), ["look"] = i.Look, ["crafted"] = i.Crafted }).ToList(),
+                {
+                    ["id"] = i.Id, ["name"] = i.Name, ["holder"] = i.Holder,
+                    ["tags"] = i.Tags.OrderBy(x => x, StringComparer.Ordinal).ToArray(), ["look"] = i.Look, ["crafted"] = i.Crafted
+                }).ToList(),
                 ["places"] = Map(w.Places), ["flags"] = Map(w.Flags), ["chronicle"] = w.Chronicle.ToArray(), ["public_news"] = w.PublicNews.ToArray(),
                 ["relations"] = w.Relations.OrderBy(x => x.Key, StringComparer.Ordinal).ToDictionary(x => x.Key, x => (object)x.Value),
                 ["whelp"] = new Dictionary<string, object>
@@ -125,7 +128,8 @@ namespace Town.Core.Dragonsleep
 
         static void Replace<T>(Dictionary<string, T> from, Dictionary<string, T> to)
         { to.Clear(); foreach (var kv in from) to.Add(kv.Key, kv.Value); }
-        static IEnumerable<Dictionary<string, object>> Objects(Dictionary<string, object> d, string key) => ((List<object>)d[key]).Cast<Dictionary<string, object>>();
+        static IEnumerable<Dictionary<string, object>> Objects(Dictionary<string, object> d, string key) =>
+            ((List<object>)d[key]).Cast<Dictionary<string, object>>();
         static int Int(Dictionary<string, object> d, string key) => (int)d.Num(key).Value;
         static float Float(Dictionary<string, object> d, string key) => (float)d.Num(key).Value;
         static bool Bool(Dictionary<string, object> d, string key) => (bool)d[key];
@@ -141,7 +145,10 @@ namespace Town.Core.Dragonsleep
             Flatten("", MiniJson.Parse(before.Json), a); Flatten("", MiniJson.Parse(after.Json), b);
             return a.Keys.Union(b.Keys).OrderBy(x => x, StringComparer.Ordinal)
                 .Where(k => !a.TryGetValue(k, out var av) || !b.TryGetValue(k, out var bv) || av != bv)
-                .Select(k => new WorldChange { Path = k, Before = a.TryGetValue(k, out var av) ? av : null, After = b.TryGetValue(k, out var bv) ? bv : null }).ToArray();
+                .Select(k => new WorldChange
+                {
+                    Path = k, Before = a.TryGetValue(k, out var av) ? av : null, After = b.TryGetValue(k, out var bv) ? bv : null
+                }).ToArray();
         }
 
         static void Flatten(string path, object value, Dictionary<string, string> result)

@@ -142,7 +142,8 @@ namespace Town.Core.Dragonsleep
             string where = Place == "" ? "" : "@" + Place;
             switch (Op)
             {
-                case "act": return Id + " " + Verb + (Target == "" ? "" : " " + Target) + (Item == "" ? "" : " " + Item) + where + (When == "" ? "" : " [" + When + "]");
+                case "act": return Id + " " + Verb + (Target == "" ? "" : " " + Target) + (Item == "" ? "" : " " + Item)
+                    + where + (When == "" ? "" : " [" + When + "]");
                 case "wait": return Id + " wait" + where + " until " + Until + (When == "" ? "" : " [" + When + "]");
                 default: return Id + " go" + where + (When == "" ? "" : " [" + When + "]");
             }
@@ -386,7 +387,8 @@ namespace Town.Core.Dragonsleep
                     DsRules.Adjudicate(w, step.ToProposal(w.PlayerPlace), act);
                     reasonCode = act.Verdict.ReasonCode;
                     if (act.FailureCode != null) return act.Verdict.Reason;
-                    if (act.Verdict.Kind == VerdictKind.Rejected || (act.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide")) return act.Verdict.Reason;
+                    if (act.Verdict.Kind == VerdictKind.Rejected || (act.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide"))
+                        return act.Verdict.Reason;
                     int cost = DsExecutor.TimeCost(AiTaskKind.Adjudicate, step.Verb, w, act);
                     DsExecutor.ApplyTime(w, ref spent, budget, cost, act);
                     return null;

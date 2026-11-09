@@ -15,7 +15,8 @@ namespace Town.Core.Dragonsleep
         public static Ending Evaluate(DsWorld w)
         {
             var wh = w.Whelp;
-            bool pactKnown = w.Items.TryGetValue("pact_page", out var page) && page.Holder == "player" || w.Flags.Keys.Any(k => k.StartsWith("shown:pact_page"));
+            bool pactKnown = w.Items.TryGetValue("pact_page", out var page) && page.Holder == "player"
+                || w.Flags.Keys.Any(k => k.StartsWith("shown:pact_page"));
             bool ember = w.Items.Values.Any(i => i.Holder == "player" && i.Tags.Contains("ember"));
             if (wh.CapturedBy == "vesna")
                 return new Ending { Id = "far_sea", Title = "远洋", Text = "维丝娜的船已驶出港口。苍穹之母掠过镇子，追向海面——龙眠镇幸存，却永远失去了龙的庇护。" };

@@ -50,7 +50,8 @@ namespace Town.Core.Dragonsleep
         public Dictionary<string, object> ToRecord() => new Dictionary<string, object>
         {
             ["failure"] = Failure.ToString(), ["reason"] = Reason, ["failed_step"] = FailedStep, ["old_plan"] = OldPlan,
-            ["new_plan"] = NewPlan, ["new_request_id"] = NewRequestId, ["new_plan_verdict"] = NewPlanVerdict, ["new_plan_executable"] = NewPlanExecutable, ["decision"] = Decision,
+            ["new_plan"] = NewPlan, ["new_request_id"] = NewRequestId, ["new_plan_verdict"] = NewPlanVerdict,
+            ["new_plan_executable"] = NewPlanExecutable, ["decision"] = Decision,
         };
     }
 
@@ -132,7 +133,8 @@ namespace Town.Core.Dragonsleep
                     chosen[kv.Key] = kv.Value;
                 }
             // 玩家改选的备选在整体校验里不可行时拒绝确认，保持待确认，由玩家换选或重规划。
-            var branch = LatestPlanTrace?.PlanReport?.Branches.FirstOrDefault(b => b.Selection.Count == chosen.Count && b.Selection.All(x => chosen.TryGetValue(x.Key, out var v) && v == x.Value));
+            var branch = LatestPlanTrace?.PlanReport?.Branches.FirstOrDefault(b => b.Selection.Count == chosen.Count
+                && b.Selection.All(x => chosen.TryGetValue(x.Key, out var v) && v == x.Value));
             if (branch != null && !branch.Feasible) throw new InvalidOperationException("该选项不可行：" + branch.FailedStep + " " + branch.Reason);
             if (RequireHomecoming && branch != null && !branch.ReachesGoal) throw new InvalidOperationException("该选项没有覆盖归巢目标");
             Selection = chosen;
@@ -348,7 +350,11 @@ namespace Town.Core.Dragonsleep
                 failure == DsPlanFailure.Dice ? "execution_failed" : "precondition") : reasonCode;
             Results.Add(r);
             foreach (var rest in _active.Skip(_next + 1))
-                Results.Add(new DsPlanStepResult { StepId = rest.Id, Op = rest.Op, Brief = rest.Brief(), Clock = Session.World.ClockText, Status = "void", Reason = "前面的步骤失败，未执行" });
+                Results.Add(new DsPlanStepResult
+                {
+                    StepId = rest.Id, Op = rest.Op, Brief = rest.Brief(), Clock = Session.World.ClockText,
+                    Status = "void", Reason = "前面的步骤失败，未执行"
+                });
             LastFailure = failure; LastReason = r.Reason; _failedStep = step;
             LastReasonCode = r.ReasonCode;
             Status = "needs_replan";
@@ -361,7 +367,11 @@ namespace Town.Core.Dragonsleep
             LastFailure = DsPlanFailure.Stale; LastReason = reason; _failedStep = step;
             LastReasonCode = new DsReason("world_changed");
             foreach (var s in _active)
-                Results.Add(new DsPlanStepResult { StepId = s.Id, Op = s.Op, Brief = s.Brief(), Clock = Session.World.ClockText, Status = "void", Failure = s == step ? DsPlanFailure.Stale : DsPlanFailure.None, Reason = s == step ? reason : "计划作废" });
+                Results.Add(new DsPlanStepResult
+                {
+                    StepId = s.Id, Op = s.Op, Brief = s.Brief(), Clock = Session.World.ClockText, Status = "void",
+                    Failure = s == step ? DsPlanFailure.Stale : DsPlanFailure.None, Reason = s == step ? reason : "计划作废"
+                });
             Status = "needs_replan";
         }
 

@@ -79,7 +79,17 @@ internal static class PlanResearch
             WriteSummary(dir, live, holdout, cases, first, episodes, calls, status);
             if (e.PlanTraces.Any(t => Fatal(t.Provider?.Error))) throw new InvalidOperationException("provider_failure");
         }
-        var sourceFiles = new[] { "dotnet/Town.Research/PlanCases.cs", "dotnet/Town.Research/PlanTransferCases.cs", "dotnet/Town.Research/PlanResearch.cs", "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlanRun.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.cs", "unity/Assets/Town.Core/Dragonsleep/BaselinePlanner.cs", "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs" };
+        var sourceFiles = new[]
+        {
+            "dotnet/Town.Research/PlanCases.cs", "dotnet/Town.Research/PlanTransferCases.cs", "dotnet/Town.Research/PlanResearch.cs",
+            "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsPlanRun.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsRules.Core.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Dialogue.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsRules.Effects.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Social.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsRules.Director.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Craft.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsRules.Travel.cs", "unity/Assets/Town.Core/Dragonsleep/BaselinePlanner.cs",
+            "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs"
+        };
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(
             sourceFiles.ToDictionary(f => f, f => DsWorldSnapshot.Digest(File.ReadAllText(Path.Combine(root, f)))), Formatting.Indented));
         try

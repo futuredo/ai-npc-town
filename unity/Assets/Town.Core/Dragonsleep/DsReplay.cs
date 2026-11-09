@@ -39,7 +39,8 @@ namespace Town.Core.Dragonsleep
         {
             ["format"] = Format, ["rules_version"] = RulesVersion, ["before"] = MiniJson.Parse(Before.Json),
             ["after"] = MiniJson.Parse(After.Json), ["kind"] = Kind.ToString(), ["actor"] = ActorId, ["input"] = Input,
-            ["prompt_hash"] = PromptHash, ["presented"] = Presented, ["failure"] = Failure, ["verdict"] = Verdict.ToString(), ["craft_decision"] = CraftDecision,
+            ["prompt_hash"] = PromptHash, ["presented"] = Presented, ["failure"] = Failure,
+            ["verdict"] = Verdict.ToString(), ["craft_decision"] = CraftDecision,
             ["plan_context"] = PlanContext,
             ["response"] = Response == null ? null : new Dictionary<string, object>
             { ["provider"] = Response.ProviderName, ["raw"] = Response.RawText, ["error"] = Response.Error,
@@ -60,7 +61,8 @@ namespace Town.Core.Dragonsleep
                 Failure = d.Str("failure"), Verdict = (VerdictKind)Enum.Parse(typeof(VerdictKind), d.Str("verdict")),
                 CraftDecision = d.Str("craft_decision"), PlanContext = d.Str("plan_context"),
                 Response = r == null ? null : new ProviderResult { ProviderName = r.Str("provider"), RawText = r.Str("raw"), Error = r.Str("error"),
-                    InputTokens = (int?)r.Num("input_tokens"), OutputTokens = (int?)r.Num("output_tokens"), EstimatedUsd = (decimal?)r.Num("estimated_usd"), Simulated = (bool)r["simulated"] }
+                    InputTokens = (int?)r.Num("input_tokens"), OutputTokens = (int?)r.Num("output_tokens"),
+                    EstimatedUsd = (decimal?)r.Num("estimated_usd"), Simulated = (bool)r["simulated"] }
             };
         }
 
