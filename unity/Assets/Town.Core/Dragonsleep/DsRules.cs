@@ -152,6 +152,8 @@ namespace Town.Core.Dragonsleep
             { Reject(t, "需要明确一个尚未持有、能够拿取的物件"); return; }
             if (verb == "hide" && !targetWhelp)
             { Reject(t, "当前只能安排雏龙的藏身处"); return; }
+            if (verb == "hide" && wh.TrustPlayer < 0.3f)
+            { Reject(t, "遮盖需要雏龙信任至少0.3；先亲近再藏好"); return; }
             if (verb == "lead")
             {
                 if (!targetWhelp) { Reject(t, "只能带上身边的雏龙"); return; }
@@ -313,7 +315,6 @@ namespace Town.Core.Dragonsleep
                     return actor.Name + "看了看「" + item.Name + "」。";
                 case "hide":
                     if (!whelp) return ok ? "你把东西藏好了。" : "没找到合适的地方。";
-                    if (wh.TrustPlayer < 0.3f) { t.Verdict.Kind = VerdictKind.Rejected; return "它不信任你，扑腾着躲开了。"; }
                     if (ok)
                     {
                         wh.Hidden = true; w.Flags["whelp_hidden_by_player"] = w.ClockText;

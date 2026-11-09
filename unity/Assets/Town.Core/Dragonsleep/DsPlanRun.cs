@@ -60,10 +60,12 @@ namespace Town.Core.Dragonsleep
     {
         public DragonsleepSession Session { get; }
         public string Goal { get; }
+        /// <summary>由调用方明确指定，不能根据模型自己写的 goal 判断任务是否完成。</summary>
+        public bool RequireHomecoming { get; }
         public DsPlan Plan { get; private set; }
         public AiTrace LatestPlanTrace { get; private set; }
         public Dictionary<string, string> Selection { get; private set; } = new Dictionary<string, string>();
-        /// <summary>planning / awaiting_confirmation / running / needs_replan / completed / abandoned。</summary>
+        /// <summary>planning / awaiting_confirmation / running / needs_replan / completed / failed / abandoned。</summary>
         public string Status { get; private set; } = "planning";
         public DsPlanFailure LastFailure { get; private set; }
         public string LastReason { get; private set; } = "";
@@ -74,21 +76,25 @@ namespace Town.Core.Dragonsleep
         public readonly List<string> AcceptedRequestIds = new List<string>();
         public IReadOnlyList<DsPlanStep> ActiveSteps => _active;
         public int NextIndex => _next;
+        public bool MeetsObjective(AiTrace t) => t?.FailureCode == null && t?.PlanReport?.Executable == true &&
+            (!RequireHomecoming || t.PlanReport.Default.ReachesGoal);
 
         List<DsPlanStep> _active = new List<DsPlanStep>();
         int _next;
         DsWorldSnapshot _expected;
         DsPlanStep _failedStep;
 
-        public DsPlanRun(DragonsleepSession session, string goal)
+        public DsPlanRun(DragonsleepSession session, string goal, bool requireHomecoming = false)
         {
             Session = session ?? throw new ArgumentNullException(nameof(session));
             Goal = ContextBuilder.Clip(goal);
+            RequireHomecoming = requireHomecoming;
         }
 
         public async Task<AiTrace> ProposeAsync(CancellationToken ct = default)
         {
-            var t = await Session.PlanAsync(Goal, null, ct).ConfigureAwait(false);
+            var t = await Session.PlanAsync(Goal, RequireHomecoming ? MiniJson.Write(new Dictionary<string, object>
+            { ["objective"] = "homecoming", ["completion"] = "小烬与母亲团聚；局部步骤结束仍需继续规划" }) : null, ct).ConfigureAwait(false);
             Adopt(t);
             return t;
         }
@@ -97,12 +103,12 @@ namespace Town.Core.Dragonsleep
         {
             LatestPlanTrace = t;
             PlanTraces.Add(t);
-            if (t.FailureCode == null && t.PlanReport != null && t.PlanReport.Executable)
+            if (MeetsObjective(t))
             {
                 Plan = t.PlanReport.Plan;
                 Status = "awaiting_confirmation";
             }
-            else if (Plan == null) Status = "planning";
+            else if (Plan == null && Replans.Count == 0) Status = "planning";
             else Status = "needs_replan";
         }
 
@@ -125,6 +131,7 @@ namespace Town.Core.Dragonsleep
             // 玩家改选的备选在整体校验里不可行时拒绝确认，保持待确认，由玩家换选或重规划。
             var branch = LatestPlanTrace?.PlanReport?.Branches.FirstOrDefault(b => b.Selection.Count == chosen.Count && b.Selection.All(x => chosen.TryGetValue(x.Key, out var v) && v == x.Value));
             if (branch != null && !branch.Feasible) throw new InvalidOperationException("该选项不可行：" + branch.FailedStep + " " + branch.Reason);
+            if (RequireHomecoming && branch != null && !branch.ReachesGoal) throw new InvalidOperationException("该选项没有覆盖归巢目标");
             Selection = chosen;
             AcceptedRequestIds.Add(LatestPlanTrace?.RequestId);
             _active = Plan.ActiveSteps(Selection);
@@ -136,7 +143,8 @@ namespace Town.Core.Dragonsleep
             if (LatestPlanTrace?.Receipt != null && LatestPlanTrace.Receipt.BeforeHash != _expected.Hash)
             {
                 var check = DsPlanValidator.Simulate(_expected, _active, Selection);
-                if (!check.Feasible) FailBeforeStart("确认前世界已变，计划在 " + check.FailedStep + " 不再可行：" + check.Reason);
+                if (!check.Feasible || (RequireHomecoming && !check.ReachesGoal))
+                    FailBeforeStart("确认前世界已变，剩余计划无法保证完成目标，请根据当前可见状态重新规划");
             }
         }
 
@@ -152,7 +160,7 @@ namespace Town.Core.Dragonsleep
         {
             if (Status != "running") throw new InvalidOperationException("计划不在执行中：" + Status);
             var w = Session.World;
-            if (w.FinalDawn || w.Whelp.WithMother || _next >= _active.Count) { Status = "completed"; return null; }
+            if (w.FinalDawn || w.Whelp.WithMother || _next >= _active.Count) { FinishOrContinue(); return null; }
             var step = _active[_next];
             var r = new DsPlanStepResult { StepId = step.Id, Op = step.Op, Brief = step.Brief(), Clock = w.ClockText };
 
@@ -164,7 +172,7 @@ namespace Town.Core.Dragonsleep
                 r.RequestIds.AddRange(night.Select(x => x.RequestId));
                 r.Receipts.AddRange(night.Select(x => x.Receipt));
                 if (CapturedByPatrol(events)) return Fail(r, step, DsPlanFailure.Dice, "换岗巡逻发现了小烬");
-                if (Session.World.FinalDawn) { Status = "completed"; return null; }
+                if (Session.World.FinalDawn) { FinishOrContinue(); return null; }
             }
 
             var now = Session.CaptureState();
@@ -173,7 +181,8 @@ namespace Town.Core.Dragonsleep
                 var changes = RelevantChanges(_expected, now);
                 var check = DsPlanValidator.Simulate(now, _active.Skip(_next).ToList(), Selection);
                 if (changes.Count > 0 || !check.Feasible)
-                    return Fail(r, step, DsPlanFailure.Stale, changes.Count > 0 ? string.Join("；", changes) : "剩余步骤在 " + check.FailedStep + " 不再可行：" + check.Reason, executed: false);
+                    return Fail(r, step, DsPlanFailure.Stale, changes.Count > 0 ? string.Join("；", changes) :
+                        "剩余步骤在 " + check.FailedStep + " 无法保证前置条件，请根据当前可见状态重新规划", executed: false);
             }
 
             if (step.Place != "" && step.Place != Session.World.PlayerPlace)
@@ -233,27 +242,74 @@ namespace Town.Core.Dragonsleep
             Results.Add(r);
             _next++;
             _expected = Session.CaptureState();
-            if (_next >= _active.Count || Session.World.FinalDawn) Status = "completed";
+            if (_next >= _active.Count || Session.World.FinalDawn || Session.World.Whelp.WithMother) FinishOrContinue();
             return r;
         }
 
-        /// <summary>从当前世界重新规划：上下文只含失败类别、玩家看到的原因、已完成步骤与旧计划摘要。</summary>
+        void FinishOrContinue()
+        {
+            if (!RequireHomecoming || Session.World.Whelp.WithMother) { Status = "completed"; return; }
+            if (Session.World.FinalDawn) { Status = "failed"; LastReason = "归巢期限已过，未能团聚"; return; }
+            LastFailure = DsPlanFailure.None;
+            LastReason = "局部步骤已经完成，但归巢目标尚未达成，请从当前状态接续到团聚";
+            _failedStep = null;
+            Status = "needs_replan";
+        }
+
+        /// <summary>显式修正被拒的首个提案；不是 HTTP 重试，也不会自动确认或执行。</summary>
+        public Task<AiTrace> RepairProposalAsync(CancellationToken ct = default)
+        {
+            if (Status != "planning" || LatestPlanTrace == null || LatestPlanTrace.Provider?.Error != null)
+                throw new InvalidOperationException("当前没有可修正的语义提案");
+            LastReason = "首个提案未通过校验，请根据拒绝反馈重新规划";
+            Status = "needs_replan";
+            return ReplanAsync(ct);
+        }
+
+        // 只送失败步骤与有限的校验反馈，不把试运行中探知的其他地点人物/雏龙状态泄露给模型。
+        Dictionary<string, object> RejectedFeedback()
+        {
+            var t = LatestPlanTrace;
+            if (t == null || MeetsObjective(t)) return null;
+            if (t.FailureCode == null && t.PlanReport?.Executable == true)
+                return new Dictionary<string, object> { ["request_id"] = t.RequestId, ["scope"] = "predicted_plan_outcome", ["code"] = "goal_not_reached",
+                    ["proposed_steps"] = t.PlanReport.Plan.ActiveSteps(t.PlanReport.Plan.DefaultSelection()).Select(s => (object)s.Brief()).ToList(),
+                    ["reason"] = "这些步骤没有覆盖归巢目标：必须先让小烬跟随（lead或rescue），再在期限前抵达龙骨岗并等到第4天清晨。仅玩家到达或只在summary写送回不算团聚。" };
+            var b = t.PlanReport?.Default;
+            var step = t.PlanReport?.Plan?.Steps.FirstOrDefault(s => s.Id == b?.FailedStep);
+            string reason = b?.Reason ?? t.FailureCode ?? "结构未通过校验";
+            if (step != null && step.Target != "" && step.Place != "" && step.Place != Session.World.PlayerPlace &&
+                (Session.World.Actors.ContainsKey(step.Target) || step.Target == "whelp") &&
+                (reason.Contains("不在") || reason.Contains("没有雏龙") || reason.Contains("笼子") || reason.Contains("吓坏") || reason.Contains("还躲在")))
+                reason = "该步骤不能保证目标在场；请依据已知线索或当前可见状态安排，不推断隐藏位置";
+            if (reason.Length > 180) reason = reason.Substring(0, 180);
+            return new Dictionary<string, object>
+            {
+                ["request_id"] = t.RequestId, ["scope"] = step == null ? "proposal_shape_or_references" : "predicted_after_prefix",
+                ["prefix_steps"] = step == null ? new List<object>() : t.PlanReport.Plan.ActiveSteps(t.PlanReport.Plan.DefaultSelection())
+                    .TakeWhile(s => s.Id != step.Id).Select(s => (object)s.Brief()).ToList(),
+                ["step"] = step?.Brief(), ["code"] = t.FailureCode ?? "precondition", ["reason"] = reason,
+                ["state_warning"] = "这是上版草稿在前序步骤后的试运行判断，不是当前世界事实；这些草稿步骤均未执行。保留可行前序步骤，仅修正矛盾处。",
+            };
+        }
+
+        /// <summary>从当前感知重新规划；历史步骤与旧计划仅保留在本地记录，防止过去的成功被误当成当前状态。</summary>
         public async Task<AiTrace> ReplanAsync(CancellationToken ct = default)
         {
             if (Status != "needs_replan") throw new InvalidOperationException("当前不需要重规划：" + Status);
-            var done = Results.Where(x => x.Status == "success").Select(x => (object)x.Brief).ToList();
             string context = MiniJson.Write(new Dictionary<string, object>
             {
                 ["failure"] = Label(LastFailure), ["reason"] = LastReason,
-                ["failed_step"] = _failedStep?.Brief(), ["done_steps"] = done.Skip(Math.Max(0, done.Count - 8)).ToList(),
-                ["old_plan"] = Plan?.Summary ?? "",
+                ["failed_step"] = _failedStep?.Brief(),
+                ["objective"] = RequireHomecoming ? "homecoming" : "player_goal",
+                ["rejected_proposal"] = RejectedFeedback(),
             });
             var t = await Session.PlanAsync(Goal, context, ct).ConfigureAwait(false);
             var record = new DsReplanRecord
             {
                 Failure = LastFailure, Reason = LastReason, FailedStep = _failedStep?.Id, OldPlan = Plan?.Brief(),
                 NewPlan = t.PlanReport?.Plan?.Brief(), NewRequestId = t.RequestId, NewPlanVerdict = t.Presented,
-                NewPlanExecutable = t.FailureCode == null && t.PlanReport != null && t.PlanReport.Executable,
+                NewPlanExecutable = MeetsObjective(t),
             };
             if (!record.NewPlanExecutable) record.Decision = "rejected";
             Replans.Add(record);
@@ -328,6 +384,7 @@ namespace Town.Core.Dragonsleep
         public Dictionary<string, object> ToRecord() => new Dictionary<string, object>
         {
             ["goal"] = Goal, ["status"] = Status, ["selection"] = Selection.ToDictionary(x => x.Key, x => (object)x.Value),
+            ["require_homecoming"] = RequireHomecoming, ["homecoming_achieved"] = Session.World.Whelp.WithMother,
             ["plan"] = Plan?.ToRecord(), ["results"] = Results.Select(x => (object)x.ToRecord()).ToList(),
             ["replans"] = Replans.Select(x => (object)x.ToRecord()).ToList(),
             ["plan_requests"] = PlanTraces.Select(x => (object)x.RequestId).ToList(),

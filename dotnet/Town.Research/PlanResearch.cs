@@ -38,11 +38,11 @@ internal static class PlanResearch
         public List<(DsReplanRecord Record, bool DeadEnd)> ReplanTruth = new List<(DsReplanRecord, bool)>();
     }
 
-    public static async Task<int> Run(string root, bool live, int seeds, bool holdout)
+    public static async Task<int> Run(string root, bool live, int seeds, bool holdout, bool transfer = false)
     {
         string dir = Path.Combine(root, ".local", "dragonsleep", "experiments", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff") + (live ? "-plan-live" : "-plan-offline"));
         Directory.CreateDirectory(dir);
-        var cases = holdout ? PlanCases.Holdout() : PlanCases.Frozen();
+        var cases = transfer ? PlanTransferCases.All() : holdout ? PlanCases.Holdout() : PlanCases.Frozen();
         using var cancellation = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
         var ct = cancellation.Token;
@@ -79,14 +79,14 @@ internal static class PlanResearch
             WriteSummary(dir, live, holdout, cases, first, episodes, calls, status);
             if (e.PlanTraces.Any(t => Fatal(t.Provider?.Error))) throw new InvalidOperationException("provider_failure");
         }
-        var sourceFiles = new[] { "dotnet/Town.Research/PlanCases.cs", "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs", "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs" };
+        var sourceFiles = new[] { "dotnet/Town.Research/PlanCases.cs", "dotnet/Town.Research/PlanTransferCases.cs", "dotnet/Town.Research/PlanResearch.cs", "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlanRun.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.cs", "unity/Assets/Town.Core/Dragonsleep/BaselinePlanner.cs", "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs" };
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(
             sourceFiles.ToDictionary(f => f, f => DsWorldSnapshot.Digest(File.ReadAllText(Path.Combine(root, f)))), Formatting.Indented));
         try
         {
             if (live) online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
             IAiProvider Planner() => online == null ? (IAiProvider)new RuleProvider() : new RoutingProvider(online, new RuleProvider(), new[] { AiTaskKind.Plan }) { FallbackOnBudget = false };
-            Console.WriteLine($"归巢计划研究；规划={(live ? OpenAiPolicy.Model + "（仅计划请求联网，居民/GM 离线）" : "离线基线")}；{(holdout ? "新措辞集" : "冻结集")} {cases.Count} 例；整局种子 {seeds}。");
+            Console.WriteLine($"归巢计划研究；规划={(live ? OpenAiPolicy.Model + "（仅计划请求联网，居民/GM 离线）" : "离线基线")}；{(transfer ? "状态迁移集" : holdout ? "新措辞集" : "冻结集")} {cases.Count} 例；整局种子 {seeds}。");
 
             // ---------- A. 首个计划 ----------
             foreach (var c in cases)
@@ -109,6 +109,13 @@ internal static class PlanResearch
             var goal = "把小烬安全送回母亲身边，避开卫兵。";
             for (int seed = 1; seed <= seeds; seed++)
             {
+                if (transfer)
+                {
+                    foreach (var c in cases)
+                        await AddEpisode(Play(Planner, "transfer", c.Id, c.Input, seed + 20, null, null, ct, Observe, setup: c.Setup));
+                    Console.WriteLine($"迁移种子 {seed + 20} 完成：累计 {episodes.Count} 局");
+                    continue;
+                }
                 foreach (var sc in new[] { "fresh", "informed", "bonded_docks", "caged" })
                     await AddEpisode(Play(Planner, "full", sc, goal, seed, null, null, ct, Observe));
                 foreach (var opt in new[] { "maren", "pip", "none" })
@@ -157,15 +164,16 @@ internal static class PlanResearch
     }
 
     static async Task<Episode> Play(Func<IAiProvider> planner, string kind, string scenario, string goal, int seed, string option,
-        Func<DsPlanRun, int, Task<bool>> perturb, CancellationToken ct, Action<DragonsleepSession, string> observe, Action<DragonsleepSession> extra = null)
+        Func<DsPlanRun, int, Task<bool>> perturb, CancellationToken ct, Action<DragonsleepSession, string> observe, Action<DragonsleepSession> extra = null,
+        Action<DragonsleepSession> setup = null)
     {
         var s = new DragonsleepSession(planner(), seed * 7919 + 13);
-        PlanCases.Scenarios[scenario](s);
+        (setup ?? PlanCases.Scenarios[scenario])(s);
         extra?.Invoke(s);
         observe(s, kind + ":" + scenario + ":" + option + ":seed=" + seed);
         var e = new Episode { Kind = kind, Scenario = scenario, Seed = seed, Option = option };
         string input = option == "maren" ? goal + "我想请梅伦修女同行。" : option == "pip" ? goal + "请皮普帮忙望风。" : option == "none" ? goal + "谁也别告诉。" : goal;
-        var run = new DsPlanRun(s, input);
+        var run = new DsPlanRun(s, input, requireHomecoming: true);
         e.Runs.Add(run);
         await run.ProposeAsync(ct);
         int executed = 0;
@@ -196,11 +204,16 @@ internal static class PlanResearch
                                (w.Whelp.CapturedBy == "osric" && (w.Day >= 4 || (w.Day == 3 && w.Phase == DayPhase.Night)));
                 await run.ReplanAsync(ct);
                 e.ReplanTruth.Add((run.Replans.Last(), deadEnd));
-                // 连续两次拿不出可执行计划：放弃，交给世界自行运转到终局。
-                if (run.PlanTraces.Count >= 2 && run.PlanTraces.Skip(run.PlanTraces.Count - 2).All(t => t.PlanReport == null || !t.PlanReport.Executable))
-                { run.Abandon(); e.Note += "连续两次无可执行计划，放弃；"; }
+                if (StopDrafting(run))
+                { run.Abandon(); e.Note += "连续三次草稿不可行或重复同一无效草稿，放弃；"; }
             }
-            else if (run.Status == "planning") { e.Note += "首个计划不可行，不在相同状态静默重抽；"; run.Abandon(); break; }
+            else if (run.Status == "planning")
+            {
+                // 独立记账的语义修正；首轮指标不改写。最多三份连续无效草稿，相同无效草稿提前停止。
+                e.Note += "首个提案被拒，附预测范围与前序步骤修正；";
+                await run.RepairProposalAsync(ct);
+                if (StopDrafting(run)) { run.Abandon(); e.Note += "首个提案修正重复同一无效草稿；"; }
+            }
             else break;
             e.PlanCalls = run.PlanTraces.Count;
         }
@@ -215,6 +228,16 @@ internal static class PlanResearch
         for (int i = 0; i < 16 && !s.World.FinalDawn; i++) await s.EndPhaseAsync(ct);
         e.Ending = s.World.FinalDawn ? DsEndings.Evaluate(s.World).Title : "未到终局";
         return e;
+    }
+
+    static bool StopDrafting(DsPlanRun run)
+    {
+        var rejected = run.PlanTraces.AsEnumerable().Reverse().TakeWhile(t => !run.MeetsObjective(t)).ToList();
+        if (rejected.Count >= 3) return true;
+        if (rejected.Count < 2 || rejected[0].PlanReport?.Plan == null || rejected[1].PlanReport?.Plan == null) return false;
+        string Key(AiTrace t) => string.Join(";", t.PlanReport.Plan.ActiveSteps(t.PlanReport.Plan.DefaultSelection()).Select(s =>
+            string.Join("|", s.Op, s.Verb, s.Target, s.Item, s.Place, s.Until, string.Join(",", s.Laws.OrderBy(x => x)))));
+        return Key(rejected[0]) == Key(rejected[1]);
     }
 
     /// <summary>回执一致：成功步骤的所有回执都是已提交/无变化；失败步骤至少有一份执行回执；作废步骤没有行动回执。</summary>
@@ -247,6 +270,7 @@ internal static class PlanResearch
         File.WriteAllText(Path.Combine(dir, "summary.json"), JsonConvert.SerializeObject(new
         {
             utc = DateTime.UtcNow, status, live, holdout, model = live ? OpenAiPolicy.Model : "offline-baseline", rulesVersion = DsExecutor.RulesVersion,
+            suite = cases.FirstOrDefault()?.Group,
             caseFingerprint = PlanCases.Fingerprint(cases),
             allCalls = new { count = calls.Count, inputTokens = calls.Sum(t => t.Provider?.InputTokens ?? 0), outputTokens = calls.Sum(t => t.Provider?.OutputTokens ?? 0),
                 unknownCosts = usd.Count(x => !x.HasValue), overFiveSeconds = calls.Count(t => t.TotalMillis > 5000),

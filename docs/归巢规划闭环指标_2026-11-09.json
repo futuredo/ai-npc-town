@@ -1,0 +1,2171 @@
+{
+  "date": "2026-11-09",
+  "scope": "M3闭环修复；M4未实施",
+  "model": "gpt-6-luna",
+  "rulesVersion": "dragonsleep-rules-6",
+  "sourceManifest": {
+    "dotnet/Town.Research/PlanCases.cs": "4554ae1f6ccc06ea939d040b01cc9c4e32d2acd3b1b51bd48e60f43ff7e52b67",
+    "dotnet/Town.Research/PlanTransferCases.cs": "473a31ad2b22d60c36ae14d34a282534d2840d6f7bee89a87375f15f4a5df5e7",
+    "dotnet/Town.Research/PlanResearch.cs": "a6be3bef3294935d539fe1ee48beee972a09fb6a9e98a434ce908fb51d11ce12",
+    "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs": "713a75bb82e5d115d90b0fedd1bdce4b3518d6c5aab1b92d6144569dcff3ed65",
+    "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs": "a3697b874344cfdc1d87333caf4b4b9c44aa777bc8a3ab89320416122c03e743",
+    "unity/Assets/Town.Core/Dragonsleep/DsPlanRun.cs": "ff4c995b53d8dec4ef8deb652ae9c4ddc7d9549fd0fd6ac72f52504e90d69d2f",
+    "unity/Assets/Town.Core/Dragonsleep/DsRules.cs": "5107312b592aea8cbedf75f87adabd245a97dda3ecbe0a74521350e43c0938f7",
+    "unity/Assets/Town.Core/Dragonsleep/BaselinePlanner.cs": "fd561a921ca2bedd90681e627c7866ab58b29063720214e224f69999bcec269e",
+    "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs": "f4e2629ee97a60633c0c1883ad4af6674e892592b1b6336594105957be8386c3"
+  },
+  "rootCauses": {
+    "initial": {
+      "小烬没有被关起来，用不着救": 5,
+      "schema_invalid": 1,
+      "你身边没有「一串熏鱼」": 5,
+      "这里没有雏龙的踪迹": 2,
+      "invalid_reference": 2,
+      "小烬已经跟着你了": 1
+    },
+    "noHide": 18,
+    "earlyHill": 22,
+    "partialCompleted": 5,
+    "actualFailures": {
+      "失败（掷骰 0.18 < 难度 0.19）": 1,
+      "等待时换岗巡逻发现了小烬": 11,
+      "铁笼和城门前都有卫兵站岗，现在下手等于自投罗网": 8,
+      "失败（掷骰 0.37 < 难度 0.57）": 1,
+      "失败（掷骰 0.54 < 难度 0.57）": 1,
+      "失败（掷骰 0.12 < 难度 0.57）": 1,
+      "失败（掷骰 0.21 < 难度 0.57）": 1,
+      "失败（掷骰 0.37 < 难度 0.40）": 1,
+      "失败（掷骰 0.41 < 难度 0.57）": 1,
+      "失败（掷骰 0.30 < 难度 0.57）": 1,
+      "小烬不见了（只知道：据皮普说，小烬藏在码头旧船屋里）": 2,
+      "失败（掷骰 0.24 < 难度 0.57）": 1,
+      "失败（掷骰 0.03 < 难度 0.43）": 1,
+      "失败（掷骰 0.17 < 难度 0.25）": 1,
+      "失败（掷骰 0.24 < 难度 0.54）": 1,
+      "换岗巡逻发现了小烬": 1,
+      "失败（掷骰 0.39 < 难度 0.50）": 1,
+      "失败（掷骰 0.39 < 难度 0.57）": 1,
+      "失败（掷骰 0.11 < 难度 0.57）": 1,
+      "失败（掷骰 0.57 < 难度 0.57）": 2,
+      "失败（掷骰 0.49 < 难度 0.57）": 1,
+      "失败（掷骰 0.01 < 难度 0.57）": 1,
+      "失败（掷骰 0.01 < 难度 0.40）": 1,
+      "失败（掷骰 0.36 < 难度 0.57）": 1,
+      "失败（掷骰 0.29 < 难度 0.57）": 1,
+      "失败（掷骰 0.44 < 难度 0.57）": 1,
+      "失败（掷骰 0.38 < 难度 0.57）": 1
+    },
+    "invalidReplans": {
+      "小烬已经跟着你了": 1,
+      "小烬被锁在王城的铁笼里，得先把它救出来": 7,
+      "invalid_reference": 6,
+      "小烬吓坏了，缩成一团不肯动": 6,
+      "这里没有雏龙的踪迹": 12,
+      "你身边没有「一串熏鱼」": 1,
+      "奥斯里克·灰岩不在这里": 1
+    }
+  },
+  "batches": [
+    {
+      "name": "试跑一",
+      "directory": "20261109-075834-244-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 72,
+        "inputTokens": 151412,
+        "outputTokens": 19633,
+        "unknownCosts": 0,
+        "overFiveSeconds": 10,
+        "errors": {
+          "schema_invalid": 1
+        },
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.01733038,
+      "completedEpisodes": 18
+    },
+    {
+      "name": "试跑二",
+      "directory": "20261109-080450-824-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 32,
+        "inputTokens": 72446,
+        "outputTokens": 8864,
+        "unknownCosts": 0,
+        "overFiveSeconds": 3,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.00831411,
+      "completedEpisodes": 9
+    },
+    {
+      "name": "中断批",
+      "directory": "20261109-081029-100-plan-live",
+      "status": "stopped_TaskCanceledException",
+      "calls": {
+        "count": 36,
+        "inputTokens": 81094,
+        "outputTokens": 9902,
+        "unknownCosts": 1,
+        "overFiveSeconds": 4,
+        "errors": {
+          "cancelled": 1
+        },
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.00941432,
+      "completedEpisodes": 9
+    },
+    {
+      "name": "闭环基础控制",
+      "directory": "20261109-081327-573-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 218,
+        "inputTokens": 513796,
+        "outputTokens": 69639,
+        "unknownCosts": 0,
+        "overFiveSeconds": 99,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.0492757,
+      "completedEpisodes": 90
+    },
+    {
+      "name": "当前状态控制",
+      "directory": "20261109-083306-191-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 218,
+        "inputTokens": 533073,
+        "outputTokens": 72238,
+        "unknownCosts": 0,
+        "overFiveSeconds": 7,
+        "errors": {
+          "schema_invalid": 2
+        },
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.05301095,
+      "completedEpisodes": 90
+    },
+    {
+      "name": "最终主组",
+      "directory": "20261109-084724-487-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 240,
+        "inputTokens": 593120,
+        "outputTokens": 80455,
+        "unknownCosts": 0,
+        "overFiveSeconds": 9,
+        "errors": {
+          "schema_invalid": 4
+        },
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.05925154,
+      "completedEpisodes": 90
+    },
+    {
+      "name": "最终新措辞",
+      "directory": "20261109-090135-268-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 74,
+        "inputTokens": 182211,
+        "outputTokens": 22444,
+        "unknownCosts": 0,
+        "overFiveSeconds": 3,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.01516649,
+      "completedEpisodes": 27
+    },
+    {
+      "name": "最终状态迁移",
+      "directory": "20261109-090600-644-plan-live",
+      "status": "completed",
+      "calls": {
+        "count": 33,
+        "inputTokens": 78885,
+        "outputTokens": 8575,
+        "unknownCosts": 0,
+        "overFiveSeconds": 1,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "knownEstimatedUsd": 0.00704987,
+      "completedEpisodes": 18
+    },
+    {
+      "name": "最终固定探针",
+      "directory": "20261109-090749-162-recovery-live",
+      "status": "completed",
+      "calls": {
+        "count": 33,
+        "inputTokens": 83932,
+        "outputTokens": 9922,
+        "unknownCosts": 0,
+        "overFiveSeconds": 9,
+        "errors": {}
+      },
+      "knownEstimatedUsd": 0.00758241,
+      "completedEpisodes": null
+    }
+  ],
+  "totals": {
+    "count": 956,
+    "inputTokens": 2289969,
+    "outputTokens": 301672,
+    "unknownCosts": 1,
+    "knownEstimatedUsd": "0.22639577",
+    "ledgerStartRequests": 491,
+    "ledgerEndRequests": 1447,
+    "ledgerEndResearchRequests": 1447,
+    "ledgerReservedUsd": 2.894
+  },
+  "experiments": {
+    "live-v5-main": {
+      "dir": "20261109-084724-487-plan-live",
+      "status": "completed",
+      "suite": "frozen",
+      "live": true,
+      "fingerprint": "bfac3c38bc8b20fd156211217eda55385a4f7875abe37f1075fcb8026ea66147",
+      "calls": {
+        "count": 240,
+        "inputTokens": 593120,
+        "outputTokens": 80455,
+        "unknownCosts": 0,
+        "overFiveSeconds": 9,
+        "errors": {
+          "schema_invalid": 4
+        },
+        "incompleteReasons": {}
+      },
+      "cost": 0.05925154,
+      "latency": {
+        "count": 240,
+        "median": 3524.3,
+        "p95": 4790.4
+      },
+      "first": {
+        "total": 14,
+        "executable": 14,
+        "check": 14,
+        "reachesGoal": 11,
+        "baselineExecutable": 14,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 14
+      },
+      "endings": {
+        "full": {
+          "count": 40,
+          "endings": {
+            "归巢·余怒": 33,
+            "远洋": 7
+          }
+        },
+        "social": {
+          "count": 30,
+          "endings": {
+            "新约": 10,
+            "归巢": 19,
+            "铁笼前的契约": 1
+          }
+        },
+        "perturb_stale": {
+          "count": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "perturb_precondition": {
+          "count": 10,
+          "endings": {
+            "未竟": 7,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 70,
+          "executable": 58,
+          "deadEnd": 0,
+          "recoverable": 70,
+          "recoverableExecutable": 58
+        },
+        "Stale": {
+          "count": 35,
+          "executable": 10,
+          "deadEnd": 23,
+          "recoverable": 12,
+          "recoverableExecutable": 10
+        },
+        "None": {
+          "count": 11,
+          "executable": 2,
+          "deadEnd": 0,
+          "recoverable": 11,
+          "recoverableExecutable": 2
+        }
+      },
+      "receipts": 90,
+      "invalidCommitted": 0,
+      "episodes": 90,
+      "scenarios": {
+        "full/fresh": {
+          "total": 10,
+          "success": 6,
+          "initialExecutable": 7,
+          "initialGoal": 7,
+          "endings": {
+            "归巢·余怒": 6,
+            "远洋": 4
+          }
+        },
+        "full/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "full/bonded_docks": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 7,
+          "initialGoal": 7,
+          "endings": {
+            "归巢·余怒": 9,
+            "远洋": 1
+          }
+        },
+        "full/caged": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 10
+          }
+        },
+        "social/pact_escort/maren": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 8,
+          "initialGoal": 8,
+          "endings": {
+            "新约": 10
+          }
+        },
+        "social/pact_escort/pip": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "social/pact_escort/none": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 8,
+          "initialGoal": 8,
+          "endings": {
+            "归巢": 10
+          }
+        },
+        "perturb_stale/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "perturb_precondition/pact_escort/maren": {
+          "total": 10,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 7,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 20,
+      "initialRepairAccepted": 8,
+      "latestRejectionFeedback": {
+        "expected": 58,
+        "provided": 58
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "只能用自己持有的东西引诱身边的雏龙": 1,
+        "梅伦需要凭据才肯冒险": 12,
+        "你身边没有「一串熏鱼」": 1,
+        "小烬已经跟着你了": 5,
+        "schema_invalid": 1
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.18 < 难度 0.19）": 4,
+        "镇上有新动静：第1天·正午：王城的卫兵提着灯，挨家挨户敲门。": 9,
+        "失败（掷骰 0.37 < 难度 0.40）": 3,
+        "失败（掷骰 0.12 < 难度 0.32）": 2,
+        "失败（掷骰 0.21 < 难度 0.32）": 1,
+        "失败（掷骰 0.01 < 难度 0.19）": 5,
+        "失败（掷骰 0.14 < 难度 0.19）": 2,
+        "失败（掷骰 0.03 < 难度 0.19）": 4,
+        "失败（掷骰 0.12 < 难度 0.19）": 2,
+        "剩余步骤在 3 无法保证前置条件，请根据当前可见状态重新规划": 2,
+        "小烬不见了（只知道：据皮普说，小烬藏在码头旧船屋里）": 3,
+        "失败（掷骰 0.30 < 难度 0.32）": 1,
+        "失败（掷骰 0.24 < 难度 0.40）": 3,
+        "失败（掷骰 0.03 < 难度 0.32）": 2,
+        "失败（掷骰 0.17 < 难度 0.32）": 1,
+        "小烬不见了（只知道：下落不明；镇上传言码头那边夜里冒烟）": 3,
+        "失败（掷骰 0.03 < 难度 0.25）": 1,
+        "失败（掷骰 0.17 < 难度 0.50）": 1,
+        "失败（掷骰 0.17 < 难度 0.19）": 2,
+        "失败（掷骰 0.07 < 难度 0.19）": 5,
+        "失败（掷骰 0.39 < 难度 0.40）": 3,
+        "失败（掷骰 0.11 < 难度 0.40）": 2,
+        "失败（掷骰 0.13 < 难度 0.19）": 2,
+        "失败（掷骰 0.11 < 难度 0.19）": 2,
+        "失败（掷骰 0.11 < 难度 0.22）": 1,
+        "镇上有新动静：第1天·黄昏：王城的卫兵提着灯，挨家挨户敲门。": 1,
+        "失败（掷骰 0.01 < 难度 0.40）": 3,
+        "失败（掷骰 0.01 < 难度 0.22）": 1,
+        "失败（掷骰 0.01 < 难度 0.36）": 1,
+        "前往龙骨岗时，卫兵发现了小烬": 1,
+        "失败（掷骰 0.36 < 难度 0.40）": 3,
+        "失败（掷骰 0.29 < 难度 0.40）": 2
+      },
+      "social": {
+        "maren": {
+          "count": 10,
+          "osricKnew": 0,
+          "allyMaren": 10,
+          "allyPip": 0,
+          "endings": {
+            "新约": 10
+          }
+        },
+        "pip": {
+          "count": 10,
+          "osricKnew": 10,
+          "allyMaren": 0,
+          "allyPip": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "none": {
+          "count": 10,
+          "osricKnew": 3,
+          "allyMaren": 0,
+          "allyPip": 3,
+          "endings": {
+            "归巢": 10
+          }
+        }
+      },
+      "actualFailures": {
+        "Dice": 60,
+        "Stale": 18
+      },
+      "steps": {
+        "stepsSucceeded": 403,
+        "stepsFailed": 60,
+        "stepsVoid": 338
+      },
+      "initialDraftRejectedEpisodes": 20,
+      "initialDraftLaterAcceptedEpisodes": 10,
+      "maxPlanCallsInEpisode": 10
+    },
+    "live-v5-holdout": {
+      "dir": "20261109-090135-268-plan-live",
+      "status": "completed",
+      "suite": "holdout",
+      "live": true,
+      "fingerprint": "e9ffb724434a722b6fa4d0da4c3a89c7bfb2a652ff67eb8f19e5f6fca91d84e2",
+      "calls": {
+        "count": 74,
+        "inputTokens": 182211,
+        "outputTokens": 22444,
+        "unknownCosts": 0,
+        "overFiveSeconds": 3,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "cost": 0.01516649,
+      "latency": {
+        "count": 74,
+        "median": 3517.3,
+        "p95": 4972.5
+      },
+      "first": {
+        "total": 10,
+        "executable": 10,
+        "check": 10,
+        "reachesGoal": 7,
+        "baselineExecutable": 10,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 8
+      },
+      "endings": {
+        "full": {
+          "count": 12,
+          "endings": {
+            "归巢·余怒": 10,
+            "远洋": 1,
+            "铁笼": 1
+          }
+        },
+        "social": {
+          "count": 9,
+          "endings": {
+            "新约": 3,
+            "归巢": 6
+          }
+        },
+        "perturb_stale": {
+          "count": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "perturb_precondition": {
+          "count": 3,
+          "endings": {
+            "未竟": 3
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 22,
+          "executable": 15,
+          "deadEnd": 0,
+          "recoverable": 22,
+          "recoverableExecutable": 15
+        },
+        "Stale": {
+          "count": 9,
+          "executable": 3,
+          "deadEnd": 6,
+          "recoverable": 3,
+          "recoverableExecutable": 3
+        },
+        "None": {
+          "count": 3,
+          "executable": 0,
+          "deadEnd": 0,
+          "recoverable": 3,
+          "recoverableExecutable": 0
+        }
+      },
+      "receipts": 27,
+      "invalidCommitted": 0,
+      "episodes": 27,
+      "scenarios": {
+        "full/fresh": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "full/informed": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "full/bonded_docks": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "铁笼": 1
+          }
+        },
+        "full/caged": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "social/pact_escort/maren": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "新约": 3
+          }
+        },
+        "social/pact_escort/pip": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢": 3
+          }
+        },
+        "social/pact_escort/none": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢": 3
+          }
+        },
+        "perturb_stale/informed": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "perturb_precondition/pact_escort/maren": {
+          "total": 3,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 3
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 3,
+      "initialRepairAccepted": 0,
+      "latestRejectionFeedback": {
+        "expected": 16,
+        "provided": 16
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "梅伦需要凭据才肯冒险": 3
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.18 < 难度 0.19）": 3,
+        "镇上有新动静：第1天·正午：王城的卫兵提着灯，挨家挨户敲门。": 3,
+        "失败（掷骰 0.12 < 难度 0.32）": 2,
+        "失败（掷骰 0.21 < 难度 0.32）": 1,
+        "失败（掷骰 0.01 < 难度 0.19）": 1,
+        "失败（掷骰 0.14 < 难度 0.19）": 1,
+        "失败（掷骰 0.03 < 难度 0.19）": 1,
+        "失败（掷骰 0.37 < 难度 0.40）": 2,
+        "失败（掷骰 0.12 < 难度 0.19）": 2,
+        "剩余步骤在 3 无法保证前置条件，请根据当前可见状态重新规划": 2,
+        "失败（掷骰 0.01 < 难度 0.26）": 1,
+        "等待时换岗巡逻发现了小烬": 1,
+        "失败（掷骰 0.03 < 难度 0.36）": 1
+      },
+      "social": {
+        "maren": {
+          "count": 3,
+          "osricKnew": 1,
+          "allyMaren": 3,
+          "allyPip": 1,
+          "endings": {
+            "新约": 3
+          }
+        },
+        "pip": {
+          "count": 3,
+          "osricKnew": 3,
+          "allyMaren": 0,
+          "allyPip": 3,
+          "endings": {
+            "归巢": 3
+          }
+        },
+        "none": {
+          "count": 3,
+          "osricKnew": 2,
+          "allyMaren": 0,
+          "allyPip": 2,
+          "endings": {
+            "归巢": 3
+          }
+        }
+      },
+      "actualFailures": {
+        "Dice": 16,
+        "Stale": 5
+      },
+      "steps": {
+        "stepsSucceeded": 120,
+        "stepsFailed": 16,
+        "stepsVoid": 83
+      },
+      "initialDraftRejectedEpisodes": 3,
+      "initialDraftLaterAcceptedEpisodes": 0,
+      "maxPlanCallsInEpisode": 7
+    },
+    "live-v5-transfer": {
+      "dir": "20261109-090600-644-plan-live",
+      "status": "completed",
+      "suite": "transfer",
+      "live": true,
+      "fingerprint": "3e02f7a6c3ce1683a9aff894457ba24f5c949188f90e76d3b827ba04426d1cff",
+      "calls": {
+        "count": 33,
+        "inputTokens": 78885,
+        "outputTokens": 8575,
+        "unknownCosts": 0,
+        "overFiveSeconds": 1,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "cost": 0.00704987,
+      "latency": {
+        "count": 33,
+        "median": 3209.4,
+        "p95": 4897.8
+      },
+      "first": {
+        "total": 6,
+        "executable": 5,
+        "check": 5,
+        "reachesGoal": 5,
+        "baselineExecutable": 2,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 2
+      },
+      "endings": {
+        "transfer": {
+          "count": 18,
+          "endings": {
+            "归巢·余怒": 17,
+            "铁笼": 1
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 9,
+          "executable": 6,
+          "deadEnd": 0,
+          "recoverable": 9,
+          "recoverableExecutable": 6
+        }
+      },
+      "receipts": 18,
+      "invalidCommitted": 0,
+      "episodes": 18,
+      "scenarios": {
+        "transfer/t01_no_money": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "transfer/t02_scared_no_food": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "transfer/t03_last_dusk_cage": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "铁笼": 1
+          }
+        },
+        "transfer/t04_last_half_phase": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "transfer/t05_left_without_cloak": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "transfer/t06_low_bond_no_food": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 0,
+      "initialRepairAccepted": 0,
+      "latestRejectionFeedback": {
+        "expected": 2,
+        "provided": 2
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {},
+      "executionFailureReasons": {
+        "失败（掷骰 0.06 < 难度 0.40）": 1,
+        "失败（掷骰 0.25 < 难度 0.32）": 1,
+        "失败（掷骰 0.10 < 难度 0.19）": 1,
+        "失败（掷骰 0.06 < 难度 0.19）": 2,
+        "失败（掷骰 0.06 < 难度 0.36）": 1,
+        "失败（掷骰 0.06 < 难度 0.32）": 1
+      },
+      "social": {},
+      "actualFailures": {
+        "Dice": 7
+      },
+      "steps": {
+        "stepsSucceeded": 74,
+        "stepsFailed": 7,
+        "stepsVoid": 25
+      },
+      "initialDraftRejectedEpisodes": 0,
+      "initialDraftLaterAcceptedEpisodes": 0,
+      "maxPlanCallsInEpisode": 4
+    },
+    "offline-v5-main": {
+      "dir": "20261109-084445-399-plan-offline",
+      "status": "completed",
+      "suite": "frozen",
+      "live": false,
+      "fingerprint": "bfac3c38bc8b20fd156211217eda55385a4f7875abe37f1075fcb8026ea66147",
+      "calls": {
+        "count": 213,
+        "inputTokens": 395378,
+        "outputTokens": 124293,
+        "unknownCosts": 0,
+        "overFiveSeconds": 0,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "cost": 0.0,
+      "latency": {
+        "count": 213,
+        "median": 1.1,
+        "p95": 2.1
+      },
+      "first": {
+        "total": 14,
+        "executable": 14,
+        "check": 14,
+        "reachesGoal": 14,
+        "baselineExecutable": 14,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 14
+      },
+      "endings": {
+        "full": {
+          "count": 40,
+          "endings": {
+            "归巢·余怒": 34,
+            "远洋": 5,
+            "铁笼": 1
+          }
+        },
+        "social": {
+          "count": 30,
+          "endings": {
+            "新约": 10,
+            "归巢": 19,
+            "铁笼前的契约": 1
+          }
+        },
+        "perturb_stale": {
+          "count": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "perturb_precondition": {
+          "count": 10,
+          "endings": {
+            "未竟": 7,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 77,
+          "executable": 73,
+          "deadEnd": 0,
+          "recoverable": 77,
+          "recoverableExecutable": 73
+        },
+        "Stale": {
+          "count": 22,
+          "executable": 10,
+          "deadEnd": 12,
+          "recoverable": 10,
+          "recoverableExecutable": 10
+        }
+      },
+      "receipts": 90,
+      "invalidCommitted": 0,
+      "episodes": 90,
+      "scenarios": {
+        "full/fresh": {
+          "total": 10,
+          "success": 7,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 7,
+            "远洋": 3
+          }
+        },
+        "full/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "full/bonded_docks": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 10
+          }
+        },
+        "full/caged": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 9,
+            "铁笼": 1
+          }
+        },
+        "social/pact_escort/maren": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "新约": 10
+          }
+        },
+        "social/pact_escort/pip": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "social/pact_escort/none": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢": 10
+          }
+        },
+        "perturb_stale/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "perturb_precondition/pact_escort/maren": {
+          "total": 10,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 7,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 10,
+      "initialRepairAccepted": 0,
+      "latestRejectionFeedback": {
+        "expected": 18,
+        "provided": 18
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "梅伦需要凭据才肯冒险": 10
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.48 < 难度 0.57）": 1,
+        "失败（掷骰 0.18 < 难度 0.43）": 1,
+        "失败（掷骰 0.18 < 难度 0.27）": 2,
+        "镇上有新动静：第1天·正午：王城的卫兵提着灯，挨家挨户敲门。": 8,
+        "失败（掷骰 0.37 < 难度 0.57）": 1,
+        "失败（掷骰 0.54 < 难度 0.57）": 1,
+        "失败（掷骰 0.12 < 难度 0.57）": 1,
+        "失败（掷骰 0.21 < 难度 0.57）": 1,
+        "小烬不见了（只知道：下落不明；镇上传言码头那边夜里冒烟）": 2,
+        "失败（掷骰 0.37 < 难度 0.40）": 2,
+        "失败（掷骰 0.12 < 难度 0.25）": 2,
+        "失败（掷骰 0.21 < 难度 0.25）": 2,
+        "小烬不见了（只知道：据皮普说，小烬藏在码头旧船屋里）": 4,
+        "失败（掷骰 0.41 < 难度 0.57）": 1,
+        "失败（掷骰 0.30 < 难度 0.57）": 1,
+        "失败（掷骰 0.05 < 难度 0.19）": 1,
+        "失败（掷骰 0.24 < 难度 0.57）": 1,
+        "失败（掷骰 0.03 < 难度 0.43）": 1,
+        "失败（掷骰 0.17 < 难度 0.43）": 1,
+        "失败（掷骰 0.24 < 难度 0.40）": 2,
+        "失败（掷骰 0.03 < 难度 0.25）": 2,
+        "失败（掷骰 0.17 < 难度 0.25）": 2,
+        "失败（掷骰 0.24 < 难度 0.29）": 2,
+        "失败（掷骰 0.03 < 难度 0.19）": 1,
+        "失败（掷骰 0.17 < 难度 0.29）": 1,
+        "失败（掷骰 0.07 < 难度 0.29）": 1,
+        "失败（掷骰 0.03 < 难度 0.29）": 1,
+        "失败（掷骰 0.24 < 难度 0.36）": 1,
+        "换岗巡逻发现了小烬": 1,
+        "失败（掷骰 0.24 < 难度 0.27）": 3,
+        "失败（掷骰 0.39 < 难度 0.57）": 1,
+        "失败（掷骰 0.11 < 难度 0.57）": 1,
+        "失败（掷骰 0.57 < 难度 0.57）": 1,
+        "失败（掷骰 0.49 < 难度 0.57）": 1,
+        "失败（掷骰 0.13 < 难度 0.57）": 1,
+        "失败（掷骰 0.56 < 难度 0.57）": 1,
+        "失败（掷骰 0.39 < 难度 0.40）": 2,
+        "失败（掷骰 0.11 < 难度 0.40）": 2,
+        "失败（掷骰 0.13 < 难度 0.27）": 2,
+        "失败（掷骰 0.11 < 难度 0.19）": 1,
+        "失败（掷骰 0.11 < 难度 0.26）": 1,
+        "镇上有新动静：第1天·黄昏：王城的卫兵提着灯，挨家挨户敲门。": 2,
+        "失败（掷骰 0.01 < 难度 0.57）": 2,
+        "失败（掷骰 0.01 < 难度 0.40）": 2,
+        "失败（掷骰 0.01 < 难度 0.29）": 2,
+        "失败（掷骰 0.01 < 难度 0.36）": 1,
+        "前往龙骨岗时，卫兵发现了小烬": 1,
+        "失败（掷骰 0.36 < 难度 0.57）": 1,
+        "失败（掷骰 0.29 < 难度 0.57）": 1,
+        "失败（掷骰 0.44 < 难度 0.57）": 1,
+        "失败（掷骰 0.38 < 难度 0.57）": 1,
+        "失败（掷骰 0.22 < 难度 0.57）": 1,
+        "失败（掷骰 0.07 < 难度 0.57）": 1,
+        "失败（掷骰 0.45 < 难度 0.57）": 1,
+        "失败（掷骰 0.55 < 难度 0.57）": 1,
+        "失败（掷骰 0.36 < 难度 0.40）": 2,
+        "失败（掷骰 0.29 < 难度 0.40）": 2,
+        "失败（掷骰 0.22 < 难度 0.27）": 2,
+        "失败（掷骰 0.07 < 难度 0.27）": 2
+      },
+      "social": {
+        "maren": {
+          "count": 10,
+          "osricKnew": 0,
+          "allyMaren": 10,
+          "allyPip": 0,
+          "endings": {
+            "新约": 10
+          }
+        },
+        "pip": {
+          "count": 10,
+          "osricKnew": 10,
+          "allyMaren": 0,
+          "allyPip": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "none": {
+          "count": 10,
+          "osricKnew": 0,
+          "allyMaren": 0,
+          "allyPip": 0,
+          "endings": {
+            "归巢": 10
+          }
+        }
+      },
+      "actualFailures": {
+        "Dice": 75,
+        "Stale": 16
+      },
+      "steps": {
+        "stepsSucceeded": 358,
+        "stepsFailed": 75,
+        "stepsVoid": 379
+      },
+      "initialDraftRejectedEpisodes": 10,
+      "initialDraftLaterAcceptedEpisodes": 0,
+      "maxPlanCallsInEpisode": 10
+    },
+    "offline-v5-holdout": {
+      "dir": "20261109-084448-615-plan-offline",
+      "status": "completed",
+      "suite": "holdout",
+      "live": false,
+      "fingerprint": "e9ffb724434a722b6fa4d0da4c3a89c7bfb2a652ff67eb8f19e5f6fca91d84e2",
+      "calls": {
+        "count": 63,
+        "inputTokens": 116619,
+        "outputTokens": 36886,
+        "unknownCosts": 0,
+        "overFiveSeconds": 0,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "cost": 0.0,
+      "latency": {
+        "count": 63,
+        "median": 1.3,
+        "p95": 2.1
+      },
+      "first": {
+        "total": 10,
+        "executable": 10,
+        "check": 8,
+        "reachesGoal": 10,
+        "baselineExecutable": 10,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 8
+      },
+      "endings": {
+        "full": {
+          "count": 12,
+          "endings": {
+            "归巢·余怒": 10,
+            "远洋": 2
+          }
+        },
+        "social": {
+          "count": 9,
+          "endings": {
+            "新约": 3,
+            "归巢": 6
+          }
+        },
+        "perturb_stale": {
+          "count": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "perturb_precondition": {
+          "count": 3,
+          "endings": {
+            "未竟": 3
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 14,
+          "executable": 14,
+          "deadEnd": 0,
+          "recoverable": 14,
+          "recoverableExecutable": 14
+        },
+        "Stale": {
+          "count": 9,
+          "executable": 3,
+          "deadEnd": 6,
+          "recoverable": 3,
+          "recoverableExecutable": 3
+        }
+      },
+      "receipts": 27,
+      "invalidCommitted": 0,
+      "episodes": 27,
+      "scenarios": {
+        "full/fresh": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "full/informed": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "full/bonded_docks": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "full/caged": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "social/pact_escort/maren": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "新约": 3
+          }
+        },
+        "social/pact_escort/pip": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢": 3
+          }
+        },
+        "social/pact_escort/none": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢": 3
+          }
+        },
+        "perturb_stale/informed": {
+          "total": 3,
+          "success": 2,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 2,
+            "远洋": 1
+          }
+        },
+        "perturb_precondition/pact_escort/maren": {
+          "total": 3,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 3
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 3,
+      "initialRepairAccepted": 0,
+      "latestRejectionFeedback": {
+        "expected": 6,
+        "provided": 6
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "梅伦需要凭据才肯冒险": 3
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.48 < 难度 0.57）": 1,
+        "失败（掷骰 0.18 < 难度 0.43）": 1,
+        "失败（掷骰 0.18 < 难度 0.27）": 2,
+        "镇上有新动静：第1天·正午：王城的卫兵提着灯，挨家挨户敲门。": 3,
+        "失败（掷骰 0.37 < 难度 0.57）": 1,
+        "失败（掷骰 0.54 < 难度 0.57）": 1,
+        "失败（掷骰 0.12 < 难度 0.57）": 1,
+        "失败（掷骰 0.21 < 难度 0.57）": 1,
+        "小烬不见了（只知道：下落不明；镇上传言码头那边夜里冒烟）": 1,
+        "失败（掷骰 0.37 < 难度 0.40）": 2,
+        "失败（掷骰 0.12 < 难度 0.25）": 2,
+        "失败（掷骰 0.21 < 难度 0.25）": 2,
+        "小烬不见了（只知道：据皮普说，小烬藏在码头旧船屋里）": 2
+      },
+      "social": {
+        "maren": {
+          "count": 3,
+          "osricKnew": 0,
+          "allyMaren": 3,
+          "allyPip": 0,
+          "endings": {
+            "新约": 3
+          }
+        },
+        "pip": {
+          "count": 3,
+          "osricKnew": 3,
+          "allyMaren": 0,
+          "allyPip": 3,
+          "endings": {
+            "归巢": 3
+          }
+        },
+        "none": {
+          "count": 3,
+          "osricKnew": 0,
+          "allyMaren": 0,
+          "allyPip": 0,
+          "endings": {
+            "归巢": 3
+          }
+        }
+      },
+      "actualFailures": {
+        "Dice": 14,
+        "Stale": 6
+      },
+      "steps": {
+        "stepsSucceeded": 104,
+        "stepsFailed": 14,
+        "stepsVoid": 89
+      },
+      "initialDraftRejectedEpisodes": 3,
+      "initialDraftLaterAcceptedEpisodes": 0,
+      "maxPlanCallsInEpisode": 7
+    },
+    "offline-v5-transfer": {
+      "dir": "20261109-084450-008-plan-offline",
+      "status": "completed",
+      "suite": "transfer",
+      "live": false,
+      "fingerprint": "3e02f7a6c3ce1683a9aff894457ba24f5c949188f90e76d3b827ba04426d1cff",
+      "calls": {
+        "count": 37,
+        "inputTokens": 67921,
+        "outputTokens": 16379,
+        "unknownCosts": 0,
+        "overFiveSeconds": 0,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "cost": 0.0,
+      "latency": {
+        "count": 37,
+        "median": 1.1,
+        "p95": 2.2
+      },
+      "first": {
+        "total": 6,
+        "executable": 2,
+        "check": 2,
+        "reachesGoal": 2,
+        "baselineExecutable": 2,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 2
+      },
+      "endings": {
+        "transfer": {
+          "count": 18,
+          "endings": {
+            "未竟": 6,
+            "铁笼": 3,
+            "归巢·余怒": 6,
+            "远洋": 3
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 1,
+          "executable": 1,
+          "deadEnd": 0,
+          "recoverable": 1,
+          "recoverableExecutable": 1
+        }
+      },
+      "receipts": 18,
+      "invalidCommitted": 0,
+      "episodes": 18,
+      "scenarios": {
+        "transfer/t01_no_money": {
+          "total": 3,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 2,
+            "远洋": 1
+          }
+        },
+        "transfer/t02_scared_no_food": {
+          "total": 3,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 2,
+            "远洋": 1
+          }
+        },
+        "transfer/t03_last_dusk_cage": {
+          "total": 3,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "铁笼": 3
+          }
+        },
+        "transfer/t04_last_half_phase": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "transfer/t05_left_without_cloak": {
+          "total": 3,
+          "success": 3,
+          "initialExecutable": 3,
+          "initialGoal": 3,
+          "endings": {
+            "归巢·余怒": 3
+          }
+        },
+        "transfer/t06_low_bond_no_food": {
+          "total": 3,
+          "success": 0,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 2,
+            "远洋": 1
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 12,
+      "initialRepairAccepted": 0,
+      "latestRejectionFeedback": {
+        "expected": 12,
+        "provided": 12
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "遮盖需要雏龙信任至少0.3；先亲近再藏好": 6,
+        "小烬吓坏了，缩成一团不肯动": 3,
+        "第三个黎明已至，来不及执行": 3
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.06 < 难度 0.19）": 1
+      },
+      "social": {},
+      "actualFailures": {
+        "Dice": 1
+      },
+      "steps": {
+        "stepsSucceeded": 12,
+        "stepsFailed": 1,
+        "stepsVoid": 2
+      },
+      "initialDraftRejectedEpisodes": 12,
+      "initialDraftLaterAcceptedEpisodes": 0,
+      "maxPlanCallsInEpisode": 2
+    },
+    "live-main-final": {
+      "dir": "20261109-081327-573-plan-live",
+      "status": "completed",
+      "suite": "frozen",
+      "live": true,
+      "fingerprint": "bfac3c38bc8b20fd156211217eda55385a4f7875abe37f1075fcb8026ea66147",
+      "calls": {
+        "count": 218,
+        "inputTokens": 513796,
+        "outputTokens": 69639,
+        "unknownCosts": 0,
+        "overFiveSeconds": 99,
+        "errors": {},
+        "incompleteReasons": {}
+      },
+      "cost": 0.0492757,
+      "latency": {
+        "count": 218,
+        "median": 4874.9,
+        "p95": 9644.1
+      },
+      "first": {
+        "total": 14,
+        "executable": 13,
+        "check": 13,
+        "reachesGoal": 11,
+        "baselineExecutable": 14,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 14
+      },
+      "endings": {
+        "full": {
+          "count": 40,
+          "endings": {
+            "归巢·余怒": 31,
+            "铁笼": 2,
+            "远洋": 7
+          }
+        },
+        "social": {
+          "count": 30,
+          "endings": {
+            "新约": 8,
+            "归巢": 18,
+            "铁笼前的契约": 3,
+            "未竟": 1
+          }
+        },
+        "perturb_stale": {
+          "count": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "perturb_precondition": {
+          "count": 10,
+          "endings": {
+            "未竟": 6,
+            "归巢": 1,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 70,
+          "executable": 50,
+          "deadEnd": 0,
+          "recoverable": 70,
+          "recoverableExecutable": 50
+        },
+        "Stale": {
+          "count": 23,
+          "executable": 10,
+          "deadEnd": 10,
+          "recoverable": 13,
+          "recoverableExecutable": 10
+        }
+      },
+      "receipts": 90,
+      "invalidCommitted": 0,
+      "episodes": 90,
+      "scenarios": {
+        "full/fresh": {
+          "total": 10,
+          "success": 7,
+          "initialExecutable": 10,
+          "initialGoal": 9,
+          "endings": {
+            "归巢·余怒": 7,
+            "远洋": 3
+          }
+        },
+        "full/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 9,
+          "initialGoal": 9,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "full/bonded_docks": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 9,
+          "initialGoal": 9,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "full/caged": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 9,
+          "initialGoal": 9,
+          "endings": {
+            "铁笼": 2,
+            "归巢·余怒": 8
+          }
+        },
+        "social/pact_escort/maren": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 5,
+          "initialGoal": 5,
+          "endings": {
+            "新约": 8,
+            "铁笼前的契约": 1,
+            "未竟": 1
+          }
+        },
+        "social/pact_escort/pip": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "social/pact_escort/none": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 8,
+          "initialGoal": 8,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "perturb_stale/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 9,
+          "initialGoal": 9,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "perturb_precondition/pact_escort/maren": {
+          "total": 10,
+          "success": 1,
+          "initialExecutable": 1,
+          "initialGoal": 1,
+          "endings": {
+            "未竟": 6,
+            "归巢": 1,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 21,
+      "initialRepairAccepted": 9,
+      "latestRejectionFeedback": {
+        "expected": 42,
+        "provided": 42
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "小烬已经跟着你了": 6,
+        "梅伦需要凭据才肯冒险": 12,
+        "这里没有雏龙的踪迹": 1,
+        "步骤可依次执行，但计划结束时尚未团聚": 1,
+        "梅伦修女不在这里": 1
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.18 < 难度 0.19）": 3,
+        "换岗巡逻发现了小烬": 1,
+        "镇上有新动静：第1天·正午：王城的卫兵提着灯，挨家挨户敲门。": 8,
+        "失败（掷骰 0.37 < 难度 0.40）": 3,
+        "失败（掷骰 0.12 < 难度 0.32）": 1,
+        "失败（掷骰 0.21 < 难度 0.32）": 3,
+        "失败（掷骰 0.12 < 难度 0.19）": 2,
+        "失败（掷骰 0.12 < 难度 0.25）": 1,
+        "小烬不见了（只知道：据皮普说，小烬藏在码头旧船屋里）": 4,
+        "失败（掷骰 0.30 < 难度 0.32）": 1,
+        "失败（掷骰 0.24 < 难度 0.40）": 3,
+        "失败（掷骰 0.03 < 难度 0.25）": 1,
+        "失败（掷骰 0.17 < 难度 0.19）": 2,
+        "失败（掷骰 0.03 < 难度 0.19）": 3,
+        "失败（掷骰 0.07 < 难度 0.19）": 4,
+        "失败（掷骰 0.24 < 难度 0.29）": 1,
+        "前往龙骨岗时，卫兵发现了小烬": 3,
+        "失败（掷骰 0.17 < 难度 0.25）": 1,
+        "失败（掷骰 0.24 < 难度 0.32）": 1,
+        "失败（掷骰 0.39 < 难度 0.40）": 2,
+        "失败（掷骰 0.11 < 难度 0.40）": 2,
+        "失败（掷骰 0.13 < 难度 0.19）": 2,
+        "失败（掷骰 0.11 < 难度 0.32）": 1,
+        "失败（掷骰 0.13 < 难度 0.22）": 1,
+        "失败（掷骰 0.11 < 难度 0.19）": 1,
+        "镇上有新动静：第1天·黄昏：王城的卫兵提着灯，挨家挨户敲门。": 2,
+        "失败（掷骰 0.01 < 难度 0.40）": 2,
+        "失败（掷骰 0.01 < 难度 0.19）": 3,
+        "失败（掷骰 0.01 < 难度 0.22）": 1,
+        "失败（掷骰 0.36 < 难度 0.40）": 3,
+        "失败（掷骰 0.29 < 难度 0.40）": 3,
+        "失败（掷骰 0.22 < 难度 0.32）": 1,
+        "剩余步骤在 2 无法保证前置条件，请根据当前可见状态重新规划": 1,
+        "失败（掷骰 0.07 < 难度 0.22）": 1
+      },
+      "social": {
+        "maren": {
+          "count": 10,
+          "osricKnew": 3,
+          "allyMaren": 9,
+          "allyPip": 3,
+          "endings": {
+            "新约": 8,
+            "铁笼前的契约": 1,
+            "未竟": 1
+          }
+        },
+        "pip": {
+          "count": 10,
+          "osricKnew": 10,
+          "allyMaren": 0,
+          "allyPip": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "none": {
+          "count": 10,
+          "osricKnew": 2,
+          "allyMaren": 0,
+          "allyPip": 2,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "actualFailures": {
+        "Dice": 57,
+        "Stale": 15
+      },
+      "steps": {
+        "stepsSucceeded": 371,
+        "stepsFailed": 57,
+        "stepsVoid": 307
+      },
+      "initialDraftRejectedEpisodes": 21,
+      "initialDraftLaterAcceptedEpisodes": 9,
+      "maxPlanCallsInEpisode": 8
+    },
+    "live-v4-main": {
+      "dir": "20261109-083306-191-plan-live",
+      "status": "completed",
+      "suite": "frozen",
+      "live": true,
+      "fingerprint": "bfac3c38bc8b20fd156211217eda55385a4f7875abe37f1075fcb8026ea66147",
+      "calls": {
+        "count": 218,
+        "inputTokens": 533073,
+        "outputTokens": 72238,
+        "unknownCosts": 0,
+        "overFiveSeconds": 7,
+        "errors": {
+          "schema_invalid": 2
+        },
+        "incompleteReasons": {}
+      },
+      "cost": 0.05301095,
+      "latency": {
+        "count": 218,
+        "median": 3448.7,
+        "p95": 4745.3
+      },
+      "first": {
+        "total": 14,
+        "executable": 13,
+        "check": 13,
+        "reachesGoal": 10,
+        "baselineExecutable": 14,
+        "invalidReferencesIntercepted": 0,
+        "baselineCheck": 14
+      },
+      "endings": {
+        "full": {
+          "count": 40,
+          "endings": {
+            "远洋": 7,
+            "归巢·余怒": 31,
+            "铁笼": 2
+          }
+        },
+        "social": {
+          "count": 30,
+          "endings": {
+            "新约": 10,
+            "归巢": 18,
+            "铁笼前的契约": 2
+          }
+        },
+        "perturb_stale": {
+          "count": 10,
+          "endings": {
+            "归巢·余怒": 6,
+            "远洋": 3,
+            "未竟": 1
+          }
+        },
+        "perturb_precondition": {
+          "count": 10,
+          "endings": {
+            "未竟": 6,
+            "归巢": 1,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "replans": {
+        "Dice": {
+          "count": 67,
+          "executable": 51,
+          "deadEnd": 0,
+          "recoverable": 67,
+          "recoverableExecutable": 51
+        },
+        "Stale": {
+          "count": 28,
+          "executable": 10,
+          "deadEnd": 18,
+          "recoverable": 10,
+          "recoverableExecutable": 10
+        }
+      },
+      "receipts": 90,
+      "invalidCommitted": 0,
+      "episodes": 90,
+      "scenarios": {
+        "full/fresh": {
+          "total": 10,
+          "success": 6,
+          "initialExecutable": 6,
+          "initialGoal": 6,
+          "endings": {
+            "远洋": 4,
+            "归巢·余怒": 6
+          }
+        },
+        "full/informed": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 9,
+          "initialGoal": 9,
+          "endings": {
+            "归巢·余怒": 8,
+            "远洋": 2
+          }
+        },
+        "full/bonded_docks": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 9,
+            "远洋": 1
+          }
+        },
+        "full/caged": {
+          "total": 10,
+          "success": 8,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 8,
+            "铁笼": 2
+          }
+        },
+        "social/pact_escort/maren": {
+          "total": 10,
+          "success": 10,
+          "initialExecutable": 6,
+          "initialGoal": 6,
+          "endings": {
+            "新约": 10
+          }
+        },
+        "social/pact_escort/pip": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "social/pact_escort/none": {
+          "total": 10,
+          "success": 9,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "perturb_stale/informed": {
+          "total": 10,
+          "success": 6,
+          "initialExecutable": 10,
+          "initialGoal": 10,
+          "endings": {
+            "归巢·余怒": 6,
+            "远洋": 3,
+            "未竟": 1
+          }
+        },
+        "perturb_precondition/pact_escort/maren": {
+          "total": 10,
+          "success": 1,
+          "initialExecutable": 0,
+          "initialGoal": 0,
+          "endings": {
+            "未竟": 6,
+            "归巢": 1,
+            "远洋": 2,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "falseCompleted": 0,
+      "initialRepairs": 19,
+      "initialRepairAccepted": 9,
+      "latestRejectionFeedback": {
+        "expected": 39,
+        "provided": 39
+      },
+      "acceptedWithoutGoal": [],
+      "initialRejectionReasons": {
+        "小烬已经跟着你了": 2,
+        "梅伦需要凭据才肯冒险": 14,
+        "只能用自己持有的东西引诱身边的雏龙": 1,
+        "这里没有雏龙的踪迹": 2
+      },
+      "executionFailureReasons": {
+        "失败（掷骰 0.18 < 难度 0.19）": 2,
+        "镇上有新动静：第1天·正午：王城的卫兵提着灯，挨家挨户敲门。": 9,
+        "失败（掷骰 0.37 < 难度 0.40）": 3,
+        "失败（掷骰 0.12 < 难度 0.32）": 2,
+        "失败（掷骰 0.21 < 难度 0.32）": 2,
+        "小烬不见了（只知道：下落不明；镇上传言码头那边夜里冒烟）": 2,
+        "失败（掷骰 0.12 < 难度 0.19）": 2,
+        "小烬不见了（只知道：据皮普说，小烬藏在码头旧船屋里）": 6,
+        "失败（掷骰 0.01 < 难度 0.19）": 3,
+        "失败（掷骰 0.14 < 难度 0.19）": 1,
+        "失败（掷骰 0.03 < 难度 0.19）": 3,
+        "失败（掷骰 0.30 < 难度 0.32）": 1,
+        "失败（掷骰 0.24 < 难度 0.40）": 3,
+        "失败（掷骰 0.03 < 难度 0.32）": 2,
+        "失败（掷骰 0.17 < 难度 0.32）": 2,
+        "失败（掷骰 0.07 < 难度 0.19）": 3,
+        "失败（掷骰 0.17 < 难度 0.25）": 1,
+        "失败（掷骰 0.24 < 难度 0.36）": 1,
+        "换岗巡逻发现了小烬": 2,
+        "失败（掷骰 0.24 < 难度 0.29）": 1,
+        "失败（掷骰 0.39 < 难度 0.40）": 3,
+        "失败（掷骰 0.11 < 难度 0.40）": 1,
+        "失败（掷骰 0.13 < 难度 0.19）": 3,
+        "失败（掷骰 0.11 < 难度 0.22）": 2,
+        "失败（掷骰 0.11 < 难度 0.19）": 2,
+        "等待时换岗巡逻发现了小烬": 1,
+        "镇上有新动静：第1天·黄昏：王城的卫兵提着灯，挨家挨户敲门。": 1,
+        "失败（掷骰 0.01 < 难度 0.40）": 3,
+        "失败（掷骰 0.01 < 难度 0.22）": 1,
+        "失败（掷骰 0.01 < 难度 0.36）": 1,
+        "前往龙骨岗时，卫兵发现了小烬": 1,
+        "失败（掷骰 0.10 < 难度 0.19）": 1,
+        "失败（掷骰 0.29 < 难度 0.40）": 1,
+        "剩余步骤在 5 无法保证前置条件，请根据当前可见状态重新规划": 1,
+        "失败（掷骰 0.36 < 难度 0.40）": 2
+      },
+      "social": {
+        "maren": {
+          "count": 10,
+          "osricKnew": 2,
+          "allyMaren": 10,
+          "allyPip": 2,
+          "endings": {
+            "新约": 10
+          }
+        },
+        "pip": {
+          "count": 10,
+          "osricKnew": 10,
+          "allyMaren": 0,
+          "allyPip": 10,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        },
+        "none": {
+          "count": 10,
+          "osricKnew": 5,
+          "allyMaren": 0,
+          "allyPip": 5,
+          "endings": {
+            "归巢": 9,
+            "铁笼前的契约": 1
+          }
+        }
+      },
+      "actualFailures": {
+        "Dice": 56,
+        "Stale": 19
+      },
+      "steps": {
+        "stepsSucceeded": 375,
+        "stepsFailed": 56,
+        "stepsVoid": 321
+      },
+      "initialDraftRejectedEpisodes": 19,
+      "initialDraftLaterAcceptedEpisodes": 9,
+      "maxPlanCallsInEpisode": 8
+    }
+  },
+  "fixedRecovery": {
+    "status": "completed",
+    "live": true,
+    "rulesVersion": "dragonsleep-rules-6",
+    "fixtureFingerprint": "9a469aac706913dedd2c3f2cdd7daad61720acfb1d6998efda5de9964be6ee71",
+    "promptSourceFingerprint": "713a75bb82e5d115d90b0fedd1bdce4b3518d6c5aab1b92d6144569dcff3ed65",
+    "total": 33,
+    "byFailure": {
+      "DiceRecoverable": {
+        "total": 10,
+        "executable": 10,
+        "reachesGoal": 9,
+        "repeatsFailedStep": 7
+      },
+      "StaleRecoverable": {
+        "total": 10,
+        "executable": 9,
+        "reachesGoal": 9,
+        "repeatsFailedStep": 9
+      },
+      "PreconditionRecoverable": {
+        "total": 10,
+        "executable": 1,
+        "reachesGoal": 1,
+        "repeatsFailedStep": 10
+      },
+      "StaleDeadEnd": {
+        "total": 3,
+        "executable": 0,
+        "reachesGoal": 0,
+        "repeatsFailedStep": 3
+      }
+    },
+    "estimatedUsd": 0.00758241,
+    "notes": "来自离线基线失败记录的固定状态探针；每个样本只请求一次，不确认执行，不代表模型自然走出的整局。死局标签只留本地。",
+    "worldUnchanged": 33,
+    "baselineByFailure": {
+      "Dice": {
+        "total": 10,
+        "executable": 10
+      },
+      "Stale": {
+        "total": 10,
+        "executable": 10
+      },
+      "Precondition": {
+        "total": 10,
+        "executable": 10
+      }
+    },
+    "failureReasons": {
+      "计划在步骤 1 不可行：梅伦需要凭据才肯冒险": 9,
+      "计划在步骤 1 不可行：这里没有雏龙的踪迹": 1,
+      "计划在步骤 2 不可行：这里没有雏龙的踪迹": 2,
+      "计划在步骤 1 不可行：梅伦修女不在这里": 1
+    }
+  },
+  "validation": {
+    "dotnetTestsPassed": 221,
+    "unityMainSceneTestsPassed": 4,
+    "payloadAudit": {
+      "count": 380,
+      "max": 9919,
+      "largest": "social:pact_escort:pip:seed=8:S1-16",
+      "over": 0
+    }
+  },
+  "notes": [
+    "各批次分别统计；控制组未作随机重复，不将变化归因于单个改动。",
+    "最终整局接受计划要求可执行且覆盖归巢；固定探针保留旧失败上下文、单次请求、从不执行。",
+    "冻结首案、新措辞首案和整局分别采样；世界种子不等于模型采样种子。",
+    "首个提案修正不覆盖首案指标，提供方故障不自动重试。",
+    "API费用由usage估算；未知费用不视为零，账本预留不是实际费用。",
+    "状态迁移6例是本轮源码冻结后首次真实测试，样本有限；未替换原冻结门槛。",
+    "低信任求助和否定约束未通过，不能宣称M3整体验收通过。"
+  ]
+}

@@ -149,7 +149,8 @@ namespace Town.OpenAI
                 {
                     ["format"] = new JObject
                     {
-                        ["type"] = "json_schema", ["name"] = packet.SchemaName, ["strict"] = true, ["schema"] = Schema(packet.Kind)
+                        ["type"] = "json_schema", ["name"] = packet.SchemaName, ["strict"] = true,
+                        ["schema"] = packet.Kind == AiTaskKind.Plan ? PlanSchema(packet.TaskSnapshot) : Schema(packet.Kind)
                     }
                 }
             };
@@ -159,6 +160,22 @@ namespace Town.OpenAI
         static JObject Num() => new JObject { ["type"] = "number" };
         static JObject Enum(params string[] values) => new JObject { ["type"] = "string", ["enum"] = new JArray(values) };
         static JObject Arr(JObject item) => new JObject { ["type"] = "array", ["items"] = item };
+
+        // ID 白名单只来自冻结的玩家视角；Core 的结构与引用检查仍然独立执行。
+        static JObject PlanSchema(TaskPerceptionView snapshot)
+        {
+            var view = JObject.Parse(snapshot.Json);
+            string[] Ids(params string[] keys) => keys.SelectMany(k => (view[k] as JArray ?? new JArray()).Values<string>())
+                .Select(s => s.Split('：')[0]).Distinct().ToArray();
+            var schema = Schema(AiTaskKind.Plan);
+            var step = (JObject)schema["properties"]["steps"]["items"]["properties"];
+            step["target"] = Enum(new[] { "", "whelp" }.Concat(Ids("known_people", "known_items")).ToArray());
+            step["item"] = Enum(new[] { "" }.Concat(Ids("known_items")).ToArray());
+            step["place"] = Enum(new[] { "" }.Concat(Ids("places")).ToArray());
+            step["laws"] = Arr(Enum(Ids("known_laws")));
+            step["cites"] = Arr(Enum(Ids("known_facts", "known_laws", "observations")));
+            return schema;
+        }
 
         static JObject Obj(params (string name, JObject type)[] props)
         {

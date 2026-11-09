@@ -25,8 +25,9 @@ internal static class Program
             var seedsArg = args.FirstOrDefault(x => x.StartsWith("--seeds="));
             int seeds = 10;
             if ((seedsArg != null && !int.TryParse(seedsArg.Substring(8), out seeds)) || seeds < 1 ||
-                args.Any(x => x != "--plan" && x != "--live" && x != "--holdout" && !x.StartsWith("--seeds="))) { Console.Error.WriteLine("用法：--plan [--holdout] [--seeds=N] [--live]"); return 2; }
-            return await PlanResearch.Run(root, args.Contains("--live"), seeds, args.Contains("--holdout"));
+                args.Any(x => x != "--plan" && x != "--live" && x != "--holdout" && x != "--transfer" && !x.StartsWith("--seeds=")) ||
+                (args.Contains("--holdout") && args.Contains("--transfer"))) { Console.Error.WriteLine("用法：--plan [--holdout|--transfer] [--seeds=N] [--live]"); return 2; }
+            return await PlanResearch.Run(root, args.Contains("--live"), seeds, args.Contains("--holdout"), args.Contains("--transfer"));
         }
         var recovery = args.FirstOrDefault(x => x.StartsWith("--plan-recovery="));
         if (recovery != null)

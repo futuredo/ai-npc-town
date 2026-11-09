@@ -193,6 +193,164 @@ namespace Town.Core.Tests
 
         // ---------------- 逐步执行 ----------------
 
+        [TestCase(false, "awaiting_confirmation")]
+        [TestCase(true, "planning")]
+        public void 局部步骤可行不冒充归巢目标已覆盖(bool homecoming, string expected)
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p);
+            p.Replies.Enqueue(Plan(Step("s1", "act", "observe")));
+            var run = new DsPlanRun(s, "目标由调用者指定", homecoming);
+            var t = run.ProposeAsync().Result;
+            Assert.IsTrue(t.PlanReport.Executable, "通用可执行指标不随任务目标改写");
+            Assert.AreEqual(expected, run.Status);
+            if (homecoming) Assert.Throws<InvalidOperationException>(() => run.Accept());
+            else { run.Accept(); run.StepAsync().Wait(); Assert.AreEqual("completed", run.Status); }
+            Assert.IsFalse(s.World.Whelp.WithMother);
+        }
+
+        [Test]
+        public void 未覆盖团聚的可执行提案修正时明确反馈目标缺口()
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p);
+            p.Replies.Enqueue(Plan(Step("s1", "wait", place: "workshop", until: "第4天·清晨")));
+            var run = new DsPlanRun(s, "归巢", true);
+            run.ProposeAsync().Wait();
+            p.Replies.Enqueue(Plan(Step("s1", "act", "observe")));
+            var revised = run.RepairProposalAsync().Result;
+            StringAssert.Contains("goal_not_reached", revised.PlanContext);
+            Assert.IsEmpty(run.AcceptedRequestIds);
+            Assert.AreEqual(1, s.World.Day, "不能执行到期限后才发现目标未覆盖");
+        }
+
+        [Test]
+        public void 改选可执行但不归巢的分支不能绕过目标校验()
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p); Follow(s.World, true);
+            p.Replies.Enqueue(Plan(Step("1", "wait", place: "skull_hill", until: "第4天·清晨", when: "route=home") + "," +
+                Step("2", "wait", place: "workshop", until: "第4天·清晨", when: "route=stay"), Choice("route", "home", "stay")));
+            var run = new DsPlanRun(s, "归巢", true); run.ProposeAsync().Wait();
+            Assert.Throws<InvalidOperationException>(() => run.Accept(new Dictionary<string, string> { ["route"] = "stay" }));
+            Assert.IsEmpty(run.AcceptedRequestIds);
+            run.Accept(); Assert.AreEqual("running", run.Status);
+        }
+
+        [Test]
+        public void 两步之间异地居民变化不会通过静态失败原因泄露()
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p);
+            s.World.PlayerPlace = "market";
+            p.Replies.Enqueue(Plan(Step("1", "act", "observe") + "," + Step("2", "act", "confide", "pip", place: "docks")));
+            s.World.Whelp.TrustPlayer = 0.6f;
+            var run = new DsPlanRun(s, "请皮普帮忙"); run.ProposeAsync().Wait(); run.Accept(); run.StepAsync().Wait();
+            s.World.Actors["pip"].Place = "cathedral";
+            var result = run.StepAsync().Result;
+            Assert.AreEqual(DsPlanFailure.Stale, result.Failure);
+            p.Replies.Enqueue(Plan(Step("1", "act", "observe")));
+            var t = run.ReplanAsync().Result;
+            StringAssert.DoesNotContain("皮普不在", t.PlanContext);
+            StringAssert.DoesNotContain("cathedral", t.PlanContext);
+            StringAssert.Contains("无法保证前置条件", t.PlanContext);
+        }
+
+        [Test]
+        public void 当前动作限制以重新关押为准_不把历史成功当当前自由()
+        {
+            var s = new DragonsleepSession(new RuleProvider()); Caged(s.World);
+            var text = MiniJson.Write(ContextBuilder.PlanPerception(s.World, 4, null)["current_requirements"]);
+            StringAssert.Contains("必须重新解除关押", text);
+            StringAssert.Contains("现在不可feed/lure/hide/lead", text);
+            StringAssert.DoesNotContain("至少还需成功", text, "笼中不建议先亲近");
+        }
+
+        [Test]
+        public void 当前限制只由玩家视角推导_隐藏状态不会影响提示()
+        {
+            var s = new DragonsleepSession(new RuleProvider());
+            var first = MiniJson.Write(ContextBuilder.PlanPerception(s.World, 4, null));
+            s.World.Whelp.CapturedBy = "vesna"; s.World.Whelp.Fear = 1;
+            s.World.Actors["osric"].Trust = 0.99f;
+            var second = MiniJson.Write(ContextBuilder.PlanPerception(s.World, 4, null));
+            Assert.AreEqual(first, second);
+            StringAssert.Contains("至少还需成功2次", second);
+        }
+
+        [Test]
+        public void 已同行居民作为当前公开状态提供_无需依赖旧计划叙述()
+        {
+            var s = new DragonsleepSession(new RuleProvider());
+            s.World.Flags["ally:maren"] = s.World.ClockText;
+            s.World.Flags["shown:pact_page:maren"] = s.World.ClockText;
+            var view = ContextBuilder.PlanPerception(s.World, 4, null);
+            CollectionAssert.Contains((List<object>)view["companions"], "maren");
+            CollectionAssert.Contains((List<object>)view["shown_by_player"], "pact_page:maren");
+        }
+
+        [Test]
+        public void 预测的重复跟随错误必须带前序草稿_不冒充当前已跟随()
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p);
+            p.Replies.Enqueue(Plan(Step("1", "act", "lure", "whelp", place: "docks") + "," +
+                Step("2", "act", "lure", "whelp", place: "docks") + "," + Step("3", "act", "hide", "whelp", "travel_cloak", "docks") + "," +
+                Step("4", "act", "lead", "whelp", place: "docks") + "," + Step("5", "act", "lead", "whelp", place: "workshop")));
+            var run = new DsPlanRun(s, "带上小烬"); var first = run.ProposeAsync().Result;
+            Assert.AreEqual("5", first.PlanReport.Default.FailedStep);
+            p.Replies.Enqueue(Plan(Step("1", "act", "observe")));
+            var next = run.RepairProposalAsync().Result;
+            var context = (Dictionary<string, object>)MiniJson.Parse(next.PlanContext);
+            var feedback = (Dictionary<string, object>)context["rejected_proposal"];
+            Assert.AreEqual("predicted_after_prefix", feedback["scope"]);
+            Assert.AreEqual(4, ((List<object>)feedback["prefix_steps"]).Count);
+            Assert.IsFalse(s.World.Whelp.Following);
+            Assert.IsFalse(context.ContainsKey("done_steps"));
+            StringAssert.Contains("均未执行", next.PlanContext);
+        }
+
+        [Test]
+        public void 每次修正携带最新拒绝_不执行提案且不暴露异地居民位置()
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p);
+            p.Replies.Enqueue(Plan(Step("s1", "act", "rescue", "whelp", place: "market")));
+            var run = new DsPlanRun(s, "检查语义反馈");
+            run.ProposeAsync().Wait();
+            string before = s.CaptureState().Hash;
+            p.Replies.Enqueue(Plan(Step("s2", "act", "confide", "maren", place: "docks")));
+            var second = run.RepairProposalAsync().Result;
+            StringAssert.Contains("用不着救", second.PlanContext);
+            p.Replies.Enqueue(Plan(Step("s3", "act", "observe")));
+            var third = run.ReplanAsync().Result;
+            StringAssert.Contains("s2", third.PlanContext);
+            StringAssert.Contains("不能保证目标在场", third.PlanContext);
+            StringAssert.DoesNotContain("用不着救", third.PlanContext);
+            StringAssert.DoesNotContain("cathedral", third.PlanContext);
+            Assert.AreEqual(before, s.CaptureState().Hash);
+            Assert.AreEqual("awaiting_confirmation", run.Status);
+            Assert.IsEmpty(run.AcceptedRequestIds);
+        }
+
+        [Test]
+        public void 托付未获同行同意时试运行与实际判定一致()
+        {
+            var p = new Scripted(); var s = new DragonsleepSession(p);
+            s.World.PlayerPlace = "cathedral";
+            p.Replies.Enqueue(Plan(Step("s1", "act", "confide", "maren", place: "cathedral")));
+            var trace = s.PlanAsync("请梅伦同行").Result;
+            Assert.IsFalse(trace.PlanReport.Executable);
+            StringAssert.Contains("凭据", trace.PlanReport.Default.Reason);
+        }
+
+        [Test]
+        public void 信任不足遮盖在掷骰前拒绝并给出真实原因()
+        {
+            var s = new DragonsleepSession(new RuleProvider());
+            s.World.PlayerPlace = "docks"; s.World.Whelp.TrustPlayer = 0.1f;
+            var before = s.CaptureState().Hash;
+            var t = s.RunStepAsync(new DsPlanStep { Verb = "hide", Target = "whelp", Item = "travel_cloak" }.ToProposal("docks"), "遮盖").Result;
+            Assert.AreEqual(VerdictKind.Rejected, t.Verdict.Kind);
+            Assert.IsNull(t.Verdict.Roll);
+            StringAssert.Contains("至少0.3", t.Verdict.Reason);
+            Assert.AreEqual(before, s.CaptureState().Hash);
+        }
+
         [Test]
         public void 逐步执行_每步单独提交并带回执_从不一次提交多步()
         {

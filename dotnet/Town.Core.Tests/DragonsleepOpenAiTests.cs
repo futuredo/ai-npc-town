@@ -227,5 +227,23 @@ namespace Town.Core.Tests
             }
             finally {if(System.IO.Directory.Exists(root))System.IO.Directory.Delete(root,true);}
         }
+
+        [Test]
+        public void 计划引用Schema来自冻结感知_消费物与私有事实不会进入枚举()
+        {
+            var s = new DragonsleepSession(new RuleProvider());
+            s.World.Items["smoked_fish"].Holder = "consumed";
+            var view = TaskPerceptionView.Capture(s.World, AiTaskKind.Plan, "player");
+            s.World.PlayerKnows.Add("b_maren_page");
+            var packet = ContextBuilder.BuildTask(view, "把小烬送回母亲身边");
+            var body = OpenAiDragonsleepProvider.BuildPayload(packet, OpenAiRunProfile.SixMechanismResearch);
+            var step = body["text"]["format"]["schema"]["properties"]["steps"]["items"]["properties"];
+            CollectionAssert.Contains(step["target"]["enum"].Values<string>(), "whelp");
+            CollectionAssert.DoesNotContain(step["item"]["enum"].Values<string>(), "whelp");
+            CollectionAssert.DoesNotContain(step["item"]["enum"].Values<string>(), "smoked_fish");
+            CollectionAssert.DoesNotContain(step["item"]["enum"].Values<string>(), "pact_page");
+            CollectionAssert.DoesNotContain(step["cites"]["items"]["enum"].Values<string>(), "b_maren_page");
+            Assert.LessOrEqual(System.Text.Encoding.UTF8.GetByteCount(body.ToString(Newtonsoft.Json.Formatting.None)), OpenAiPolicy.MaxRequestBytes);
+        }
     }
 }

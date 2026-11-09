@@ -385,7 +385,7 @@ namespace Town.Core.Dragonsleep
                     var act = new AiTrace();
                     DsRules.Adjudicate(w, step.ToProposal(w.PlayerPlace), act);
                     if (act.FailureCode != null) return act.Verdict.Reason;
-                    if (act.Verdict.Kind == VerdictKind.Rejected) return act.Verdict.Reason;
+                    if (act.Verdict.Kind == VerdictKind.Rejected || (act.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide")) return act.Verdict.Reason;
                     int cost = DsExecutor.TimeCost(AiTaskKind.Adjudicate, step.Verb, w, act);
                     DsExecutor.ApplyTime(w, ref spent, budget, cost, act);
                     return null;
