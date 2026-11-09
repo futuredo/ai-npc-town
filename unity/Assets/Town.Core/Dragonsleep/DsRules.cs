@@ -94,7 +94,7 @@ namespace Town.Core.Dragonsleep
         {
             ["buy"] = 0.05, ["lure"] = 0.6, ["feed"] = 0.5, ["give"] = 0.15, ["take"] = 0.35, ["search"] = 0.5,
             ["hide"] = 0.45, ["sneak"] = 0.6, ["show"] = 0.2, ["use"] = 0.15, ["observe"] = 0.1, ["wait"] = 0.05,
-            ["lead"] = 0.3, ["release"] = 0.05, ["rescue"] = 0.55,
+            ["lead"] = 0.3, ["release"] = 0.05, ["rescue"] = 0.55, ["confide"] = 0.05,
         };
 
         public static void Adjudicate(DsWorld w, Dictionary<string, object> p, AiTrace t)
@@ -124,7 +124,8 @@ namespace Town.Core.Dragonsleep
                 if (!targetWhelp) { Reject(t, "救出只针对被关起来的雏龙"); return; }
                 if (wh.CapturedBy == null) { Reject(t, "小烬没有被关起来，用不着救"); return; }
                 if (wh.CapturedBy != "osric" || wh.Place != w.PlayerPlace) { Reject(t, "小烬不在这里的笼子里"); return; }
-                if (DsGuards.IsWatched(w, w.PlayerPlace, out var guarded)) { Reject(t, guarded + "，现在下手等于自投罗网"); return; }
+                // 计划试运行不读取未来岗哨（玩家并不知道），这一条到真正执行时才检查。
+                if (!w.DryRun && DsGuards.IsWatched(w, w.PlayerPlace, out var guarded)) { Reject(t, guarded + "，现在下手等于自投罗网"); return; }
             }
             else if (targetWhelp && (wh.Place != w.PlayerPlace || wh.CapturedBy != null))
             {
@@ -159,6 +160,8 @@ namespace Town.Core.Dragonsleep
                 if (wh.TrustPlayer < 0.4f) { Reject(t, $"小烬还不够信任你（{wh.TrustPlayer:0.00}，至少要 0.40），不肯跟你走"); return; }
                 if (wh.Fear >= 0.85f) { Reject(t, "小烬吓坏了，缩成一团不肯动"); return; }
             }
+            if (verb == "confide" && (targetActor == null || targetWhelp))
+            { Reject(t, "需要明确一位在场的居民来托付"); return; }
             if (verb == "release" && (!targetWhelp || !wh.Following))
             { Reject(t, "小烬并没有跟着你"); return; }
             if (verb == "use" && (item == null || item.Holder != "player" || !item.Crafted))
@@ -201,7 +204,7 @@ namespace Town.Core.Dragonsleep
             modelDifficulty = Clamp(modelDifficulty, 0, 1);
             double final = Clamp(0.7 * engine + 0.3 * modelDifficulty, 0.05, 0.95);
             if (Math.Abs(engine - modelDifficulty) > 0.35) t.Verdict.Notes.Add($"模型估计 {modelDifficulty:0.00} 与规则 {engine:0.00} 分歧较大");
-            double roll = verb == "observe" || verb == "wait" || verb == "buy" || verb == "release" ? 1.0 : w.NextRoll();
+            double roll = verb == "observe" || verb == "wait" || verb == "buy" || verb == "release" || verb == "confide" ? 1.0 : w.NextRoll();
             bool success = roll >= final;
             t.Verdict.Difficulty = final;
             t.Verdict.Roll = roll;
@@ -239,6 +242,8 @@ namespace Town.Core.Dragonsleep
                     if (wh.Hidden) { wh.Hidden = false; t.Changes.Add(new WorldChange { Path = "whelp.hidden", Before = "true", After = "false" }); }
                     bool food = item != null && item.Tags.Contains("food");
                     if (food && verb == "feed") Set(t, "whelp.hunger", ref wh.Hunger, wh.Hunger - 0.5f);
+                    // 吃饱后安心一些：恐惧不再只升不降，连续失败后仍有补救路径。
+                    if (verb == "feed") Set(t, "whelp.fear", ref wh.Fear, wh.Fear - 0.15f);
                     Set(t, "whelp.trust_player", ref wh.TrustPlayer, wh.TrustPlayer + (verb == "feed" ? 0.35f : 0.2f));
                     if (verb == "feed" && item != null) Move(t, item, "consumed");
                     return food ? "一颗蓝色的小脑袋从船屋门缝里探出来，鼻孔冒着细烟，盯着你手里的东西。" : "它探出头看了你一眼。";
@@ -309,7 +314,12 @@ namespace Town.Core.Dragonsleep
                 case "hide":
                     if (!whelp) return ok ? "你把东西藏好了。" : "没找到合适的地方。";
                     if (wh.TrustPlayer < 0.3f) { t.Verdict.Kind = VerdictKind.Rejected; return "它不信任你，扑腾着躲开了。"; }
-                    if (ok) { wh.Hidden = true; w.Flags["whelp_hidden_by_player"] = w.ClockText; t.Changes.Add(new WorldChange { Path = "whelp.hidden", Before = "false", After = "true", Note = "玩家藏好" }); }
+                    if (ok)
+                    {
+                        wh.Hidden = true; w.Flags["whelp_hidden_by_player"] = w.ClockText;
+                        t.Changes.Add(new WorldChange { Path = "whelp.hidden", Before = "false", After = "true", Note = "玩家藏好" });
+                        Set(t, "whelp.fear", ref wh.Fear, wh.Fear - 0.1f);
+                    }
                     return ok ? "你用斗篷盖住它，它乖乖缩成一团。" : "它挣扎着不肯待在原处。";
                 case "sneak":
                     if (ok)
@@ -326,6 +336,7 @@ namespace Town.Core.Dragonsleep
                     return wh.Hidden ? "小烬在斗篷下拱了拱，愿意跟你走了。" : "小烬抖了抖翅膀，跟在你脚边。";
                 case "release":
                     wh.Following = false;
+                    w.Flags["whelp_left_at"] = w.PlayerPlace;
                     t.Changes.Add(new WorldChange { Path = "whelp.following", Before = "true", After = "false", Note = "留在" + w.PlayerPlace });
                     return "你让小烬留在" + w.Places[w.PlayerPlace] + "，它乖乖待在原地。";
                 case "rescue":
@@ -348,6 +359,8 @@ namespace Town.Core.Dragonsleep
                     w.Flags["whelp_rescued"] = w.ClockText;
                     return "铁笼的门吱呀一声开了，小烬一头扎进你怀里。";
                 }
+                case "confide":
+                    return Confide(w, actor, t);
                 case "observe":
                     var hints = new List<string>();
                     if (wh.Place == w.PlayerPlace && wh.CapturedBy == null) hints.Add(wh.Hidden ? "旧船屋门缝里飘出一缕细烟" : "雏龙正警惕地盯着你");
@@ -355,6 +368,53 @@ namespace Town.Core.Dragonsleep
                     return hints.Count == 0 ? "四周很安静。" : string.Join("；", hints) + "。";
                 default:
                     return "时间静静流过。";
+            }
+        }
+
+        /// <summary>
+        /// 把护送计划托付给在场居民：对方从此知道计划（进入其认知，夜里可能转告他人）。
+        /// 梅伦要看过契约页且信任足够才肯同行；皮普要看到小烬信任你才肯望风；其他人只会记下。
+        /// </summary>
+        static string Confide(DsWorld w, DsActor actor, AiTrace t)
+        {
+            string id = "b_plan_" + actor.Id;
+            if (w.Belief(id) == null)
+            {
+                w.Beliefs.Add(new DsBelief { Id = id, Owner = actor.Id, Topic = "plan", RevealTrust = 0.3f, Source = "told:player",
+                    Text = "言契师打算把小烬送上龙骨岗，等苍穹之母降临时交还给她。" });
+                t.Changes.Add(new WorldChange { Path = actor.Id + ".beliefs", Before = "", After = id, Note = "得知护送计划" });
+            }
+            w.Flags["confided:" + actor.Id] = w.ClockText;
+            var wh = w.Whelp;
+            switch (actor.Id)
+            {
+                case "maren":
+                    if (w.Flags.ContainsKey("shown:pact_page:maren") && actor.Trust >= 0.5f)
+                    {
+                        w.Flags["ally:maren"] = w.ClockText;
+                        t.Changes.Add(new WorldChange { Path = "flags.ally", Before = "", After = "maren", Note = "以教会名义同行" });
+                        t.Verdict.Reason = "梅伦愿意同行";
+                        return "梅伦按住那页契约：“教会欠她一个交代。这一程，我以教会的名义陪你走。”";
+                    }
+                    t.Verdict.Kind = VerdictKind.Partial;
+                    t.Verdict.Reason = "梅伦需要凭据才肯冒险";
+                    return "梅伦犹豫良久：“没有凭据，我不能拿教会的名誉冒险。”她记下了你的打算。";
+                case "pip":
+                    if (wh.TrustPlayer >= 0.4f && wh.CapturedBy == null)
+                    {
+                        w.Flags["ally:pip"] = w.ClockText;
+                        t.Changes.Add(new WorldChange { Path = "flags.ally", Before = "", After = "pip", Note = "替你望风" });
+                        if (wh.Place == w.PlayerPlace) Set(t, "whelp.fear", ref wh.Fear, wh.Fear - 0.2f);
+                        t.Verdict.Reason = "皮普愿意望风";
+                        return "皮普看着小烬蹭你的手，咬了咬牙：“行。我替你们望风——可别骗我。”";
+                    }
+                    t.Verdict.Kind = VerdictKind.Partial;
+                    t.Verdict.Reason = "皮普不信任你";
+                    return "皮普瞪着你：“小烬都还不信你，我凭什么信？”可他显然把话听进去了。";
+                default:
+                    t.Verdict.Kind = VerdictKind.Partial;
+                    t.Verdict.Reason = actor.Name + "只是记下了";
+                    return actor.Name + "听完，意味深长地看了你一眼。";
             }
         }
 

@@ -125,6 +125,7 @@ namespace Town.Core.Tests
         [TestCase(AiTaskKind.Craft)]
         [TestCase(AiTaskKind.AgentPlan)]
         [TestCase(AiTaskKind.Direct)]
+        [TestCase(AiTaskKind.Plan)]
         public void 非对话任务在占预算和联网前拒绝(AiTaskKind kind)
         {
             var http = new FakeHttp { Reply = () => Ok("{}") };
@@ -182,6 +183,7 @@ namespace Town.Core.Tests
         [TestCase(AiTaskKind.Craft, "player")]
         [TestCase(AiTaskKind.AgentPlan, "marta")]
         [TestCase(AiTaskKind.Direct, "gm")]
+        [TestCase(AiTaskKind.Plan, "player")]
         public void 六机制研究显式授权后仍只发送冻结的对应视角(AiTaskKind kind, string actor)
         {
             var w = DsContent.NewWorld();

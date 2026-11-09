@@ -183,14 +183,47 @@ namespace Town.Core.Dragonsleep
             finally { _gate.Release(); }
         }
 
-        public async Task<AiTrace> RunAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct = default)
+        public async Task<AiTrace> RunAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct = default, string planContext = null)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
-            try { return await RunLockedAsync(kind, actorId, playerText, ct).ConfigureAwait(false); }
+            try { return await RunLockedAsync(kind, actorId, playerText, ct, null, planContext).ConfigureAwait(false); }
             finally { _gate.Release(); }
         }
 
-        async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct)
+        /// <summary>
+        /// 多步计划：把玩家目标交给规划者（模型或离线基线），只做整体校验，不改变世界。
+        /// planContext 是系统生成的重规划上下文（失败类别、原因、旧计划），冻结进感知快照。
+        /// </summary>
+        public Task<AiTrace> PlanAsync(string goal, string planContext = null, CancellationToken ct = default) =>
+            RunAsync(AiTaskKind.Plan, "player", goal, ct, planContext);
+
+        /// <summary>
+        /// 执行已确认计划中的一步：结构化提案直接进入同一条管线（感知、校验、裁决、单次提交、回执），
+        /// 不再调用模型。trace 中提供方标为“计划步骤”，回放与普通行动相同。
+        /// </summary>
+        public Task<AiTrace> RunStepAsync(Dictionary<string, object> proposal, string label, CancellationToken ct = default) =>
+            RunWithProviderAsync(AiTaskKind.Adjudicate, "player", label, new FixedProvider("计划步骤（结构化，无模型调用）", MiniJson.Write(proposal)), ct);
+
+        /// <summary>用指定的提供方跑一次管线（计划步骤、研究扰动）。仍经过全部校验与单次提交。</summary>
+        public async Task<AiTrace> RunWithProviderAsync(AiTaskKind kind, string actorId, string text, IAiProvider provider, CancellationToken ct = default)
+        {
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            try { return await RunLockedAsync(kind, actorId, text, ct, provider, null).ConfigureAwait(false); }
+            finally { _gate.Release(); }
+        }
+
+        sealed class FixedProvider : IAiProvider
+        {
+            readonly string _raw;
+            public FixedProvider(string name, string raw) { Name = name; _raw = raw; }
+            public string Name { get; }
+            public bool IsSimulated => true;
+            public Task<ProviderResult> CompleteAsync(PromptPacket packet, CancellationToken ct) =>
+                Task.FromResult(new ProviderResult { ProviderName = Name, RawText = _raw, Simulated = true, EstimatedUsd = 0m });
+        }
+
+        async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
+            IAiProvider providerOverride = null, string planContext = null)
         {
             var total = Stopwatch.StartNew();
             var w = World;
@@ -198,7 +231,7 @@ namespace Town.Core.Dragonsleep
             var t = new AiTrace
             {
                 Sequence = ++_sequence, Kind = kind, ActorId = actorId, PlayerInput = playerText,
-                RequestId = $"S{w.SessionGen}-{_sequence}", Clock = w.ClockText, SessionGen = w.SessionGen,
+                RequestId = $"S{w.SessionGen}-{_sequence}", Clock = w.ClockText, SessionGen = w.SessionGen, PlanContext = planContext,
                 WorldVersionBefore = w.Version,
                 ActorName = w.Actors.TryGetValue(actorId ?? "", out var a) ? a.Name : actorId == "gm" ? "龙母之心" : "言契师",
             };
@@ -219,14 +252,14 @@ namespace Town.Core.Dragonsleep
                     SkipRest(t, AiStage.Prompt);
                     return t;
                 }
-                t.Perception = Perceive(kind, actorId);
+                t.Perception = kind == AiTaskKind.Plan ? ContextBuilder.PlanPerception(World, TimeLeftInPhase, planContext) : Perceive(kind, actorId);
                 End(t, AiStage.Context, StageStatus.Ok, $"{t.Perception.Count} 个字段；仅含{(kind == AiTaskKind.Direct ? "汇总状态" : "该视角可见信息")}", sw);
 
                 // ② 提示组装
                 sw.Restart(); Begin(t, AiStage.Prompt);
                 t.Prompt = kind == AiTaskKind.Dialogue
                     ? ContextBuilder.BuildDialogue(NpcPerceptionView.Capture(w, actorId), playerText)
-                    : ContextBuilder.BuildTask(TaskPerceptionView.Capture(w, kind, actorId), playerText);
+                    : ContextBuilder.BuildTask(TaskPerceptionView.Capture(w, kind, actorId, TimeLeftInPhase, planContext), playerText);
                 bool clipped = playerText != null && playerText.Length > ContextBuilder.MaxPlayerChars;
                 End(t, AiStage.Prompt, clipped ? StageStatus.Warn : StageStatus.Ok,
                     $"{t.Prompt.Sections.Count} 段，{t.Prompt.TotalChars} 字符{(clipped ? "；玩家输入已截断" : "")}", sw);
@@ -236,8 +269,9 @@ namespace Town.Core.Dragonsleep
                 _latestByActor[actorId ?? ""] = t.RequestId;
                 int gen = w.SessionGen;
                 ProviderResult r;
-                try { r = await Provider.CompleteAsync(t.Prompt, ct).ConfigureAwait(false); }
-                catch (OperationCanceledException) { r = new ProviderResult { ProviderName = Provider.Name, Error = "cancelled" }; }
+                var provider = providerOverride ?? Provider;
+                try { r = await provider.CompleteAsync(t.Prompt, ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { r = new ProviderResult { ProviderName = provider.Name, Error = "cancelled" }; }
                 t.Provider = r;
                 if (r.Error != null || string.IsNullOrEmpty(r.RawText))
                 {
@@ -275,6 +309,7 @@ namespace Town.Core.Dragonsleep
                 var plan = _executor.Prepare(w, _spent, PhaseBudget, kind, actorId, t.RequestId, proposal);
                 t.ValidationIssues.AddRange(plan.Evaluation.ValidationIssues);
                 t.Verdict = plan.Evaluation.Verdict;
+                t.PlanReport = plan.Evaluation.PlanReport;
                 t.Presented = plan.Evaluation.Presented;
                 t.FailureCode = plan.FailureCode;
                 End(t, AiStage.Validate, plan.FailureCode != null ? StageStatus.Fail : t.ValidationIssues.Count > 0 ? StageStatus.Warn : StageStatus.Ok,
@@ -290,6 +325,13 @@ namespace Town.Core.Dragonsleep
 
                 // ⑦ 单次提交：完整状态比对 + 幂等标识；回执来自实际差异，而非模型宣称。
                 sw.Restart(); Begin(t, AiStage.Commit);
+                if (kind == AiTaskKind.Plan)
+                {
+                    // 计划只是提案：不提交、不耗时；玩家确认后逐步执行，每步各自产生回执。
+                    t.Receipt = new DsExecutionReceipt(plan, "plan_only", false, plan.Before);
+                    End(t, AiStage.Commit, StageStatus.Skipped, "计划不改变世界；等待玩家确认取舍后逐步执行", sw);
+                    return t;
+                }
                 if (kind == AiTaskKind.Craft && plan.FailureCode == null && t.Verdict.Kind != VerdictKind.Rejected)
                 {
                     _pendingCraft = plan; _pendingCraftTrace = t; t.CraftDecision = "pending";

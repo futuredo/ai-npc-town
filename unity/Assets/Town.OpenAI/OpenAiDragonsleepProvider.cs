@@ -177,6 +177,15 @@ namespace Town.OpenAI
                     return Obj(("verb", Enum(ContextBuilder.AgentVerbs)), ("place", Str()), ("target", Str()), ("share", Arr(Str())), ("reason", Str()));
                 case AiTaskKind.Direct:
                     return Obj(("event", Enum(ContextBuilder.GmEvents)), ("intensity", Num()), ("reason", Str()));
+                case AiTaskKind.Plan:
+                {
+                    var option = Obj(("id", Str()), ("label", Str()));
+                    var choice = Obj(("id", Str()), ("question", Str()), ("options", Arr(option)));
+                    var verbs = ContextBuilder.AdjudicateVerbs.Where(v => v != "unsupported").Concat(new[] { "" }).ToArray();
+                    var step = Obj(("id", Str()), ("op", Enum(DsPlan.Ops)), ("verb", Enum(verbs)), ("target", Str()), ("item", Str()),
+                        ("place", Str()), ("until", Str()), ("laws", Arr(Str())), ("cites", Arr(Str())), ("when", Str()), ("why", Str()));
+                    return Obj(("goal", Str()), ("summary", Str()), ("choices", Arr(choice)), ("steps", Arr(step)));
+                }
                 default:
                     return Obj(("name", Str()), ("look", Str()), ("consume", Arr(Str())), ("tags", Arr(Enum(ContextBuilder.CraftTags))), ("potency", Num()));
             }

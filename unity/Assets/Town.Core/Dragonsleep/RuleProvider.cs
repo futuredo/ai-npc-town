@@ -26,6 +26,7 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Adjudicate: reply = Adjudicate(perception, input); break;
                 case AiTaskKind.AgentPlan: reply = Agent(perception); break;
                 case AiTaskKind.Direct: reply = Direct(perception); break;
+                case AiTaskKind.Plan: reply = BaselinePlanner.Plan(perception, input); break;
                 default: reply = Craft(perception, input); break;
             }
             string raw = MiniJson.Write(reply);
@@ -114,7 +115,7 @@ namespace Town.Core.Dragonsleep
         {
             (new[] { "使用", "点亮", "激活" }, "use"),
             (new[] { "救", "撬开", "打开铁笼", "打开笼" }, "rescue"), (new[] { "带上", "带它", "跟我", "跟着我", "领着" }, "lead"),
-            (new[] { "留在", "放下它", "让它待" }, "release"),
+            (new[] { "留在", "放下它", "让它待" }, "release"), (new[] { "托付", "求助" }, "confide"),
             (new[] { "买", "购" }, "buy"), (new[] { "喂" }, "feed"), (new[] { "引", "诱", "吸引", "撒" }, "lure"), (new[] { "出示", "展示", "给他看", "给她看" }, "show"),
             (new[] { "给", "递", "送" }, "give"), (new[] { "偷", "拿", "取", "捡" }, "take"), (new[] { "搜", "找", "翻" }, "search"),
             (new[] { "藏" }, "hide"), (new[] { "溜", "潜" }, "sneak"), (new[] { "等" }, "wait"), (new[] { "看", "观察", "打量", "听" }, "observe"),
@@ -176,6 +177,10 @@ namespace Town.Core.Dragonsleep
             var share = new List<object>();
             switch (id)
             {
+                case "osric" when beliefs.Any(b => b.Contains("龙骨岗")):
+                    verb = "guard"; place = "skull_hill"; reason = "既然知道他们要去龙骨岗，今晚亲自守在那里。"; break;
+                case "vesna" when beliefs.Any(b => b.Contains("龙骨岗")):
+                    verb = "search"; place = "skull_hill"; reason = "货要被送上龙骨岗？那就在半路截下。"; break;
                 case "osric":
                     verb = "search"; place = heardDocks ? "docks" : "market";
                     reason = heardDocks ? "听说码头有动静，亲自带人去搜。" : "先从人多的集市查起。"; break;
@@ -188,7 +193,17 @@ namespace Town.Core.Dragonsleep
                     foreach (var b in beliefs) if (b.StartsWith("b_marta_saw_pip")) share.Add(b.Split('：')[0]);
                     break;
                 case "pip":
-                    verb = "guard"; place = "docks"; reason = "今晚得守着小烬。"; break;
+                {
+                    // 得知护送计划后坐不住：去集市给小烬弄路上吃的；被总管撞见、又不够信任言契师时会说漏嘴。
+                    string plan = beliefs.FirstOrDefault(b => b.StartsWith("b_plan_pip"));
+                    bool osricHere = (per["others"] as List<object>).Cast<string>().Any(o => o.StartsWith("osric@"));
+                    double trust = per.Num("trust_in_player") ?? 0;
+                    if (plan != null && osricHere && trust < 0.6)
+                    { verb = "tell"; target = "osric"; share.Add(plan.Split('：')[0]); reason = "被总管堵住盘问，一慌就说漏了嘴。"; }
+                    else if (plan != null) { verb = "move"; place = "market"; reason = "去集市给小烬弄点路上吃的。"; }
+                    else { verb = "guard"; place = "docks"; reason = "今晚得守着小烬。"; }
+                    break;
+                }
                 case "maren":
                     verb = "move"; place = "catacombs"; reason = "去墓穴确认那页纸还在。"; break;
             }

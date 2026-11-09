@@ -14,7 +14,7 @@ namespace Town.Core.Dragonsleep
         public DsWorldSnapshot Before;
         public DsWorldSnapshot After;
         public AiTaskKind Kind;
-        public string ActorId, Input, PromptHash, Presented, Failure, CraftDecision;
+        public string ActorId, Input, PromptHash, Presented, Failure, CraftDecision, PlanContext;
         public VerdictKind Verdict;
         public ProviderResult Response;
 
@@ -22,7 +22,7 @@ namespace Town.Core.Dragonsleep
         {
             Before = before, After = after, Kind = trace.Kind, ActorId = trace.ActorId, Input = trace.PlayerInput,
             PromptHash = Fingerprint(trace.Prompt), Presented = trace.Presented, Failure = trace.FailureCode, Verdict = trace.Verdict.Kind,
-            CraftDecision = trace.CraftDecision,
+            CraftDecision = trace.CraftDecision, PlanContext = trace.PlanContext,
             Response = trace.Provider == null ? null : new ProviderResult { ProviderName = trace.Provider.ProviderName,
                 RawText = trace.Provider.RawText, Error = trace.Provider.Error, InputTokens = trace.Provider.InputTokens,
                 OutputTokens = trace.Provider.OutputTokens, EstimatedUsd = trace.Provider.EstimatedUsd, Simulated = trace.Provider.Simulated }
@@ -40,6 +40,7 @@ namespace Town.Core.Dragonsleep
             ["format"] = Format, ["rules_version"] = RulesVersion, ["before"] = MiniJson.Parse(Before.Json),
             ["after"] = MiniJson.Parse(After.Json), ["kind"] = Kind.ToString(), ["actor"] = ActorId, ["input"] = Input,
             ["prompt_hash"] = PromptHash, ["presented"] = Presented, ["failure"] = Failure, ["verdict"] = Verdict.ToString(), ["craft_decision"] = CraftDecision,
+            ["plan_context"] = PlanContext,
             ["response"] = Response == null ? null : new Dictionary<string, object>
             { ["provider"] = Response.ProviderName, ["raw"] = Response.RawText, ["error"] = Response.Error,
                 ["input_tokens"] = Response.InputTokens, ["output_tokens"] = Response.OutputTokens,
@@ -57,7 +58,7 @@ namespace Town.Core.Dragonsleep
                 After = DsWorldSnapshot.Parse(MiniJson.Write(d.Obj("after"))), Kind = (AiTaskKind)Enum.Parse(typeof(AiTaskKind), d.Str("kind")),
                 ActorId = d.Str("actor"), Input = d.Str("input"), PromptHash = d.Str("prompt_hash"), Presented = d.Str("presented"),
                 Failure = d.Str("failure"), Verdict = (VerdictKind)Enum.Parse(typeof(VerdictKind), d.Str("verdict")),
-                CraftDecision = d.Str("craft_decision"),
+                CraftDecision = d.Str("craft_decision"), PlanContext = d.Str("plan_context"),
                 Response = r == null ? null : new ProviderResult { ProviderName = r.Str("provider"), RawText = r.Str("raw"), Error = r.Str("error"),
                     InputTokens = (int?)r.Num("input_tokens"), OutputTokens = (int?)r.Num("output_tokens"), EstimatedUsd = (decimal?)r.Num("estimated_usd"), Simulated = (bool)r["simulated"] }
             };
@@ -74,7 +75,7 @@ namespace Town.Core.Dragonsleep
             if (RulesVersion != DsExecutor.RulesVersion) return false;
             var s = new DragonsleepSession(new RecordedProvider(this, requireMatchingPrompt));
             s.RestoreState(Before);
-            var t = await s.RunAsync(Kind, ActorId, Input, ct).ConfigureAwait(false);
+            var t = await s.RunAsync(Kind, ActorId, Input, ct, PlanContext).ConfigureAwait(false);
             if (s.HasPendingCraft && (CraftDecision == "confirmed" || CraftDecision == "declined")) t = s.ConfirmCraft(CraftDecision == "confirmed");
             return s.CaptureState().Hash == After.Hash && t.Presented == Presented && t.FailureCode == Failure && t.Verdict.Kind == Verdict;
         }

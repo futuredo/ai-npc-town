@@ -9,7 +9,7 @@ namespace Town.Core.Dragonsleep
     /// </summary>
     public static class ContextBuilder
     {
-        public static readonly string[] AdjudicateVerbs = { "buy", "lure", "feed", "give", "take", "search", "hide", "sneak", "show", "use", "lead", "release", "rescue", "observe", "wait", "unsupported" };
+        public static readonly string[] AdjudicateVerbs = { "buy", "lure", "feed", "give", "take", "search", "hide", "sneak", "show", "use", "lead", "release", "rescue", "confide", "observe", "wait", "unsupported" };
         public static readonly string[] AgentVerbs = { "move", "search", "tell", "guard", "wait" };
         public static readonly string[] GmEvents = { "none", "omen_roar", "guard_sweep", "snowfall", "rumor_spreads", "mother_descends" };
         public static readonly string[] CraftTags = { "light", "ember", "lure:dragon", "quiet", "calm", "iron", "warmth", "truth", "binding", "sound" };
@@ -76,6 +76,7 @@ namespace Town.Core.Dragonsleep
                 ["where"] = a.Place,
                 ["time"] = w.ClockText,
                 ["fear"] = Round(a.Fear),
+                ["trust_in_player"] = Round(a.Trust),
                 ["your_beliefs"] = w.BeliefsOf(npcId).Select(b => (object)(b.Id + "：" + b.Text)).ToList(),
                 ["others"] = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Where(x => x.Id != npcId && x.Place == a.Place).Select(x => (object)(x.Id + "@" + x.Place)).ToList(),
                 ["known_people"] = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Where(x => x.Id != npcId).Select(x => (object)(x.Id + "：" + x.Name)).ToList(),
@@ -83,6 +84,34 @@ namespace Town.Core.Dragonsleep
                     .Select(x => (object)(x.Key.Substring(npcId.Length + 1) + "：信任 " + Round(x.Value))).ToList(),
                 ["places"] = w.Places.Keys.OrderBy(x => x, System.StringComparer.Ordinal).Cast<object>().ToList(),
             };
+        }
+
+        /// <summary>
+        /// 计划视角：只有玩家已知的事实、物件与眼前情况；不含其他地点的卫兵岗位、居民私有认知或世界真值。
+        /// 重规划上下文由系统生成，冻结在同一份快照里。
+        /// </summary>
+        public static Dictionary<string, object> PlanPerception(DsWorld w, int timeLeftInPhase, string replanContext)
+        {
+            var here = AdjudicatePerception(w);
+            string whelp = DsPlayerKnowledge.WhelpStatus(w, out string code);
+            var view = new Dictionary<string, object>
+            {
+                ["where"] = here["where"], ["time"] = w.ClockText, ["time_left_in_phase"] = timeLeftInPhase,
+                ["deadline"] = "第4天·清晨苍穹之母降临龙骨岗；那时小烬必须没被关押、就在龙骨岗。",
+                ["time_rules"] = "每个时段 4 点时间：行动 2 点，confide 1 点，移动不耗时。时间用完进入下一时段；深夜居民各自行动，无法预知。",
+                ["coins"] = w.Coins,
+                ["whelp"] = whelp, ["whelp_status"] = code, ["whelp_bond"] = Round(w.Whelp.TrustPlayer),
+                ["whelp_mood"] = DsPlayerKnowledge.WhelpMood(w),
+                ["inventory"] = here["inventory"], ["people_here"] = here["people_here"], ["guards_here"] = here["guards_here"],
+                ["known_people"] = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Select(x => (object)(x.Id + "：" + x.Name + "，" + x.Role)).ToList(),
+                ["known_items"] = DsPlayerKnowledge.Items(w).Select(x => (object)(x.Key + "：" + x.Value)).ToList(),
+                ["known_facts"] = w.Beliefs.Where(b => w.PlayerKnows.Contains(b.Id)).OrderBy(b => b.Id, System.StringComparer.Ordinal).Select(b => (object)(b.Id + "：" + b.Text)).ToList(),
+                ["known_laws"] = here["known_laws"],
+                ["observations"] = new List<object> { "obs_whelp：" + whelp, "obs_here：" + here["guards_here"], "obs_deadline：母龙第4天清晨降临龙骨岗" },
+                ["places"] = w.Places.OrderBy(x => x.Key, System.StringComparer.Ordinal).Select(x => (object)(x.Key + "：" + x.Value)).ToList(),
+            };
+            if (!string.IsNullOrEmpty(replanContext)) view["replan"] = MiniJson.Parse(replanContext);
+            return view;
         }
 
         public static Dictionary<string, object> DirectorPerception(DsWorld w)
@@ -150,7 +179,7 @@ namespace Town.Core.Dragonsleep
                         "verb 只能取 verbs 中的值；购买用 buy，item 填 for_sale 里的物件。使用已织造物品的 light/calm/quiet/lure:dragon 效果用 use。target/item/place 必须是感知里出现的 ID（没有就填空字符串）。" +
                         "laws 只引用 known_laws 中与行动相关的规律 ID。difficulty 是你估计的难度 0~1。" +
                         "hide 表示为身边的雏龙安排藏身处，可用已有斗篷遮盖；feed 喂食，lure 诱引，search 翻找，sneak 潜行（会让接下来同一时段的行进更隐蔽）。" +
-                        "lead 带上身边的雏龙同行，release 让跟着的雏龙留在当前地点，rescue 把被关在笼里的雏龙救出来；前往别处由玩家亲自走过去，不是行动动词。能力在这些动词内时应提出尝试，不要因不确定成功率拒绝，成功与否由规则掷骰。" +
+                        "lead 带上身边的雏龙同行，release 让跟着的雏龙留在当前地点，rescue 把被关在笼里的雏龙救出来，confide 把护送雏龙的打算托付给在场的居民、请对方帮忙；前往别处由玩家亲自走过去，不是行动动词。能力在这些动词内时应提出尝试，不要因不确定成功率拒绝，成功与否由规则掷骰。" +
                         "不能执行或没有合适动词时用 unsupported，不能偷偷换成 observe/wait。注意否定、条件和先后关系；一次只执行一个明确的当下动作。明确说现在不做、只计划明天的动作不能执行。" +
                         "narration 用一句中文描述玩家的尝试，不要宣布结果——结果由规则决定。" + Guard;
                     break;
@@ -166,6 +195,17 @@ namespace Town.Core.Dragonsleep
                         "根据 tension 与最近事件，从 events 中选一个事件（可以是 none），给出 intensity 0~1 和一句理由。" +
                         "final_dawn=true 时必须选 mother_descends，这是世界的确定期限；否则不能选它。" +
                         "张力已高时应选 none 或温和事件；major_events_today 达到 major_event_limit 时，不再选 omen_roar 或 guard_sweep。不能替玩家做决定，不能直接改变雏龙归属。" + Guard;
+                    break;
+                case AiTaskKind.Plan:
+                    p.SchemaName = "ds_plan_v1";
+                    p.Instructions = "你是《龙眠镇》的“织言机”，把玩家的目标拆成一份可执行的多步计划，由规则引擎逐步执行并给回执。" +
+                        "步骤 op：act 用 verbs 中的一个动词（含义同语义判定：buy/lure/feed/hide/lead/release/rescue/confide/sneak/search/show/give/take/use/observe/wait），" +
+                        "go 只是走到 place，wait 在 place 一直等到 until（写成“第3天·黄昏”这样的时刻，只能是清晨/正午/黄昏）。act/wait 填 place 时会先走过去。" +
+                        "target/item/place 只能用感知里出现的 ID；item 必须在 known_items 中；laws 只能用 known_laws；cites 写这一步依据的 known_facts/known_laws/observations ID。" +
+                        "不要假设你不知道的卫兵岗位、居民动向或物件下落；不知道就安排能获得信息或降低风险的步骤。掷骰可能失败，计划要留余地。" +
+                        "遇到真正的关键取舍（例如找谁帮忙、走哪条路）时放进 choices（2–3 个选项，第一个是你推荐的），相关步骤的 when 写“取舍id=选项id”，其余步骤 when 留空。" +
+                        "最多 14 步，why 用不超过 20 字说明目的。有 replan 字段时，这是上一份计划失败后的重新规划：先读失败原因，从当前状态出发，不要重复已失败的做法，不要重做已完成的步骤。" +
+                        "goal 复述玩家目标，summary 用一句话概括计划。" + Guard;
                     break;
                 case AiTaskKind.Craft:
                     p.SchemaName = "ds_craft_v1";
@@ -196,6 +236,7 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Adjudicate: return new Dictionary<string, object> { ["verbs"] = AdjudicateVerbs.Cast<object>().ToList() };
                 case AiTaskKind.AgentPlan: return new Dictionary<string, object> { ["verbs"] = AgentVerbs.Cast<object>().ToList() };
                 case AiTaskKind.Direct: return new Dictionary<string, object> { ["events"] = GmEvents.Cast<object>().ToList() };
+                case AiTaskKind.Plan: return new Dictionary<string, object> { ["ops"] = DsPlan.Ops.Cast<object>().ToList(), ["verbs"] = AdjudicateVerbs.Where(v => v != "unsupported").Cast<object>().ToList() };
                 default: return new Dictionary<string, object> { ["allowed_tags"] = CraftTags.Cast<object>().ToList() };
             }
         }
@@ -208,6 +249,8 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Adjudicate: return "{\"verb\":verb,\"target\":id,\"item\":id,\"place\":id,\"laws\":[id],\"difficulty\":number,\"narration\":string}";
                 case AiTaskKind.AgentPlan: return "{\"verb\":verb,\"place\":id,\"target\":id,\"share\":[id],\"reason\":string}";
                 case AiTaskKind.Direct: return "{\"event\":event,\"intensity\":number,\"reason\":string}";
+                case AiTaskKind.Plan: return "{\"goal\":string,\"summary\":string,\"choices\":[{\"id\":string,\"question\":string,\"options\":[{\"id\":string,\"label\":string}]}]," +
+                    "\"steps\":[{\"id\":string,\"op\":op,\"verb\":verb,\"target\":id,\"item\":id,\"place\":id,\"until\":string,\"laws\":[id],\"cites\":[id],\"when\":string,\"why\":string}]}";
                 default: return "{\"name\":string,\"look\":string,\"consume\":[id],\"tags\":[tag],\"potency\":number}";
             }
         }

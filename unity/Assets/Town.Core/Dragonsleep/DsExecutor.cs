@@ -7,7 +7,7 @@ namespace Town.Core.Dragonsleep
     /// <summary>规则只能修改私有候选世界；本类是 Session 内唯一的提案提交入口。</summary>
     public sealed class DsExecutor
     {
-        public const string RulesVersion = "dragonsleep-rules-4";
+        public const string RulesVersion = "dragonsleep-rules-5";
         readonly Dictionary<string, DsExecutionReceipt> _committed = new Dictionary<string, DsExecutionReceipt>();
         public void Reset() => _committed.Clear();
 
@@ -35,20 +35,13 @@ namespace Town.Core.Dragonsleep
                         case AiTaskKind.AgentPlan: DsRules.AgentPlan(candidate, actorId, copy, trial); break;
                         case AiTaskKind.Direct: DsRules.Direct(candidate, copy, trial); break;
                         case AiTaskKind.Craft: DsRules.Craft(candidate, copy, trial); break;
+                        case AiTaskKind.Plan: EvaluatePlan(before, copy, trial); break;
                         default: Fail(trial, "task_not_supported", "未知任务类型"); break;
                     }
                     if (trial.FailureCode == null)
                     {
-                        timeCost = kind == AiTaskKind.Dialogue ? 1 : kind == AiTaskKind.Adjudicate || kind == AiTaskKind.Craft ? 2 : 0;
-                        if (candidate.Phase == DayPhase.Night || (trial.Verdict.Kind == VerdictKind.Rejected && !trial.Verdict.Roll.HasValue)) timeCost = 0;
-                        if (timeCost > 0)
-                        {
-                            string clockBefore = candidate.ClockText + " / 剩余 " + (phaseBudget - spent);
-                            nextSpent += timeCost;
-                            while (nextSpent >= phaseBudget) { nextSpent -= phaseBudget; candidate.Advance(); AppendPhaseStart(candidate, trial); }
-                            trial.Changes.Add(new WorldChange { Path = "world.time", Before = clockBefore,
-                                After = candidate.ClockText + " / 剩余 " + (phaseBudget - nextSpent), Note = "消耗 " + timeCost + " 点时间" });
-                        }
+                        timeCost = TimeCost(kind, copy.Str("verb"), candidate, trial);
+                        ApplyTime(candidate, ref nextSpent, phaseBudget, timeCost, trial);
                         // 一次事务只增长一个版本；包括掷骰、时间、日志、旗标等隐式变化。
                         candidate.Version = world.Version;
                         if (DsWorldSnapshot.Capture(candidate, nextSpent, phaseBudget).Hash != before.Hash) candidate.Version++;
@@ -86,6 +79,47 @@ namespace Town.Core.Dragonsleep
             if (trial.FailureCode != null) { candidate = before.Restore(); trial.Changes.Clear(); }
             var after = DsWorldSnapshot.Capture(candidate, spent, phaseBudget);
             return new DsExecutionPlan(before, after, trial, DsWorldSnapshot.Digest("rule|" + label + "|" + before.Hash), 0);
+        }
+
+        /// <summary>行动的时间花费：对话 1、行动/造物 2、求助 1；深夜或未掷骰的拒绝不耗时。计划试运行共用。</summary>
+        internal static int TimeCost(AiTaskKind kind, string verb, DsWorld candidate, AiTrace trial)
+        {
+            int cost = kind == AiTaskKind.Dialogue ? 1 : kind == AiTaskKind.Adjudicate || kind == AiTaskKind.Craft ? 2 : 0;
+            if (kind == AiTaskKind.Adjudicate && verb == "confide") cost = 1;
+            if (candidate.Phase == DayPhase.Night || (trial.Verdict.Kind == VerdictKind.Rejected && !trial.Verdict.Roll.HasValue)) cost = 0;
+            return cost;
+        }
+
+        internal static void ApplyTime(DsWorld candidate, ref int spent, int phaseBudget, int cost, AiTrace trial)
+        {
+            if (cost <= 0) return;
+            string clockBefore = candidate.ClockText + " / 剩余 " + (phaseBudget - spent);
+            spent += cost;
+            while (spent >= phaseBudget) { spent -= phaseBudget; candidate.Advance(); AppendPhaseStart(candidate, trial); }
+            trial.Changes.Add(new WorldChange { Path = "world.time", Before = clockBefore,
+                After = candidate.ClockText + " / 剩余 " + (phaseBudget - spent), Note = "消耗 " + cost + " 点时间" });
+        }
+
+        /// <summary>计划只做整体校验，不改候选世界：结构/引用问题直接拦截，不可行给出原因。</summary>
+        static void EvaluatePlan(DsWorldSnapshot before, Dictionary<string, object> proposal, AiTrace trial)
+        {
+            DsPlan.TryParse(proposal, out var plan);
+            var report = DsPlanValidator.Validate(before, plan);
+            trial.PlanReport = report;
+            if (report.Code != null) { Fail(trial, report.Code, string.Join("；", report.Issues.Take(4))); return; }
+            var def = report.Default;
+            if (!def.Feasible)
+            {
+                trial.Verdict.Kind = VerdictKind.Rejected;
+                trial.Verdict.Reason = "计划在步骤 " + def.FailedStep + " 不可行：" + def.Reason;
+                trial.Presented = "这份计划走不通——" + def.FailedStep + "：" + def.Reason;
+                return;
+            }
+            var bad = report.Branches.Skip(1).Where(b => !b.Feasible).ToList();
+            trial.Verdict.Kind = bad.Count == 0 ? VerdictKind.Accepted : VerdictKind.Partial;
+            trial.Verdict.Reason = def.Reason + (bad.Count == 0 ? "" : "；" + bad.Count + " 个备选不可行");
+            foreach (var b in bad) trial.Verdict.Notes.Add(string.Join(",", b.Selection.Select(x => x.Key + "=" + x.Value)) + " 在 " + b.FailedStep + " 不可行：" + b.Reason);
+            trial.Presented = "计划：" + plan.Summary;
         }
 
         /// <summary>行动消耗时间跨入新时段时，同一事务内执行换岗巡逻。</summary>
@@ -178,6 +212,7 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.AgentPlan: strings = new[] { "verb", "place", "target", "reason" }; arrays = new[] { "share" }; numbers = Array.Empty<string>(); break;
                 case AiTaskKind.Direct: strings = new[] { "event", "reason" }; arrays = Array.Empty<string>(); numbers = new[] { "intensity" }; break;
                 case AiTaskKind.Craft: strings = new[] { "name", "look" }; arrays = new[] { "consume", "tags" }; numbers = new[] { "potency" }; break;
+                case AiTaskKind.Plan: return DsPlan.TryParse(p, out _);
                 default: return "未知任务";
             }
             foreach (string key in strings)

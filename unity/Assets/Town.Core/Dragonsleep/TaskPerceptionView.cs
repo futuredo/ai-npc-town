@@ -12,7 +12,7 @@ namespace Town.Core.Dragonsleep
         TaskPerceptionView(AiTaskKind kind, string actor, Dictionary<string, object> view)
         { Kind = kind; ActorId = actor; Json = MiniJson.Write(view); }
 
-        public static TaskPerceptionView Capture(DsWorld world, AiTaskKind kind, string actor)
+        public static TaskPerceptionView Capture(DsWorld world, AiTaskKind kind, string actor, int timeLeftInPhase = 4, string planContext = null)
         {
             Dictionary<string, object> view;
             switch (kind)
@@ -30,6 +30,9 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Direct:
                     if (actor != "gm") throw new ArgumentException("director_role_required");
                     view = ContextBuilder.DirectorPerception(world); break;
+                case AiTaskKind.Plan:
+                    if (actor != "player") throw new ArgumentException("player_role_required");
+                    view = ContextBuilder.PlanPerception(world, timeLeftInPhase, planContext); break;
                 default: throw new ArgumentException("unsupported_task");
             }
             return new TaskPerceptionView(kind, actor, view);

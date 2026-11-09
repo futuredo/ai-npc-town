@@ -12,6 +12,7 @@ namespace Town.Core.Dragonsleep
         AgentPlan,    // N5 多智能体：居民自主行动
         Direct,       // N3 AI GM：龙母之心导演
         Craft,        // N6 生成式构造：织言机造物
+        Plan,         // 多步计划：把玩家目标拆成现有动词组成的步骤，只提案、不改世界
     }
 
     public enum AiStage { Context, Prompt, Provider, Parse, Validate, Adjudicate, Commit }
@@ -122,6 +123,10 @@ namespace Town.Core.Dragonsleep
         public string Presented = "";
         public DsExecutionReceipt Receipt;
         public string CraftDecision;
+        /// <summary>计划任务的整体校验报告（结构、引用、试运行可行性）。</summary>
+        public DsPlanReport PlanReport;
+        /// <summary>重规划时由系统生成的上下文（失败类别、原因、旧计划摘要），属于冻结感知的一部分。</summary>
+        public string PlanContext;
         public string FailureCode;
         public double TotalMillis;
 
@@ -143,6 +148,7 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Adjudicate: return "N4 语义判定";
                 case AiTaskKind.AgentPlan: return "N5 多智能体";
                 case AiTaskKind.Direct: return "N3 AI GM";
+                case AiTaskKind.Plan: return "多步计划";
                 default: return "N6 生成式构造";
             }
         }
@@ -188,6 +194,7 @@ namespace Town.Core.Dragonsleep
                 ["verdict"] = Verdict.Kind.ToString(), ["reason"] = Verdict.Reason, ["roll"] = Verdict.Roll,
                 ["difficulty"] = Verdict.Difficulty, ["changes"] = changes, ["presented"] = Presented,
                 ["receipt"] = Receipt?.ToRecord(), ["craft_decision"] = CraftDecision, ["rules_version"] = DsExecutor.RulesVersion,
+                ["plan"] = PlanReport?.ToRecord(), ["plan_context"] = PlanContext,
                 ["failure"] = FailureCode, ["stages"] = stages, ["total_ms"] = TotalMillis,
                 ["version_before"] = WorldVersionBefore, ["version_after"] = WorldVersionAfter
             };

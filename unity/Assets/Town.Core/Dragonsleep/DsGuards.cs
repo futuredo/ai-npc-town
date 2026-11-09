@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Town.Core.Dragonsleep
 {
@@ -14,6 +15,9 @@ namespace Town.Core.Dragonsleep
         {
             reason = null;
             if (w.FinalDawn) return false;                       // 母龙降临前，卫兵都退回王城
+            // 计划泄露：总管得知护送计划后，龙骨岗下白天与黄昏都加派人手（深夜仍看他是否亲自守）。
+            if (place == "skull_hill" && w.Phase != DayPhase.Night && OsricKnowsPlan(w))
+            { reason = "奥斯里克得知了你的打算，龙骨岗下加派了人手"; return true; }
             if (w.Phase == DayPhase.Dusk) return false;           // 黄昏换岗：各处岗哨都有片刻无人
             if (w.Phase == DayPhase.Night)
             {
@@ -44,6 +48,9 @@ namespace Town.Core.Dragonsleep
 
         public static bool IsWatched(DsWorld w, string place) => IsWatched(w, place, out _);
 
+        /// <summary>总管是否已得知护送计划（他本人持有主题为 plan 的认知）。</summary>
+        public static bool OsricKnowsPlan(DsWorld w) => w.Beliefs.Any(b => b.Owner == "osric" && b.Topic == "plan");
+
         /// <summary>雏龙是否正跟着玩家、且此刻就在玩家身边。</summary>
         public static bool WhelpWithPlayer(DsWorld w) =>
             w.Whelp.Following && w.Whelp.CapturedBy == null && w.Whelp.Place == w.PlayerPlace;
@@ -58,6 +65,8 @@ namespace Town.Core.Dragonsleep
             notes.Add(cloaked ? "小烬藏在斗篷下，基础暴露 0.25" : "小烬暴露在外，基础暴露 0.60");
             if (w.Flags.ContainsKey("quiet:" + w.PlayerPlace)) { chance -= 0.15; notes.Add("消声织物 −0.15"); }
             if (w.Flags.TryGetValue("sneaking", out var clock) && clock == w.ClockText) { chance -= 0.25; notes.Add("本时段在潜行 −0.25"); }
+            if (w.Flags.ContainsKey("ally:maren")) { chance -= 0.2; notes.Add("梅伦修女以教会名义同行 −0.20"); }
+            if (w.Flags.ContainsKey("ally:pip")) { chance -= 0.1; notes.Add("皮普在前面望风 −0.10"); }
             return Math.Max(0.05, chance);
         }
 

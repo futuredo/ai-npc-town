@@ -20,6 +20,14 @@ internal static class Program
         if(seedArg!=null&&!int.TryParse(seedArg.Substring(7),out seed)) return 2;
         if (args.Contains("--journey")&&args.All(x=>x=="--journey"||x=="--live"||x=="--three-nights"||x.StartsWith("--seed=")))
             return await Journey.Run(root,args.Contains("--live"),seedArg==null?18:seed,args.Contains("--three-nights")?3:1);
+        if (args.Contains("--plan"))
+        {
+            var seedsArg = args.FirstOrDefault(x => x.StartsWith("--seeds="));
+            int seeds = 10;
+            if ((seedsArg != null && !int.TryParse(seedsArg.Substring(8), out seeds)) || seeds < 1 ||
+                args.Any(x => x != "--plan" && x != "--live" && x != "--holdout" && !x.StartsWith("--seeds="))) { Console.Error.WriteLine("用法：--plan [--holdout] [--seeds=N] [--live]"); return 2; }
+            return await PlanResearch.Run(root, args.Contains("--live"), seeds, args.Contains("--holdout"));
+        }
         bool live = args.Contains("--live");
         string filter = args.FirstOrDefault(x=>x.StartsWith("--cases="))?.Substring(8);
         if (args.Any(x=>x!="--live"&&x!="--holdout"&&!x.StartsWith("--cases=")&&!x.StartsWith("--seed="))) { Console.Error.WriteLine("用法：无参数离线；--live 显式真实实验；--cases=id,id；--holdout 新措辞集；--seed=N；--journey --three-nights；--replay 目录"); return 2; }
