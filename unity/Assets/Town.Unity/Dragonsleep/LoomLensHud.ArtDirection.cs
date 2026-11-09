@@ -96,6 +96,8 @@ namespace Town.Unity.Dragonsleep
             _shortcuts.style.justifyContent = Justify.SpaceBetween;
             var links = Row();
             links.Add(SmallLink("J  手记", ShowJournal)); links.Add(SmallLink("M  地图", ShowMap)); links.Add(SmallLink("Tab  织言镜", ToggleLens));
+            var ending = SmallLink("结局", () => { if (Game.Ending != null) ShowEnding(Game.Ending); }); ending.name = "reopenEnding";
+            links.Add(ending);
             _shortcuts.Add(links);
             Button motion = null;
             motion = SmallLink(DsUiMotion.Reduced ? "动效：简约" : "动效：完整", () =>
@@ -119,6 +121,8 @@ namespace Town.Unity.Dragonsleep
         void RefreshArtState()
         {
             bool busy = Game.Busy;
+            var ending = _shortcuts?.Q<Button>("reopenEnding");
+            if (ending != null) ending.style.display = Game.Ending != null ? DisplayStyle.Flex : DisplayStyle.None;
             if (!busy) _location.text = "龙眠镇  /  " + Game.PlaceName;
             _sendButton.SetEnabled(!busy && Game.Ending == null);
             _input.SetEnabled(!busy && Game.Ending == null);

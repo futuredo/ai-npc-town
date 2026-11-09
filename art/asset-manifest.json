@@ -1093,6 +1093,32 @@
   ],
   "technical_prototypes": [
     {
+      "id": "dragonsleep_m4_rules_stage_graybox",
+      "name": "龙眠镇M4规则投影：斗篷包裹、铁笼与卫兵岗位灰盒",
+      "scope": "technical_prototype_not_production_art",
+      "status": "runtime_geometry_playmode_verified_not_production_art",
+      "source": "本项目DragonsleepStageView使用Unity内置几何与运行时URP材质；不导入新第三方资产",
+      "author": "本项目",
+      "license": null,
+      "license_status": "project_authored_arrangement_using_unity_builtin_primitives_not_third_party_license_grant",
+      "attribution": "使用Unity内置几何，适用Unity条款；不标记为正式人物、正式布料或CC0素材",
+      "target_directory": "unity/Assets/Town.Unity/Dragonsleep/DragonsleepStageView.cs",
+      "import_verified": true,
+      "in_game_approved": false,
+      "modifications": [
+        "运行时只读世界快照，映射实际跟随、隐藏、受惊、王城抓捕与岗位；动画不写回规则",
+        "母龙与雏龙复用已登记local_dragons中的现有模型与控制器；不改原商业源文件及许可状态",
+        "本机试玩构建不上传或再分发商业素材，外部分发仍需原始许可核实"
+      ],
+      "technical_verification": {
+        "unity_version": "6000.3.23f1",
+        "unity_playmode_passed": 26,
+        "new_stage_playmode_tests": 9,
+        "notes": "真实主场景离线事务与多帧状态映射已验证；灰盒、动作观感、真人理解、性能与商业素材分发许可未验收"
+      },
+      "audit": "docs/开发日志/2026-11-09_045_M4实体投影与本机试玩构建.md"
+    },
+    {
       "id": "moonlight_slice_technical_geometry",
       "name": "月光工坊首个离线执行切片：平台、桥、角色代理、光束与符文",
       "scope": "technical_prototype_not_production_art",

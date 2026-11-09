@@ -40,6 +40,7 @@ namespace Town.Unity.Dragonsleep
         void ShowMap()
         {
             if (Game.Busy) { Toast("请等待当前操作结束；规划请求可在计划面板取消。"); return; }
+            if (Game.Ending != null || Game.Session.World.FinalDawn) { Toast("这一局已经结束；可查看现场或重新开始。"); return; }
             var card = Card(660);
             card.Add(L("龙 眠 镇", 30, Ink, true));
             card.Add(L("快速前往（不消耗时间）", 14, InkSoft));

@@ -36,6 +36,7 @@ namespace Town.Unity.Dragonsleep
         int _ruleEventsSeen;
         Animator _whelpAnimator;
         Coroutine _whelpReaction;
+        public DragonsleepStageView Stage { get; private set; }
         readonly System.Threading.CancellationTokenSource _lifetime = new System.Threading.CancellationTokenSource();
 
         public IReadOnlyDictionary<string, Transform> ActorTransforms => _actors;
@@ -46,11 +47,15 @@ namespace Town.Unity.Dragonsleep
             if (PlacesRoot != null)
                 foreach (Transform t in PlacesRoot) _places[t.name.Replace("Place_", "")] = t;
             foreach (var tag in FindObjectsByType<DragonsleepActorTag>(FindObjectsSortMode.None)) _actors[tag.ActorId] = tag.transform;
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "../../.local/dragonsleep/traces"));
-            _exportPath = Path.GetFullPath(Path.Combine(Application.dataPath, "../../.local/dragonsleep/traces",
-                "trace-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".jsonl"));
+            string traceDirectory = Application.isEditor ? Path.GetFullPath(Path.Combine(Application.dataPath, "../../.local/dragonsleep/traces"))
+                : Path.Combine(Application.persistentDataPath, "dragonsleep", "traces");
+            Directory.CreateDirectory(traceDirectory);
+            _exportPath = Path.Combine(traceDirectory, "trace-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".jsonl");
             Session.TraceCompleted += t => { try { File.AppendAllText(_exportPath, MiniJson.Write(t.ToRecord()) + "\n"); } catch (IOException) { } };
             if (Whelp != null) _whelpAnimator = Whelp.GetComponentInChildren<Animator>(true);
+            var stage = new GameObject("Rules Presentation"); stage.transform.SetParent(transform, false);
+            Stage = stage.AddComponent<DragonsleepStageView>();
+            Stage.Initialize(Player != null ? Player.transform : null, Whelp, PlacesRoot, FindFirstObjectByType<DragonCircle>());
         }
 
         void Start() => ReflectWorld();
@@ -65,7 +70,7 @@ namespace Town.Unity.Dragonsleep
         void Update()
         {
             if (Player == null) return;
-            if (!Busy) { UpdatePlace(); DrainRuleEvents(); }
+            if (!Busy && !Session.Busy) { UpdatePlace(); DrainRuleEvents(); Stage.Apply(DragonsleepStageFrame.Capture(Session.World)); }
             UpdateNearestActor();
             bool typing = Hud != null && (Hud.Typing || Hud.ReadingPanelOpen);
             Player.InputBlocked = typing || Busy || Ending != null;
@@ -123,7 +128,7 @@ namespace Town.Unity.Dragonsleep
 
         public void TravelTo(string place)
         {
-            if (Busy) return;
+            if (Busy || Ending != null || Session.World.FinalDawn) return;
             SyncPlayerPlace(place);
         }
 
@@ -218,6 +223,8 @@ namespace Town.Unity.Dragonsleep
             Ending = null;
             _dayStartTrace = 0;
             _ruleEventsSeen = 0;
+            Stage.ResetStage();
+            SyncPlayerPlace("market");
             ReflectWorld();
             Hud?.Toast("新的一局开始了。旧局未返回的请求将被丢弃。");
         }
@@ -234,8 +241,8 @@ namespace Town.Unity.Dragonsleep
             }
             if (Whelp != null)
             {
-                bool show = w.Whelp.CapturedBy == null && !w.Whelp.Hidden && !w.Whelp.WithMother;
-                Whelp.gameObject.SetActive(show);
+                Stage.Apply(DragonsleepStageFrame.Capture(w));
+                bool show = Whelp.gameObject.activeSelf;
                 // 演出只读提交后的回执；台词或尚待确认的提案不能触发成功动作。
                 if (show && trace?.Receipt?.Applied == true && trace.Receipt.Effects.Any(e => e.Path.StartsWith("whelp.")))
                 {

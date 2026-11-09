@@ -73,6 +73,7 @@ namespace Town.Unity.Dragonsleep
         }
 
         static FontAsset _font;
+        Label _escortState;
         static void ApplyFont(VisualElement root)
         {
             if (_font == null)
@@ -133,6 +134,8 @@ namespace Town.Unity.Dragonsleep
             _questHint = Wrap(L("", 15, Ink));
             _questHint.style.marginTop = 6;
             _quest.Add(_questHint);
+            _escortState = Wrap(L("", 14, Gold)); _escortState.name = "escortStageStatus";
+            _escortState.style.marginTop = 10; _quest.Add(_escortState);
             _quest.Add(Tiny("J 日志 · M 地图 · Tab 织言镜", InkSoft));
             _root.Add(_quest);
 
@@ -271,6 +274,17 @@ namespace Town.Unity.Dragonsleep
             RefreshQuest(w);
             RefreshPlates();
             RefreshWarning(w);
+            var frame = Game.Stage?.Frame;
+            if (frame != null)
+            {
+                string escort = frame.Mode == WhelpStageMode.Following ? "小烬跟在身边"
+                    : frame.Mode == WhelpStageMode.Concealed ? "小烬藏在斗篷下同行"
+                    : frame.Mode == WhelpStageMode.Reunited ? "小烬已回到母亲身边"
+                    : frame.Mode == WhelpStageMode.Captured ? frame.Captor == "osric" ? "小烬被关进王城铁笼" : "小烬已不在身边"
+                    : frame.Mode == WhelpStageMode.Visible ? "小烬已现身，尚未同行" : "小烬暂未现身";
+                bool guard = frame.Guards.TryGetValue(frame.PlayerPlace, out bool watched) && watched;
+                _escortState.text = escort + (guard ? "\n此地有卫兵（当前使用灰盒岗位）" : "");
+            }
             _nearby.text = Game.NearestActorId != null ? "Enter　与 " + Game.ActorName(Game.NearestActorId).Split('（')[0] + " 交谈" : "";
             if (_lens.style.display == DisplayStyle.Flex)
             {
@@ -467,11 +481,13 @@ namespace Town.Unity.Dragonsleep
 
         public void ShowEnding(DsEndings.Ending e)
         {
+            Game.Stage?.ShowEndingView();
             var card = Card(780);
             card.Add(L("第三个黎明", 15, InkSoft));
             card.Add(L(e.Title, 46, Ink, true));
             var t = Wrap(L(e.Text, 18, Ink)); t.style.unityTextAlign = TextAnchor.MiddleCenter; t.style.marginTop = 16;
             card.Add(t);
+            var view = CardButton("查看现场", CloseModal); view.name = "viewEndingScene"; card.Add(view);
             card.Add(CardButton("再来一局", () => { CloseModal(); Game.Restart(); ClearLens(); }));
         }
 
