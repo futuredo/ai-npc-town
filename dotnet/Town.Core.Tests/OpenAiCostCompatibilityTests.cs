@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using Town.Core.Brain;
 using Town.OpenAI;
 
 namespace Town.Core.Tests
@@ -15,11 +14,7 @@ namespace Town.Core.Tests
         {
             decimal value = decimal.Parse(expected, System.Globalization.CultureInfo.InvariantCulture);
             Assert.AreEqual(value, OpenAiPolicy.EstimateUsd(input, cached, output));
-            Assert.AreEqual(value, OpenAiPolicy.EstimateUsd(new TokenUsage
-            { InputTokens = input, CachedInputTokens = cached, OutputTokens = output }));
         }
 
-        [Test]
-        public void 缺少用量仍为未知费用() => Assert.IsNull(OpenAiPolicy.EstimateUsd(null));
     }
 }

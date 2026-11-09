@@ -1,7 +1,36 @@
 {
   "schema_version": 2,
-  "updated_at": "2026-11-08",
-  "stage": "native_village_offline_rescue_demo_integrated_pending_live_ai_visual_performance_and_license_validation",
+  "updated_at": "2026-11-09",
+  "stage": "dragonsleep_v6_current_legacy_prototypes_retired_release_and_license_approval_pending",
+  "cleanup_history": [
+    {
+      "date": "2026-11-09",
+      "scope": "user_authorized_retirement_of_v3_and_moonlight_project_authored_prototypes",
+      "current_scene": "Assets/LocalThirdParty/Dragonsleep/Dragonsleep_Town.unity",
+      "removed": [
+        "Assets/Scenes/Town_Graybox.unity and its project-authored materials/navigation",
+        "Assets/Scenes/Moonlight_Workshop.unity and Assets/MoonlightSlice",
+        "Assets/LocalThirdParty/Gameplay/Moonlight_Rescue.unity",
+        "Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity",
+        "Legacy Gameplay navigation and PanelSettings derivatives; original commercial source assets preserved"
+      ],
+      "preserved": "Commercial source packages, original vendor scenes/prefabs/textures, current Dragonsleep scene, Review previews, historical provenance/license/import audits; no new third-party import or release approval",
+      "shared_theme": {
+        "source": "Project-authored Unity UI Toolkit theme importing the Unity default runtime theme",
+        "author": "本项目；基础运行时主题由 Unity 提供",
+        "license": null,
+        "license_status": "existing_project_resource_moved_no_new_license_grant_unity_terms_still_apply",
+        "from": "Assets/Town.Unity/Moonlight/MoonRuntimeTheme.tss",
+        "to": "Assets/Town.Unity/Shared/UiTheme/MoonRuntimeTheme.tss",
+        "guid": "f248bbac75c5a4c5d97c3993e160af62",
+        "sha256": "682e2b1c6cc1d6e332c15f56c840f7d8282cb1e5bc627eb6664580352a752fda",
+        "verification": "Content and original meta unchanged; Dragonsleep PanelSettings theme reference preserved; existing four Dragonsleep PlayMode tests passed",
+        "in_game_approved": false
+      },
+      "historical_record_policy": "Existing usage bindings, technical_verification counts and evidence paths below describe their original dates, not current live assets. Retired local temporary verification outputs may no longer exist; provenance and license evidence remain.",
+      "audit": "docs/开发日志/2026-11-09_043_旧原型退役与工程整理.md"
+    }
+  ],
   "assets": [
     {
       "id": "shader_sketch_ink",
@@ -22,7 +51,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 新增；风格核心，优先自制，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -40,7 +69,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 新增；风格核心，优先自制，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 新增；风格核心，优先自制，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -63,7 +92,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -89,7 +118,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -114,7 +143,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -136,7 +165,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -156,7 +185,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -177,7 +206,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -201,7 +230,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -222,7 +251,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -242,7 +271,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -262,7 +291,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -283,7 +312,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -303,7 +332,7 @@
       "modifications": [],
       "import_verified": false,
       "in_game_approved": false,
-      "notes": "v3 需求条目；正式素材尚未准备，见 docs/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
+      "notes": "v3 需求条目；正式素材尚未准备，见 docs/history/v3/素材清单_未竟之镇_v3.md。 2026-11-07：旧需求暂停，不指导v4采购；可复用技术另列v4需求。",
       "scope": "v3_legacy"
     },
     {
@@ -1067,7 +1096,8 @@
       "id": "moonlight_slice_technical_geometry",
       "name": "月光工坊首个离线执行切片：平台、桥、角色代理、光束与符文",
       "scope": "technical_prototype_not_production_art",
-      "status": "generated_in_editor_playmode_verified",
+      "status": "retired_project_derivatives_deleted_2026_11_09",
+      "historical_status": "generated_in_editor_playmode_verified",
       "source": "本项目 MoonWorkshopSceneBuilder 使用 Unity 内置几何和项目编写的 URP 材质生成；没有引用商业样板",
       "author": "本项目",
       "license": null,
@@ -1094,7 +1124,8 @@
       "id": "moonlight_rescue_native_scene_integration",
       "name": "月光驿站：现成村落、附魔工作站与三灯护送短局",
       "scope": "local_technical_gameplay_integration_not_release_approved",
-      "status": "offline_ui_flow_playmode_verified_pending_visual_performance_live_ai_and_license",
+      "status": "retired_project_derivatives_deleted_2026_11_09",
+      "historical_status": "offline_ui_flow_playmode_verified_pending_visual_performance_live_ai_and_license",
       "source": "项目MoonRescueSceneBuilder/MoonVillageSceneBuilder组装已登记的KINGDOM、AFS、Horde、UI和Dragon资源；原场景不覆盖",
       "author": "本项目组装；各商业资产作者与许可仍按各自条目核实",
       "license": null,
@@ -1131,7 +1162,8 @@
       "id": "moonlight_village_third_person_integration",
       "name": "月光驿站第三人称读者、近场交互与镜头重做",
       "scope": "local_gameplay_copy_control_and_presentation_not_release_approval",
-      "status": "automated_3c_checks_passed_human_playfeel_and_quality_review_pending",
+      "status": "retired_project_derivatives_deleted_2026_11_09",
+      "historical_status": "automated_3c_checks_passed_human_playfeel_and_quality_review_pending",
       "source": "Project MoonThreeCSetup and MoonVillageSceneBuilder reuse already registered Horde Male_1 and existing UI; no new external asset import",
       "license": null,
       "license_status": "underlying_commercial_asset_permissions_unchanged_not_a_license_grant",

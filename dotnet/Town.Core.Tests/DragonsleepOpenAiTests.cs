@@ -27,14 +27,14 @@ namespace Town.Core.Tests
             { Calls++; LastBody = await r.Content.ReadAsStringAsync(); return Reply(); }
         }
 
-        static HttpResponseMessage Ok(string modelJson, string status = "completed") => new HttpResponseMessage(HttpStatusCode.OK)
+        static HttpResponseMessage Ok(string modelJson, string status = "completed", bool includeUsage = true) => new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = new StringContent(new JObject
             {
                 ["status"] = status,
                 ["incomplete_details"] = status == "incomplete" ? new JObject { ["reason"] = "max_output_tokens" } : null,
                 ["output"] = new JArray(new JObject { ["type"] = "message", ["content"] = new JArray(new JObject { ["type"] = "output_text", ["text"] = modelJson }) }),
-                ["usage"] = new JObject { ["input_tokens"] = 900, ["output_tokens"] = 80, ["input_tokens_details"] = new JObject { ["cached_tokens"] = 0 } }
+                ["usage"] = includeUsage ? new JObject { ["input_tokens"] = 900, ["output_tokens"] = 80, ["input_tokens_details"] = new JObject { ["cached_tokens"] = 0 } } : null
             }.ToString())
         };
 
@@ -52,6 +52,19 @@ namespace Town.Core.Tests
             Assert.AreEqual(0.00013m, t.Provider.EstimatedUsd);
             Assert.That(t.ValidationIssues, Has.Some.Contains("b_pip_whelp_place"), "模型引用别人的认知照样被剔除");
             Assert.IsTrue(s.World.PlayerKnows.Contains("b_marta_saw_pip"));
+        }
+
+        [Test]
+        public void 返回缺少用量时费用未知但响应仍可执行且不重试()
+        {
+            var http = new FakeHttp { Reply = () => Ok("{\"say\":\"我看见皮普在码头。\",\"cites\":[],\"reveal\":[],\"trust_delta\":0.05,\"persuaded_by\":[],\"action\":\"none\"}", includeUsage: false) };
+            var budget = new Budget();
+            var s = Session(http, budget);
+            var t = s.SpeakAsync("marta", "最近怎么样？").Result;
+            Assert.IsNull(t.Provider.EstimatedUsd);
+            Assert.IsNotNull(t.Receipt, "缺少 usage 不应阻止规则校验和执行");
+            Assert.AreEqual(1, http.Calls, "缺少 usage 不应触发重试");
+            Assert.AreEqual(1, budget.Calls);
         }
 
         [Test]

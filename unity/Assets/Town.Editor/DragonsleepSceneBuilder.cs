@@ -402,7 +402,7 @@ namespace Town.Editor
         // ---------- 可玩部分：玩家、镜头、织言镜 ----------
 
         const string PanelPath = Root + "/Dragonsleep_Panel.asset";
-        const string ThemePath = "Assets/Town.Unity/Moonlight/MoonRuntimeTheme.tss";
+        const string ThemePath = "Assets/Town.Unity/Shared/UiTheme/MoonRuntimeTheme.tss";
 
         static void Gameplay(Transform rig, Transform places, Transform whelp, List<string> report)
         {
