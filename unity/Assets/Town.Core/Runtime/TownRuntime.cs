@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,11 +16,13 @@ namespace Town.Core.Runtime
     /// <summary>Unity 与无画面测试共享的组合入口。默认离线，不引用任何网络实现。</summary>
     public sealed class TownRuntime : IDisposable
     {
-        private readonly ILLMClient _dialogue;
+        private ILLMClient _dialogue;
         private readonly StalenessGuard _guard = new StalenessGuard();
         private readonly CancellationTokenSource _lifetime = new CancellationTokenSource();
         private bool _disposed;
         private bool _batchingTime;
+        private bool _unrecordedCommand;
+        private readonly List<ReplayStep> _steps = new List<ReplayStep>();
         public HammerEventSetup.Session Session { get; }
         public HammerEventRules Rules { get; }
         public EventJournal Journal { get; } = new EventJournal();
@@ -34,6 +37,7 @@ namespace Town.Core.Runtime
             Session.World.Changed += OnWorldChanged;
             Rules.Noted += OnRuleNote;
             Journal.Append(Session.World, "session", "started");
+            Rules.Story.Tick();
         }
 
         private void OnWorldChanged(WorldState world, string reason)
@@ -61,6 +65,7 @@ namespace Town.Core.Runtime
             }
             finally { _batchingTime = false; }
             Journal.Append(Session.World, "world", "time+" + minutes);
+            _steps.Add(new ReplayStep { Kind = "advance", Minutes = minutes });
         }
 
         /// <summary>由导航到达检测回报；null 表示仍在路上。不能由点击目标直接调用到达。</summary>
@@ -69,10 +74,29 @@ namespace Town.Core.Runtime
             ThrowIfDisposed();
             if (locationId != null && !Ids.Loc.All.Contains(locationId)) throw new ArgumentException("未知地点。");
             if (Session.World.PlayerLocationId != locationId)
+            {
                 Session.World.Commit("player:location:" + (locationId ?? "travelling"), w => w.PlayerLocationId = locationId);
+                _steps.Add(new ReplayStep { Kind = "location", Target = locationId });
+            }
         }
 
+        /// <summary>兼容旧测试/脚本。任意委托不可持久化；正式玩法请使用类型化命令。</summary>
         public CommandResult Execute(Func<HammerEventRules, CommandResult> command)
+        {
+            _unrecordedCommand = true;
+            return ExecuteCore(command);
+        }
+
+        public CommandResult Execute(TownCommand command)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            var result = ExecuteCore(command.Apply);
+            if (result.Success) _steps.Add(new ReplayStep { Kind = "command", Command = (int)command.Kind,
+                Target = command.NpcId, Topic = command.PropositionId, Mode = (int)command.Mode });
+            return result;
+        }
+
+        private CommandResult ExecuteCore(Func<HammerEventRules, CommandResult> command)
         {
             ThrowIfDisposed();
             if (IsDialoguePending) return CommandResult.Reject("请等待本轮对话结束。");
@@ -93,6 +117,7 @@ namespace Town.Core.Runtime
             {
                 var shy = new DialogueResult { Success = true, Reply = $"（{npc.DisplayName}犹豫了一下）……没什么，以后再说吧。" };
                 Memory.Record(npcId, playerText, shy.Reply);
+                RecordDialogue(npcId, playerText, shy);
                 return shy;
             }
             var request = NpcDialogueRequest.From(Session.Knowledge.ViewFor(npcId), playerText, includeSecrets: trusts);
@@ -118,6 +143,7 @@ namespace Town.Core.Runtime
                     Memory.Record(npcId, playerText, result.Reply);
                     if (result.Success) Rules.Rumor.PlayerHeard(npcId, result.CitedBeliefs);
                     Journal.Append(Session.World, "dialogue:result", envelope.RequestId + ":" + (result.Success ? "ok" : result.ErrorCode));
+                    RecordDialogue(npcId, playerText, result);
                     return result;
                 }
                 catch (OperationCanceledException) { return DialogueResult.Failure("cancelled"); }
@@ -131,6 +157,25 @@ namespace Town.Core.Runtime
             }
         }
 
+        private void RecordDialogue(string npc, string text, DialogueResult result) => _steps.Add(new ReplayStep
+        {
+            Kind = "dialogue", Target = npc, Topic = text, Reply = result.Reply, Success = result.Success,
+            Error = result.ErrorCode, Citations = result.CitedBeliefs?.ToArray() ?? Array.Empty<string>()
+        });
+
+        public TownSave CreateSave(SpatialBookmark position = null)
+        {
+            ThrowIfDisposed();
+            if (IsDialoguePending) throw new InvalidOperationException("请等待对话结束后存档。");
+            if (_unrecordedCommand) throw new InvalidOperationException("本局包含未记录的开发命令，不能生成可靠存档。");
+            var save = new TownSave { Steps = _steps.Select(s => s.Copy()).ToArray(), StateHash = RuntimeEvidence.Hash(this), Position = position };
+            // 在写盘前实际重建一次，直接发现绕过 Runtime 的开发修改，不能生成假成功存档。
+            using (TownSaveCodec.Restore(save, Session.World.SessionGen + 1)) { }
+            return save;
+        }
+
+        internal void UseOfflineDialogue() => _dialogue = new RuleDialogueClient();
+
         private void ThrowIfDisposed() { if (_disposed) throw new ObjectDisposedException(nameof(TownRuntime)); }
         public void Dispose()
         {
@@ -138,6 +183,7 @@ namespace Town.Core.Runtime
             _disposed = true;
             _lifetime.Cancel();
             Session.World.Changed -= OnWorldChanged;
+            Rules.Noted -= OnRuleNote;
             _lifetime.Dispose();
         }
     }

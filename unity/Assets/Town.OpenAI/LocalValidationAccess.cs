@@ -29,9 +29,6 @@ namespace Town.OpenAI
                     if (!string.IsNullOrWhiteSpace(value)) return value;
                 }
             }
-            // 本项目文件优先，防止意外使用另一个工程/组织的环境密钥。
-            string fromEnvironment = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
-            if (!string.IsNullOrWhiteSpace(fromEnvironment)) return fromEnvironment;
             throw new InvalidOperationException("未配置 OPENAI_API_KEY，请使用安全密钥设置流程。");
         }
     }
@@ -41,11 +38,13 @@ namespace Town.OpenAI
     {
         private readonly string _directory;
         private int _runRequests;
+        private readonly OpenAiRunProfile _profile;
         private readonly object _gate = new object();
 
-        public FileRequestBudget(string projectRoot)
+        public FileRequestBudget(string projectRoot, OpenAiRunProfile profile = null)
         {
             _directory = Path.Combine(projectRoot, ".local", "openai");
+            _profile = profile ?? OpenAiRunProfile.Dialogue;
         }
 
         public bool TryReserve(out string reason)
@@ -53,8 +52,8 @@ namespace Town.OpenAI
             lock (_gate)
             {
                 reason = "budget_exhausted";
-                if (_runRequests >= OpenAiPolicy.MaxRequestsPerRun ||
-                    (_runRequests + 1) * OpenAiPolicy.ReservationUsdPerRequest > OpenAiPolicy.MaxRunReservationUsd)
+                if (_runRequests >= _profile.MaxRequests ||
+                    (_runRequests + 1) * OpenAiPolicy.ReservationUsdPerRequest > _profile.MaxReservedUsd)
                     return false;
                 try
                 {
@@ -64,12 +63,14 @@ namespace Town.OpenAI
                     {
                         var ledger = File.Exists(path)
                             ? JsonConvert.DeserializeObject<Ledger>(File.ReadAllText(path)) : new Ledger();
-                        if (ledger == null || ledger.Requests < 0 || ledger.ReservedUsd < 0)
+                        if (ledger == null || ledger.Requests < 0 || ledger.ReservedUsd < 0 || ledger.ResearchRequests < 0)
                         { reason = "invalid_budget_ledger"; return false; }
-                        if (ledger.Requests >= OpenAiPolicy.MaxRequestsPerUtcDay ||
-                            ledger.ReservedUsd + OpenAiPolicy.ReservationUsdPerRequest > OpenAiPolicy.MaxDayReservationUsd)
+                        if (ledger.Requests >= _profile.MaxDailyRequests ||
+                            ledger.ReservedUsd + OpenAiPolicy.ReservationUsdPerRequest > _profile.MaxDailyReservedUsd ||
+                            (_profile.AllMechanisms && ledger.ResearchRequests >= _profile.MaxRequests))
                             return false;
                         ledger.Requests++;
+                        if (_profile.AllMechanisms) ledger.ResearchRequests++;
                         ledger.ReservedUsd += OpenAiPolicy.ReservationUsdPerRequest;
                         string temp = path + ".pending";
                         File.WriteAllText(temp, JsonConvert.SerializeObject(ledger, Formatting.Indented));
@@ -90,6 +91,7 @@ namespace Town.OpenAI
         {
             public int Requests { get; set; }
             public decimal ReservedUsd { get; set; }
+            public int ResearchRequests { get; set; }
         }
     }
 }

@@ -67,7 +67,7 @@ namespace Town.Core.Rules
             if (cur != null && cur.Stance == stance && cur.OriginId == origin) return;
             K.Learn(Ids.Player, prop, stance, confidence, SourceType.ToldBy, World.Now, sourceActorId: teller, originId: origin);
             _s.Ledger.Add(new Transmission { At = World.Now, Teller = teller, Receiver = Ids.Player, PropositionId = prop,
-                Stance = stance, Mode = mode, OriginId = origin, Adopted = true, Reaction = "记进了信使手账" });
+                Stance = stance, Mode = mode, OriginId = origin, Adopted = true, Reaction = "记进了读者手记" });
         }
 
         // ———————————— 玩家传话 ————————————
@@ -81,7 +81,7 @@ namespace Town.Core.Rules
             if (!Propositions.All.ContainsKey(propositionId)) return CommandResult.Reject("未知的说法。");
 
             var mine = K.ViewFor(Ids.Player).Current(propositionId);
-            if (mine == null) return CommandResult.Reject("你的信使手账里没有这件事。");
+            if (mine == null) return CommandResult.Reject("你的读者手记里没有这件事。");
 
             string say = propositionId;
             bool stance = mine.Stance;
@@ -175,7 +175,7 @@ namespace Town.Core.Rules
                 return Finish(t);
             }
 
-            // 5b. 已经因为别的源头相信了：记为又一个人这么说，保留原来的源头（誓钟按每人的源头计数）
+            // 5b. 已经因为别的源头相信了：记为又一个人这么说，保留原来的源头（墨钟按源头计数）
             if (cur != null && cur.Stance == stance && cur.Source == SourceType.ToldBy)
             {
                 t.Adopted = true;

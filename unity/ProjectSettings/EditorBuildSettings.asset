@@ -8,5 +8,14 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Town_Graybox.unity
     guid: 63f435c347292405298a6dd0bc92d298
+  - enabled: 1
+    path: Assets/Scenes/Moonlight_Workshop.unity
+    guid: 1f5cf655fd0534016a904fff0cb46e4b
+  - enabled: 1
+    path: Assets/LocalThirdParty/Gameplay/Moonlight_Rescue.unity
+    guid: 63e51bfe00a6447ae9a9c7890229e556
+  - enabled: 1
+    path: Assets/LocalThirdParty/Gameplay/Moonlight_Village.unity
+    guid: 6250bddaf0ac34a54b0a340ee7cce520
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

@@ -5,7 +5,11 @@
         "Town.Core",
         "Town.Unity",
         "Town.OpenAI",
-        "Unity.AI.Navigation"
+        "Unity.AI.Navigation",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Core.Editor",
+        "Unity.RenderPipelines.Universal.Editor"
     ],
     "includePlatforms": [
         "Editor"

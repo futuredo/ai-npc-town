@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Town.OpenAI.Smoke", "Town.O
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Town.Sandbox", "Town.Sandbox\Town.Sandbox.csproj", "{308C0F33-9AE6-480C-B49B-236367B65970}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Town.Research", "Town.Research\Town.Research.csproj", "{52BA5624-9293-46DB-B821-2ABA5EBE98C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,18 @@ Global
 		{308C0F33-9AE6-480C-B49B-236367B65970}.Release|x64.Build.0 = Release|Any CPU
 		{308C0F33-9AE6-480C-B49B-236367B65970}.Release|x86.ActiveCfg = Release|Any CPU
 		{308C0F33-9AE6-480C-B49B-236367B65970}.Release|x86.Build.0 = Release|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Release|x64.Build.0 = Release|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{52BA5624-9293-46DB-B821-2ABA5EBE98C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

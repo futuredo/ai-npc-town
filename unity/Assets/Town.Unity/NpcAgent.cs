@@ -18,10 +18,18 @@ namespace Town.Unity
         private string _status = "";
         private string _targetId;
         private float _baseSpeed = -1f;
+        private TownNavigation _navigation;
+        private float _retryAt;
+        public TownNavigation Navigation => _navigation != null ? _navigation :
+            (_navigation = GetComponent<TownNavigation>() ?? gameObject.AddComponent<TownNavigation>());
 
         public bool IsMoving => _agent != null && _agent.hasPath && _agent.remainingDistance > _agent.stoppingDistance + 0.05f;
 
-        private void Awake() => _agent = GetComponent<NavMeshAgent>();
+        private void Awake()
+        {
+            _agent = GetComponent<NavMeshAgent>();
+            _navigation = GetComponent<TownNavigation>() ?? gameObject.AddComponent<TownNavigation>();
+        }
 
         private NavMeshAgent Agent
         {
@@ -35,14 +43,14 @@ namespace Town.Unity
 
         public void WarpTo(Vector3 p, string targetId = null)
         {
-            if (Agent.isOnNavMesh) Agent.ResetPath();
-            Agent.Warp(p);
+            Navigation.Warp(p);
             _targetId = targetId;
+            _retryAt = 0;
         }
 
         public void MoveTo(Vector3 p)
         {
-            if (Agent.isOnNavMesh) Agent.SetDestination(p);
+            Navigation.TryNavigate(p);
         }
 
         /// <summary>每帧由 TownGame 调用：Core 里的目标地点变了才重新寻路；速度随时间倍率变化。</summary>
@@ -50,8 +58,11 @@ namespace Town.Unity
         {
             var agent = Agent;
             agent.speed = _baseSpeed * Mathf.Max(1f, speedMultiplier);
-            if (agent.isOnNavMesh) agent.isStopped = stopped;
-            if (targetId == _targetId) return;
+            Navigation.Suspend(stopped);
+            if (stopped) return;
+            if (targetId == _targetId && _navigation.State != NavigationState.Blocked && _navigation.State != NavigationState.Unreachable) return;
+            if (Time.time < _retryAt) return;
+            _retryAt = Time.time + 2f;
             _targetId = targetId;
             MoveTo(point);
         }

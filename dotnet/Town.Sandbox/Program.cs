@@ -11,7 +11,7 @@ using L = Town.Core.World.Ids.Loc;
 using P = Town.Core.Knowledge.Propositions;
 
 /// <summary>
-/// 《回音镇》离线演示：用规则对话跑两条路线并打印结算。位置由脚本直接回报，不代表 Unity 寻路已验收。
+/// 《未竟之镇》离线演示：用规则对话跑两条路线并打印剧情与结算。位置由脚本直接回报，不代表 Unity 寻路已验收。
 /// 用法：dotnet run --project dotnet/Town.Sandbox [best|rumor]
 /// </summary>
 internal static class Program
@@ -20,13 +20,18 @@ internal static class Program
     {
         string route = args.FirstOrDefault() ?? "best";
         using var rt = new TownRuntime();
-        Console.WriteLine($"《回音镇：誓钟响起之前》离线演示 · 路线：{route}");
+        Console.WriteLine($"《未竟之镇》离线演示 · 路线：{route}");
         Console.WriteLine();
+        rt.SetPlayerLocation(L.BellTower);
+        Say(rt, "见霍勒斯，领取书签", () => rt.Execute(r => r.MeetKeeper()).Message);
+        rt.SetPlayerLocation(L.Plaza);
 
         if (route == "rumor") await RumorRoute(rt);
         else await BestRoute(rt);
 
         Goto(rt, 18, 1);
+        rt.SetPlayerLocation(L.BellTower);
+        rt.Execute(r => r.ReadLastPage());
         Print(rt);
         return rt.Rules.Bell.Rung ? 0 : 1;
     }
@@ -34,7 +39,7 @@ internal static class Program
     /// <summary>最好的路线：看井、让芬恩亲手还锤、牵线拜师、把灯灵的真相说给两个独立的人。</summary>
     private static async Task BestRoute(TownRuntime rt)
     {
-        Say(rt, "去旧井看一眼", () => { rt.SetPlayerLocation(L.Well); return rt.Execute(r => r.InspectWell()).Message; });
+        Say(rt, "去废稿井看一眼", () => { rt.SetPlayerLocation(L.Well); return rt.Execute(r => r.InspectWell()).Message; });
         Goto(rt, 10, 5);
         rt.SetPlayerLocation(L.Plaza);
         Say(rt, "在广场请芬恩亲手还锤", () => rt.Execute(r => r.AskFinnToReturnHammer()).Message);
@@ -76,11 +81,15 @@ internal static class Program
     {
         var rules = rt.Rules;
         Console.WriteLine();
+        Console.WriteLine("—— 第七章 · 剧情记录 ——");
+        foreach (var beat in rules.Story.History)
+            Console.WriteLine($"  {beat.At.Hour:00}:{beat.At.Minute:00} {beat.Id} · {beat.Text}");
+        Console.WriteLine();
         Console.WriteLine("—— 闲聊与人际变化 ——");
         foreach (var e in rt.Journal.Entries.Where(e => e.Kind == "gossip" || e.Kind == "relation" || e.Kind == "apprentice" || e.Kind == "help"))
             Console.WriteLine($"  {e.GameTime.Substring(e.GameTime.Length - 5)} {e.Detail}");
         Console.WriteLine();
-        Console.WriteLine("—— 🔔 誓钟敲响 ——");
+        Console.WriteLine("—— 🔔 墨钟敲响 ——");
         foreach (var m in rules.Bell.Manifested) Console.WriteLine("  显化：" + P.All[m.PropositionId].ManifestEffect);
         if (rules.Bell.Manifested.Count == 0) Console.WriteLine("  什么也没有显化");
         Console.WriteLine($"  拱门修复：{rt.Session.World.GetFlag(Ids.Flag.BenchProgress)}%   拜师：{rules.Apprentice.State}");
@@ -88,8 +97,11 @@ internal static class Program
         Console.WriteLine("—— 结局 ——");
         foreach (var e in FestivalOutcome.Endings(rules)) Console.WriteLine($"  {e.Title}：{e.Description}");
         Console.WriteLine();
-        Console.WriteLine("—— 《回音镇灯节小报》 ——");
+        Console.WriteLine("—— 第七章正文（灰盒条目版） ——");
         foreach (var h in FestivalOutcome.Headlines(rules)) Console.WriteLine("  · " + h);
+        Console.WriteLine();
+        Console.WriteLine("—— 最后一页 ——");
+        Console.WriteLine(rules.Story.LastPageText);
         Console.WriteLine();
         Console.WriteLine("—— 流言溯源 ——");
         foreach (var line in FestivalOutcome.Trace(rules)) Console.WriteLine("  " + line);

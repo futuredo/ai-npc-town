@@ -18,7 +18,7 @@ namespace Town.Core.Rules
     }
 
     /// <summary>
-    /// 《回音镇》一局的全部规则入口。只接受显式玩家交互和按游戏时间推进的 Tick；模型台词没有调用本规则的权限。
+    /// 《未竟之镇》一局的全部规则入口。只接受显式玩家交互和按游戏时间推进的 Tick；模型台词没有调用本规则的权限。
     /// </summary>
     public sealed class HammerEventRules
     {
@@ -33,6 +33,7 @@ namespace Town.Core.Rules
         public HelpRules Help { get; }
         public ApprenticeRules Apprentice { get; }
         public OathBell Bell { get; }
+        public StoryRules Story { get; }
 
         /// <summary>规则层的说明性事件（kind, detail），由 Runtime 写入审计日志。</summary>
         public event Action<string, string> Noted;
@@ -45,6 +46,7 @@ namespace Town.Core.Rules
             Help = new HelpRules(session, Rumor, note);
             Apprentice = new ApprenticeRules(session, () => Help.FinnReturnedHimself, note);
             Bell = new OathBell(session, note);
+            Story = new StoryRules(this, note);
             session.Relations.Changed += c => note("relation", c.ToString());
         }
 
@@ -68,7 +70,7 @@ namespace Town.Core.Rules
 
         public CommandResult InspectWell()
         {
-            if (World.PlayerLocationId != Ids.Loc.Well) return CommandResult.Reject("请先走到旧井边。");
+            if (World.PlayerLocationId != Ids.Loc.Well) return CommandResult.Reject("请先走到废稿井边。");
             if (HasWellEvidence) return CommandResult.Ok("井底那团小小的光还在发抖。");
             HasWellEvidence = true;
             World.Commit("evidence:observed_well", _ => { });
@@ -126,6 +128,8 @@ namespace Town.Core.Rules
         public CommandResult AskFinnToReturnHammer() => Help.AskFinnToReturnHammer();
         public CommandResult PromiseToBrunn() => Help.PromiseToBrunn();
         public CommandResult ApologizeToFinn() => Help.ApologizeToFinn();
+        public CommandResult MeetKeeper() => Story.MeetKeeper();
+        public CommandResult ReadLastPage() => Story.ReadLastPage();
 
         // ———————————— 每游戏分钟推进 ————————————
 
@@ -148,6 +152,7 @@ namespace Town.Core.Rules
                 });
                 Apprentice.Tick(); // 守信徽记显化后，布伦可能当场改口
             }
+            Story.Tick(); // 在维修、钟响和拜师判定后生成提示与封存最后一页。
         }
 
         private void TickRepair()

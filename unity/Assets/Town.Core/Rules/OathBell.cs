@@ -7,17 +7,23 @@ using Town.Core.World;
 
 namespace Town.Core.Rules
 {
-    /// <summary>回音石板上的一行：某条可显化说法现在有几人信、来自几个独立源头。</summary>
+    /// <summary>钟楼石板上的一行：某条可落墨说法现在有几人信、来自几个独立源头。</summary>
     public sealed class BellReading
     {
         public string PropositionId;
         public IReadOnlyList<string> Believers;
         public IReadOnlyList<string> Origins;
         public bool Ready => Believers.Count >= OathBell.MinBelievers && Origins.Count >= OathBell.MinOrigins;
+        /// <summary>霍勒斯只解释数量，不透露相信者、源头身份或命题真假。</summary>
+        public string KeeperComment => Believers.Count < OathBell.MinBelievers
+            ? (Believers.Count == 0 ? "还没有人这么想。" : "只有一个人这么想。")
+            : Origins.Count < OathBell.MinOrigins
+                ? "两个人信了，可都是听同一个人说的。"
+                : "这件事已经够了，墨会落下来的。";
     }
 
     /// <summary>
-    /// 誓钟规则（玩法设计 v2 §3）：日落时，至少 2 位居民相信、且来自至少 2 个独立源头的可显化说法变成现实。
+    /// 墨钟规则：日落时，至少 2 位居民相信、且来自至少 2 个独立源头的可落墨说法变成现实。
     /// 玩家（外乡人）的信念不计数。由规则统一判定，模型不能触发。
     /// </summary>
     public sealed class OathBell
@@ -40,7 +46,7 @@ namespace Town.Core.Rules
             _note = note ?? ((_, __) => { });
         }
 
-        /// <summary>回音石板：随时可读，只给数量，界面不显示具体是谁。</summary>
+        /// <summary>石板底层查询：只给数量；玩家可见入口另由 StoryRules 检查位置和书签。</summary>
         public IReadOnlyList<BellReading> Read()
         {
             var list = new List<BellReading>();
@@ -91,7 +97,7 @@ namespace Town.Core.Rules
                 }
             });
             foreach (var r in ready) _note("bell", "显化：" + Propositions.All[r.PropositionId].ManifestEffect);
-            if (ready.Count == 0) _note("bell", "誓钟响了三声，什么也没有改变");
+            if (ready.Count == 0) _note("bell", "墨钟响了三声，没有新的正文落下");
         }
     }
 }

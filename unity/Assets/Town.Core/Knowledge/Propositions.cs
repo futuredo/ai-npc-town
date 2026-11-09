@@ -22,7 +22,7 @@ namespace Town.Core.Knowledge
         public string ExaggerationBlockedBy;
         /// <summary>指控类说法：较真的人要证据，被指控的人会受伤。</summary>
         public bool IsAccusation;
-        /// <summary>誓钟敲响时可以显化成现实。</summary>
+        /// <summary>墨钟敲响时可以落墨成现实。</summary>
         public bool Manifestable;
         /// <summary>显化后的效果说明（给界面和结算）。</summary>
         public string ManifestEffect;
@@ -33,7 +33,7 @@ namespace Town.Core.Knowledge
     }
 
     /// <summary>
-    /// 《回音镇》命题表（玩法设计 v2 §9）。A 线沿用 P1—P6 的 ID，保证旧测试与日志不变。
+    /// 《未竟之镇》命题表。A 线沿用 P1—P6 的 ID，保证旧测试与日志不变。
     /// </summary>
     public static class Propositions
     {
@@ -69,13 +69,13 @@ namespace Town.Core.Knowledge
                 LeakKeywords = new[] { "石亭", "哨塔" } },
             [Stole] = new Proposition { Id = Stole, Thread = "A", Text = "芬恩偷了符文锤", TruthInWorld = false, SubjectId = Finn, IsAccusation = true,
                 Defenses = new[] { Borrowed, Returned, Reliable }, Manifestable = true, ManifestEffect = "芬恩手上烙下窃贼印记", LeakKeywords = new string[0] },
-            [Promise] = new Proposition { Id = Promise, Text = "信使承诺日落前把符文锤找回来", TruthInWorld = null, LeakKeywords = new string[0] },
+            [Promise] = new Proposition { Id = Promise, Text = "读者承诺日落前把符文锤找回来", TruthInWorld = null, LeakKeywords = new string[0] },
 
-            [WellGlow] = new Proposition { Id = WellGlow, Thread = "B", Text = "旧井里有一团幽光", TruthInWorld = true,
+            [WellGlow] = new Proposition { Id = WellGlow, Thread = "B", Text = "废稿井里有一团幽光", TruthInWorld = true,
                 ExaggeratesTo = WellEvil, ExaggerationBlockedBy = WellWisp, LeakKeywords = new[] { "幽光" } },
-            [WellEvil] = new Proposition { Id = WellEvil, Thread = "B", Text = "旧井里藏着恶灵", TruthInWorld = false,
+            [WellEvil] = new Proposition { Id = WellEvil, Thread = "B", Text = "废稿井里藏着恶灵", TruthInWorld = false,
                 Manifestable = true, ManifestEffect = "灯灵化作恶灵，灯节的灯火全部熄灭", Refutes = new[] { WellWisp }, Defenses = new[] { WellWisp }, LeakKeywords = new string[0] },
-            [WellWisp] = new Proposition { Id = WellWisp, Thread = "B", Text = "旧井里是一只走失的灯灵", TruthInWorld = true,
+            [WellWisp] = new Proposition { Id = WellWisp, Thread = "B", Text = "废稿井里是一只走失的灯灵", TruthInWorld = true,
                 Manifestable = true, ManifestEffect = "灯灵成为灯节的守护灵，点亮整个广场", Refutes = new[] { WellEvil }, Defenses = new[] { WellEvil }, LeakKeywords = new[] { "灯灵" } },
 
             [WantsToLearn] = new Proposition { Id = WantsToLearn, Thread = "C", Text = "芬恩想跟布伦学符文锻造", TruthInWorld = true, SubjectId = Finn, SecretOwnerId = Finn,

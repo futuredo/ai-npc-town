@@ -172,7 +172,7 @@ namespace Town.Core.Tests
             for (int i = 0; i < 300; i++) runtime.Advance(1);
             Assert.That(runtime.Journal.Entries.Count, Is.EqualTo(256));
             using var fresh = new TownRuntime(2);
-            Assert.That(fresh.Journal.Entries.Count, Is.EqualTo(1));
+            Assert.That(fresh.Journal.Entries.Select(e => e.Kind), Is.EqualTo(new[] { "session", "story" }));
             Assert.That(fresh.Rules.HasShelterEvidence, Is.False);
         }
 

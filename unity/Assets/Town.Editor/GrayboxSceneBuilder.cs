@@ -77,8 +77,8 @@ namespace Town.Editor
             Building(env, Ids.Loc.Store, "醉月旅店", new Vector3(17, 0, 9), new Vector3(8, 4, 6), new Color(0.85f, 0.75f, 0.45f), "酒桶");
             Building(env, Ids.Loc.Shelter, "旧哨塔石亭", new Vector3(14, 0, -13), new Vector3(6, 3.5f, 4), new Color(0.55f, 0.58f, 0.62f), "箱子");
             Building(env, Ids.Loc.Homes, "民居", new Vector3(-17, 0, -13), new Vector3(9, 5, 5), new Color(0.75f, 0.7f, 0.68f), null);
-            Building(env, Ids.Loc.Well, "旧井", new Vector3(0, 0, -15), new Vector3(2.4f, 1.2f, 2.4f), new Color(0.4f, 0.42f, 0.5f), null);
-            Building(env, Ids.Loc.BellTower, "钟楼", new Vector3(0, 0, 16), new Vector3(4.5f, 12, 4.5f), new Color(0.6f, 0.55f, 0.7f), "回音石板");
+            Building(env, Ids.Loc.Well, "废稿井", new Vector3(0, 0, -15), new Vector3(2.4f, 1.2f, 2.4f), new Color(0.4f, 0.42f, 0.5f), null);
+            Building(env, Ids.Loc.BellTower, "钟楼", new Vector3(0, 0, 16), new Vector3(4.5f, 12, 4.5f), new Color(0.6f, 0.55f, 0.7f), "钟楼石板");
             Plaza(env);
 
             var surface = env.AddComponent<NavMeshSurface>();
@@ -220,7 +220,7 @@ namespace Town.Editor
             var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
             if (mat == null)
             {
-                mat = new Material(Shader.Find("Standard"));
+                mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
                 AssetDatabase.CreateAsset(mat, path);
             }
             mat.color = color;

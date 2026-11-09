@@ -9,13 +9,13 @@ using L = Town.Core.World.Ids.Loc;
 namespace Town.Core.Content
 {
     /// <summary>
-    /// 《回音镇：誓钟响起之前》的初始状态（玩法设计 v2）：世界事实、初始认知、关系与日程。
+    /// 《未竟之镇》第七章的初始状态：世界事实、初始认知、关系与日程。
     /// 类名沿用早期版本以免牵动调用方；以后改为从配置读取。
     /// </summary>
     public static class HammerEventSetup
     {
         public static readonly GameTime StartTime = GameTime.At(1, 9, 0);
-        /// <summary>日落，誓钟敲响，灯节开始。</summary>
+        /// <summary>日落，墨钟敲响，灯节开始。</summary>
         public static readonly GameTime MarketTime = GameTime.At(1, 18, 0);
         /// <summary>昨晚那场雨。</summary>
         public static readonly GameTime BorrowTime = GameTime.At(0, 15, 0);

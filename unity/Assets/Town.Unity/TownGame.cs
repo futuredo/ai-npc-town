@@ -1,11 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System;
+using System.IO;
 using Town.Core.Content;
 using Town.Core.Knowledge;
 using Town.Core.World;
 using Town.Core.Runtime;
+using Town.Core.Rules;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Town.Unity
 {
@@ -26,6 +30,11 @@ namespace Town.Unity
         public float SpeedMultiplier { get; private set; } = 1f;
         /// <summary>对话等界面打开时为 true，阻止点地移动。</summary>
         public bool InputBlocked { get; set; }
+        public string SystemMessage { get; private set; } = "";
+        public PlayerClickMover Player { get; private set; }
+        public TownCameraRig CameraRig { get; private set; }
+        public string SaveDirectoryOverride { private get; set; }
+        private TownSaveStore SaveStore => new TownSaveStore(Path.Combine(SaveDirectoryOverride ?? Path.Combine(Application.persistentDataPath, "unfinished-town"), "chapter7.json"));
 
         private readonly Dictionary<string, LocationMarker> _locations = new Dictionary<string, LocationMarker>();
         private readonly Dictionary<string, NpcAgent> _npcs = new Dictionary<string, NpcAgent>();
@@ -39,6 +48,9 @@ namespace Town.Unity
             Instance = this;
             foreach (var l in FindObjectsByType<LocationMarker>(FindObjectsSortMode.None)) _locations[l.locationId] = l;
             foreach (var n in FindObjectsByType<NpcAgent>(FindObjectsSortMode.None)) _npcs[n.npcId] = n;
+            Player = FindFirstObjectByType<PlayerClickMover>();
+            if (Camera.main != null)
+                CameraRig = Camera.main.GetComponent<TownCameraRig>() ?? Camera.main.gameObject.AddComponent<TownCameraRig>();
             StartSession(1);
             if (GetComponent<TownInteractionPanel>() == null) gameObject.AddComponent<TownInteractionPanel>();
         }
@@ -52,12 +64,16 @@ namespace Town.Unity
                 if (_npcs.TryGetValue(npc.Id, out var agent) && npc.LocationId != null && _locations.TryGetValue(npc.LocationId, out var loc))
                     agent.WarpTo(loc.StandPoint + NpcOffset(npc.Id), npc.LocationId);
             }
-            var player = FindFirstObjectByType<PlayerClickMover>();
-            if (player != null && _locations.TryGetValue(Ids.Loc.Plaza, out var spawn))
-                player.ResetPosition(spawn.StandPoint + Vector3.right * 1.5f);
+            if (Player != null && _locations.TryGetValue(Ids.Loc.Plaza, out var spawn))
+            {
+                Player.ResetPosition(spawn.StandPoint + Vector3.right * 1.5f);
+                CameraRig?.Bind(Player.transform);
+            }
             InputBlocked = false;
             Paused = false;
             _accum = 0;
+            SpeedMultiplier = 1f;
+            SystemMessage = "";
             Debug.Log($"[Town] 新局开始 SessionGen={Session.World.SessionGen} {Session.World.Now}");
         }
 
@@ -110,11 +126,92 @@ namespace Town.Unity
             if (Input.GetKeyDown(KeyCode.F2)) Paused = !Paused;
             if (Input.GetKeyDown(KeyCode.F3)) SpeedMultiplier = SpeedMultiplier >= 4f ? 1f : 4f;
             if (Input.GetKeyDown(KeyCode.F5)) ResetSession();
+            if (Input.GetKeyDown(KeyCode.F6)) SaveSession();
+            if (Input.GetKeyDown(KeyCode.F9)) LoadSession();
+            if (Input.GetKeyDown(KeyCode.E) && !Paused && !InputBlocked && !Runtime.IsDialoguePending) InteractNearby();
             if (Input.GetKeyDown(KeyCode.Tab)) _debugNpcIndex = (_debugNpcIndex + 1) % Ids.Npc.All.Length;
         }
 
         public bool TryGetLocation(string id, out LocationMarker marker) => _locations.TryGetValue(id, out marker);
         public bool TryGetNpc(string id, out NpcAgent agent) => _npcs.TryGetValue(id, out agent);
+
+        public bool CanInteract(string id) => Player != null && _npcs.TryGetValue(id, out var actor) &&
+            Session.World.Npcs.TryGetValue(id, out var npc) && npc.LocationId != null &&
+            npc.LocationId == Session.World.PlayerLocationId && Vector3.Distance(Player.transform.position, actor.transform.position) <= 5f;
+
+        public CommandResult Execute(TownCommand command)
+        {
+            string target = command.NpcId;
+            if (command.Kind == TownCommandKind.ReturnHammer || command.Kind == TownCommandKind.Promise) target = Ids.Npc.Amu;
+            if (command.Kind == TownCommandKind.AskFinnToReturn || command.Kind == TownCommandKind.Apologize) target = Ids.Npc.Xiaochuan;
+            if (target != null && !CanInteract(target)) return CommandResult.Reject("先走到这位居民身边，等他停下脚步。");
+            return Runtime.Execute(command);
+        }
+
+        private async void InteractNearby()
+        {
+            switch (Session.World.PlayerLocationId)
+            {
+                case Ids.Loc.BellTower: SystemMessage = Execute(new TownCommand(Runtime.Rules.Story.HasBookmark ? TownCommandKind.ReadTablet : TownCommandKind.MeetKeeper)).Message; return;
+                case Ids.Loc.Shelter: SystemMessage = Execute(new TownCommand(TownCommandKind.InspectShelter)).Message; return;
+                case Ids.Loc.Well: SystemMessage = Execute(new TownCommand(TownCommandKind.InspectWell)).Message; return;
+            }
+            string id = _npcs.Keys.Where(CanInteract).OrderBy(n => Vector3.Distance(Player.transform.position, _npcs[n].transform.position)).FirstOrDefault();
+            if (id == null) { SystemMessage = "附近没有可交谈的人，先走近一点。"; return; }
+            var runtime = Runtime;
+            var reply = await runtime.TalkAsync(id, Propositions.Took);
+            if (this != null && Runtime == runtime) SystemMessage = Ids.Name(id) + "：" + reply.Reply;
+        }
+
+        private static SpatialBookmark Bookmark(Transform actor, string id = null) => new SpatialBookmark
+        { ActorId = id, X = actor.position.x, Y = actor.position.y, Z = actor.position.z, Yaw = actor.eulerAngles.y };
+
+        public bool SaveSession()
+        {
+            try
+            {
+                if (Player == null) throw new InvalidOperationException();
+                var save = Runtime.CreateSave(Bookmark(Player.transform, Ids.Player));
+                save.Residents = _npcs.OrderBy(n => n.Key).Select(n => Bookmark(n.Value.transform, n.Key)).ToArray();
+                SaveStore.Write(save);
+                SystemMessage = "书签已夹好。这一局保存在本机；读档不会重新调用模型。";
+                return true;
+            }
+            catch (Exception) { SystemMessage = "存档未完成：请等待对话结束，并确认本机目录可写。旧存档没有被主动清除。"; return false; }
+        }
+
+        public bool LoadSession()
+        {
+            if (Runtime.IsDialoguePending) { SystemMessage = "请等待对话结束后读档。"; return false; }
+            TownRuntime restored = null;
+            try
+            {
+                restored = SaveStore.Read(Session.World.SessionGen + 1, out var save, out bool backup);
+                if (Player == null || save.Position == null || save.Position.ActorId != Ids.Player || save.Residents == null ||
+                    save.Residents.Any(p => !_npcs.ContainsKey(p.ActorId))) throw new InvalidDataException();
+                // 先校验全部坐标；失败不替换当前局、不移动任何角色。
+                foreach (var p in (save.Residents ?? Array.Empty<SpatialBookmark>()).Concat(new[] { save.Position }))
+                    if (!NavMesh.SamplePosition(new Vector3(p.X, p.Y, p.Z), out _, 2f, NavMesh.AllAreas)) throw new InvalidDataException();
+                Player.ResetPosition(new Vector3(save.Position.X, save.Position.Y, save.Position.Z));
+                Player.transform.rotation = Quaternion.Euler(0, save.Position.Yaw, 0);
+                foreach (var p in save.Residents ?? Array.Empty<SpatialBookmark>())
+                {
+                    var actor = _npcs[p.ActorId];
+                    actor.WarpTo(new Vector3(p.X, p.Y, p.Z));
+                    actor.transform.rotation = Quaternion.Euler(0, p.Yaw, 0);
+                }
+                // 场景前置条件检查完、角色定位完才交换核心运行时。
+                var old = Runtime;
+                Runtime = restored;
+                restored = null;
+                old.Dispose();
+                _accum = 0; SpeedMultiplier = 1f; Paused = true; InputBlocked = false;
+                CameraRig?.Bind(Player.transform);
+                SystemMessage = backup ? "主存档损坏，已恢复上一份书签。当前暂停，按 F2 继续。" : "已回到书签夹住的那一刻。当前暂停，按 F2 继续。";
+                return true;
+            }
+            catch (Exception) { restored?.Dispose(); SystemMessage = "没有可用的兼容存档，或坐标已不可达；当前局保持不变。"; return false; }
+        }
 
         public void ReportPlayerPosition(Vector3 position)
         {
@@ -155,7 +252,7 @@ namespace Town.Unity
             sb.AppendLine($"  拱门修复: {w.GetFlag(Ids.Flag.BenchProgress)}%");
             sb.AppendLine();
 
-            sb.AppendLine("【回音石板（真值面板，开发用）】");
+            sb.AppendLine("【钟楼石板（真值面板，开发用）】");
             foreach (var r in Runtime.Rules.Bell.Read())
                 sb.AppendLine($"  {Propositions.All[r.PropositionId].Text}: {r.Believers.Count}人/{r.Origins.Count}源{(r.Ready ? " ★" : "")}");
             sb.AppendLine();

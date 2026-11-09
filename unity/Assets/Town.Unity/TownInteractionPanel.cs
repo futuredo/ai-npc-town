@@ -5,6 +5,7 @@ using Town.Core.Outcome;
 using Town.Core.Rules;
 using Town.Core.Social;
 using Town.Core.World;
+using Town.Core.Runtime;
 using UnityEngine;
 using N = Town.Core.World.Ids.Npc;
 using P = Town.Core.Knowledge.Propositions;
@@ -12,7 +13,7 @@ using P = Town.Core.Knowledge.Propositions;
 namespace Town.Unity
 {
     /// <summary>
-    /// 灰盒玩法面板：信使手账、传话、回音石板、钟响结算。只调用 Runtime / Rules 的公开命令。
+    /// 灰盒玩法面板：读者手记、传话、钟楼石板、剧情与钟响结算。只调用 Runtime / Rules 的公开命令。
     /// 正式 UI（UGUI + 奇幻皮肤）在素材到位后替换，逻辑不变。
     /// </summary>
     public sealed class TownInteractionPanel : MonoBehaviour
@@ -31,12 +32,13 @@ namespace Town.Unity
         };
 
         private TownGame _game;
-        private string _message = "你是刚到回音镇的信使。日落时誓钟会响——被足够多人相信的事会变成真的。";
+        private string _message = "你掉进了一本没写完的书。先去钟楼，找守钟人霍勒斯。";
         private Vector2 _scroll;
         private int _generation;
         private string _selected;           // 手账里选中的条目（命题 ID）
         private List<BellReading> _board;   // 上次在钟楼看到的石板
         private string _boardTime;
+        private bool _showStoryHistory;
 
         private void Awake() => _game = GetComponent<TownGame>();
 
@@ -49,29 +51,39 @@ namespace Town.Unity
             if (_generation != world.SessionGen)
             {
                 _generation = world.SessionGen;
-                _message = "新的一天。日落时誓钟会响。";
+                _message = "你掉进了一本没写完的书。先去钟楼，找守钟人霍勒斯。";
                 _selected = null;
                 _board = null;
+                _boardTime = null;
+                _showStoryHistory = false;
             }
 
             GUILayout.BeginArea(PanelRect, GUI.skin.box);
             _scroll = GUILayout.BeginScrollView(_scroll);
 
             int left = HammerEventSetupMinutesLeft(world);
-            GUILayout.Label($"<b>回音镇</b>  {world.Now.Hour:00}:{world.Now.Minute:00}  {(left > 0 ? $"距誓钟 {left / 60} 小时 {left % 60} 分" : "誓钟已响")}", Rich());
+            GUILayout.Label($"<b>未竟之镇</b>  {world.Now.Hour:00}:{world.Now.Minute:00}  {(left > 0 ? $"距落墨 {left / 60} 小时 {left % 60} 分" : "墨钟已响")}", Rich());
             GUILayout.Label("你在：" + Ids.Name(world.PlayerLocationId) + "    拱门修复：" + world.GetFlag(Ids.Flag.BenchProgress) + "%");
             GUILayout.Label(_message, Wrap());
+            DrawStory(rules);
 
             if (world.GetFlag(Ids.Flag.MarketStarted) == 1) DrawFinale(rules);
 
             GUI.enabled = !rt.IsDialoguePending;
             DrawPlace(rules, world);
-            foreach (var npc in world.Npcs.Values.Where(n => n.LocationId != null && n.LocationId == world.PlayerLocationId))
+            foreach (var npc in world.Npcs.Values.Where(n => _game.CanInteract(n.Id)))
                 DrawNpc(rt, rules, npc);
             DrawNotebook(rt);
             DrawBoard(rules, world);
 
             GUILayout.Space(8);
+            GUILayout.Label("WASD 行走 · Shift 快走 · 左键点地 · 右键环绕 · 滚轮缩放 · E 附近交互", Wrap());
+            GUILayout.Label(_game.Player?.Navigation?.Feedback ?? "", Wrap());
+            GUILayout.Label(_game.SystemMessage, Wrap());
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("夹书签 / 存档 F6")) _game.SaveSession();
+            if (GUILayout.Button("回到书签 / 读档 F9")) _game.LoadSession();
+            GUILayout.EndHorizontal();
             GUILayout.Label("开发：", Wrap());
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("+30 分钟")) rt.Advance(30);
@@ -97,21 +109,29 @@ namespace Town.Unity
             {
                 case Ids.Loc.Shelter:
                     Header("旧哨塔石亭");
-                    if (GUILayout.Button("查看箱子")) Run(r => r.InspectShelter());
-                    if (GUILayout.Button("拿起符文锤")) Run(r => r.TakeHammer());
+                    if (GUILayout.Button("查看箱子")) Run(TownCommandKind.InspectShelter);
+                    if (GUILayout.Button("拿起符文锤")) Run(TownCommandKind.TakeHammer);
                     break;
                 case Ids.Loc.Well:
-                    Header("旧井");
-                    if (GUILayout.Button("探头往井里看")) Run(r => r.InspectWell());
+                    Header("废稿井");
+                    if (GUILayout.Button("探头往井里看")) Run(TownCommandKind.InspectWell);
                     break;
                 case Ids.Loc.BellTower:
                     Header("钟楼");
-                    if (GUILayout.Button("读回音石板"))
+                    GUILayout.Label("霍勒斯 · 守钟人（不参与传话）", Wrap());
+                    if (GUILayout.Button(rules.Story.HasBookmark ? "重温落墨三规" : "和霍勒斯交谈，领取书签")) Run(TownCommandKind.MeetKeeper);
+                    if (GUILayout.Button("读钟楼石板"))
                     {
-                        _board = rules.Bell.Read().ToList();
-                        _boardTime = $"{world.Now.Hour:00}:{world.Now.Minute:00}";
-                        _message = "石板上的符文闪着微光：每条说法有几人相信、来自几个源头。";
+                        var result = _game.Execute(new TownCommand(TownCommandKind.ReadTablet));
+                        _message = result.Message;
+                        if (result.Success)
+                        {
+                            rules.Story.ReadTablet(out var readings);
+                            _board = readings.ToList();
+                            _boardTime = $"{world.Now.Hour:00}:{world.Now.Minute:00}";
+                        }
                     }
+                    if (GUILayout.Button(rules.Story.HasReadLastPage ? "重读最后一页" : "拆开最后一页（钟响之后）")) Run(TownCommandKind.ReadLastPage);
                     break;
             }
         }
@@ -127,32 +147,41 @@ namespace Town.Unity
 
             if (npc.Id == N.Amu)
             {
-                if (GUILayout.Button("出示：石亭里的符文锤")) Run(r => r.ShowEvidence(npc.Id));
-                if (GUILayout.Button("把符文锤交给他")) Run(r => r.ReturnHammer());
-                if (GUILayout.Button("承诺：日落前把锤子找回来")) Run(r => r.PromiseToBrunn());
+                if (GUILayout.Button("出示：石亭里的符文锤")) Run(TownCommandKind.ShowEvidence, npc.Id);
+                if (GUILayout.Button("把符文锤交给他")) Run(TownCommandKind.ReturnHammer);
+                if (GUILayout.Button("承诺：日落前把锤子找回来")) Run(TownCommandKind.Promise);
             }
             if (npc.Id == N.Xiaochuan)
             {
-                if (GUILayout.Button("请他亲手把锤子还给布伦")) Run(r => r.AskFinnToReturnHammer());
-                if (GUILayout.Button("道歉")) Run(r => r.ApologizeToFinn());
+                if (GUILayout.Button("请他亲手把锤子还给布伦")) Run(TownCommandKind.AskFinnToReturn);
+                if (GUILayout.Button("道歉")) Run(TownCommandKind.Apologize);
             }
-            if (npc.Id == N.Ahe && GUILayout.Button("出示：石亭里的符文锤")) Run(r => r.ShowEvidence(npc.Id));
+            if (npc.Id == N.Ahe && GUILayout.Button("出示：石亭里的符文锤")) Run(TownCommandKind.ShowEvidence, npc.Id);
 
             if (_selected != null)
             {
                 GUILayout.Label($"把「{P.TextOf(_selected)}」告诉{npc.DisplayName}：", Wrap());
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("如实转述")) Run(r => r.Tell(npc.Id, _selected, TellMode.Faithful));
-                if (GUILayout.Button("说成亲眼所见")) Run(r => r.Tell(npc.Id, _selected, TellMode.ClaimSeen));
-                if (P.All[_selected].ExaggeratesTo != null && GUILayout.Button("添油加醋")) Run(r => r.Tell(npc.Id, _selected, TellMode.Exaggerate));
+                if (GUILayout.Button("如实转述")) Run(TownCommandKind.Tell, npc.Id, _selected, TellMode.Faithful);
+                if (GUILayout.Button("说成亲眼所见")) Run(TownCommandKind.Tell, npc.Id, _selected, TellMode.ClaimSeen);
+                if (P.All[_selected].ExaggeratesTo != null && GUILayout.Button("添油加醋")) Run(TownCommandKind.Tell, npc.Id, _selected, TellMode.Exaggerate);
                 GUILayout.EndHorizontal();
             }
         }
 
-        // —— 信使手账 ——
+        private void DrawStory(HammerEventRules rules)
+        {
+            Header(rules.Story.ChapterTitle);
+            _showStoryHistory = GUILayout.Toggle(_showStoryHistory, "展开本局剧情记录");
+            var beats = rules.Story.History;
+            foreach (var beat in _showStoryHistory ? beats : beats.Skip(System.Math.Max(0, beats.Count - 2)))
+                GUILayout.Label($"{beat.At.Hour:00}:{beat.At.Minute:00} · {beat.Text}", Wrap());
+        }
+
+        // —— 读者手记 ——
         private void DrawNotebook(Town.Core.Runtime.TownRuntime rt)
         {
-            Header("信使手账（点选一条，再对身边的人传话；不说就是保密）");
+            Header("读者手记（点选一条，再对身边的人传话；不说就是保密）");
             var view = rt.Session.Knowledge.ViewFor(Ids.Player);
             var mine = view.ActiveBeliefs.Where(b => b.PropositionId != P.Promise).Select(b => b.PropositionId).Distinct()
                 .OrderBy(id => id).Select(id => view.Current(id)).ToList();
@@ -166,33 +195,39 @@ namespace Town.Unity
             }
         }
 
-        // —— 回音石板 ——
+        // —— 钟楼石板 ——
         private void DrawBoard(HammerEventRules rules, WorldState world)
         {
-            Header("回音石板" + (_board == null ? "（去钟楼读一读）" : $"（{_boardTime} 读到）"));
+            Header("钟楼石板" + (_board == null ? "（先找霍勒斯拿书签，再读）" : $"（{_boardTime} 读到）"));
             if (_board == null) return;
             foreach (var r in _board)
+            {
                 GUILayout.Label($"{(r.Ready ? "✦" : "·")} {P.TextOf(r.PropositionId)}：{r.Believers.Count} 人相信，{r.Origins.Count} 个源头", Wrap());
-            GUILayout.Label("（需要 2 人相信、2 个源头。你是外乡人，你的信念不算数。）", Wrap());
+                GUILayout.Label("霍勒斯：" + r.KeeperComment, Wrap());
+            }
+            GUILayout.Label("（至少 2 位居民相信、2 个源头。读者之信不落墨。）", Wrap());
         }
 
         // —— 钟响结算 ——
         private void DrawFinale(HammerEventRules rules)
         {
-            Header("🔔 誓钟敲响了三声");
+            Header("🔔 墨钟敲响了三声");
             foreach (var m in rules.Bell.Manifested)
                 GUILayout.Label("✦ 显化：" + P.All[m.PropositionId].ManifestEffect, Wrap());
             if (rules.Bell.Manifested.Count == 0) GUILayout.Label("什么也没有显化。", Wrap());
             GUILayout.Label("<b>结局</b>", Rich());
             foreach (var e in FestivalOutcome.Endings(rules))
                 GUILayout.Label($"{e.Title}：{e.Description}", Wrap());
-            GUILayout.Label("<b>《回音镇灯节小报》</b>", Rich());
+            GUILayout.Label("<b>第七章正文（灰盒条目版）</b>", Rich());
             foreach (var h in FestivalOutcome.Headlines(rules)) GUILayout.Label("· " + h, Wrap());
+            GUILayout.Label("<b>最后一页</b>", Rich());
+            GUILayout.Label(rules.Story.LastPageText ?? "墨印松开了。回钟楼，找霍勒斯拆开最后一页。", Wrap());
             GUILayout.Label("<b>流言溯源</b>", Rich());
             foreach (var line in FestivalOutcome.Trace(rules)) GUILayout.Label(line, Wrap());
         }
 
-        private void Run(System.Func<HammerEventRules, CommandResult> command) => _message = _game.Runtime.Execute(command).Message;
+        private void Run(TownCommandKind kind, string npc = null, string prop = null, TellMode mode = TellMode.Faithful) =>
+            _message = _game.Execute(new TownCommand(kind, npc, prop, mode)).Message;
 
         private async void Talk(string npcId, string topic)
         {

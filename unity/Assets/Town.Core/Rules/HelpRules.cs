@@ -42,7 +42,7 @@ namespace Town.Core.Rules
         public CommandResult AskFinnToReturnHammer()
         {
             if (!Near(N.Xiaochuan)) return CommandResult.Reject("请先走到芬恩身边。");
-            if (World.GetFlag(Ids.Flag.MarketStarted) != 0) return CommandResult.Reject("誓钟已经响过了。");
+            if (World.GetFlag(Ids.Flag.MarketStarted) != 0) return CommandResult.Reject("墨钟已经响过了。");
             if (Carry == CarryState.ToPickup || Carry == CarryState.ToDeliver) return CommandResult.Ok("芬恩：「我已经在办啦！」");
             if (Carry == CarryState.Delivered) return CommandResult.Ok("芬恩：「锤子已经交给布伦了。」");
             if (World.RequireItem(Ids.Item.Hammer).HolderId == N.Amu) return CommandResult.Reject("布伦已经拿回锤子了。");
@@ -135,7 +135,7 @@ namespace Town.Core.Rules
         {
             if (!Near(N.Amu)) return CommandResult.Reject("请先走到布伦身边。");
             if (Promise != null) return CommandResult.Ok("布伦：「我记着呢，日落前。」");
-            if (World.GetFlag(Ids.Flag.MarketStarted) != 0) return CommandResult.Reject("誓钟已经响过了。");
+            if (World.GetFlag(Ids.Flag.MarketStarted) != 0) return CommandResult.Reject("墨钟已经响过了。");
             if (World.RequireItem(Ids.Item.Hammer).HolderId == N.Amu) return CommandResult.Reject("锤子已经回到布伦手里了。");
             Promise = new Commitment("promise_hammer", Ids.Player, N.Amu, "日落前把符文锤找回来", World.Now, HammerEventSetup.MarketTime);
             _s.Knowledge.Learn(N.Amu, Propositions.Promise, true, 1f, SourceType.Experienced, World.Now);
