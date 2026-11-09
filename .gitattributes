@@ -1,0 +1,4 @@
+# Unity 序列化空字符串会输出“字段名: ”；保留编辑器格式，避免反复改写资源。
+# 仅放宽生成的材质/配置文件行尾空格，C#、JSON 和 Markdown 仍按默认检查。
+unity/**/*.asset whitespace=-blank-at-eol
+unity/**/*.mat whitespace=-blank-at-eol

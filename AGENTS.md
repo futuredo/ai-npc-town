@@ -19,3 +19,20 @@
 - 输出必须做结构与引用校验。当前能力仅限对话，`action=none`，不能把模型台词视为已执行的世界动作。
 - API 费用按返回 usage 和当前价格估算并标注“估算”；没有 usage 时费用未知，不得报告为零。不要声称已验证账户余额或赠送额度扣费，除非有平台证据。
 - 详见 [OpenAI 接入与成本规范](docs/OpenAI接入与成本规范.md)。
+
+## 本轮六机制研究授权（2026-11-08）
+
+- 用户明确要求足量真实模型实验，并进一步说明“预算无上限，能实现我的需求和目标就行”。此授权覆盖本轮六机制、连续世界演化、失败适配和复验，不因扩量或费用重复询问。
+- `OpenAiRunProfile.SixMechanismResearch` 不设费用和每日请求配额；继续在原账本逐次记账，按有限案例、种子和夜晚数结束实验。标准对话配置仍保留上方的限额。
+- 研究默认模型仍为 `gpt-6-luna`，单并发、输出最多 768 tokens、请求体最多 12 KiB、无自动重试；本轮未自动升级模型或启用额外工具。
+- 研究能力已扩展为对话、行动提案、居民自主计划、GM 事件和造物。对话 `action=none`；其他任务经结构/引用/规则校验后提交，造物还要玩家确认图样。
+- 对话发送当前居民冻结的 `NpcPerceptionView`；其他机制发送其角色裁剪的 `TaskPerceptionView`。行动只看玩家可见场景，造物只看可用材料，居民计划只看本人认知，GM 只看汇总与公共事件。完整世界快照仅留本地回放。
+- CLI 仅 `--live` 联网；Unity 需要选择“下一局六机制真实模型（研究模式）”，退出 Play 后清除。普通打开工程、Play 和测试继续默认离线。
+
+## Blender 技能与 Unity 工作流
+
+- 本项目在 `.agents/skills/` 安装了 `arjun988/blender-skills` 的 94 个技能；固定版本、MIT 许可和文件哈希见该目录的 `blender-skills-source.json`、`LICENSE.blender-skills`。按任务读取相关 `SKILL.md` 与引用文档。
+- 新建或复杂改造资产优先读取 `blender-director`，再按任务使用 `prop-artist`、`environment-artist`、`rigging`、`animation` 等；交付前读取 `asset-optimization`、`unity-export` 与 `qa-review`。
+- Blender 使用当前会话实际可用的 MCP 工具；先读取连接状态和场景，再操作。上游示例中的工具名、Windows MCP 配置和引擎建议需适配本机工具描述与本项目约定。
+- 本项目默认以 FBX + 独立贴图进入 Unity；米制、明确枢轴，导入后检查尺寸/朝向/法线/URP 材质；人物另查 Avatar、片段与 Root Motion。GLB 仅在项目已有合适导入器且任务需要时采用。
+- Unity CLI 命令显式传入本工程 `unity/` 路径，先发现当前命令；优先复用已配置的 MCP/Pipeline。Blender 源文件、导出文件和资产来源维护见 [Blender 与 Unity 工具链](docs/Blender与Unity工具链.md)。

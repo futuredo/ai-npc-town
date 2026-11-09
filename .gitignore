@@ -16,6 +16,8 @@ unity/.vscode/
 dotnet/**/bin/
 dotnet/**/obj/
 dotnet/TestResults/
+# 本地素材审计脚本缓存
+tools/__pycache__/
 # 本地
 .env
 .env.*
@@ -29,3 +31,9 @@ dotnet/TestResults/
 .unity-*.log
 .unity-*.xml
 .local/
+
+# 本机素材筛选：原始商业素材不随仓库分发
+unity/Assets/LocalThirdParty/
+unity/Assets/LocalThirdParty.meta
+# 误建的空 Unity 工程（只有 Library 缓存，不属于本仓库）
+unity/New Unity Project/

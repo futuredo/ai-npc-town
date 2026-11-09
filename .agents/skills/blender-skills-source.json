@@ -1,0 +1,1088 @@
+{
+  "source": "https://github.com/arjun988/blender-skills",
+  "revision": "904f095d8f36a6e72adaebb08d07f884a074743d",
+  "installed_at": "2026-11-07",
+  "scope": "project",
+  "directory": ".agents/skills",
+  "skill_count": 94,
+  "license": "MIT",
+  "installer": "official skill-installer validation/copy helpers; verified local Git checkout used after archive download stalled",
+  "files": [
+    {
+      "path": "analog-found-footage-horror/SKILL.md",
+      "sha256": "d847723638791210fa207b08fa97c6b32a096ab2bda779fe4c9aeb475fcd84ae"
+    },
+    {
+      "path": "analog-found-footage-horror/references/found-footage-camera.md",
+      "sha256": "70d39bcc7c6908247a32a15424964e8028ae77e2541f6eea7c7d414e925bfce8"
+    },
+    {
+      "path": "analog-found-footage-horror/references/vhs-comp.md",
+      "sha256": "5f7774dfd77ffbd3118d1216653c14dea0d3a618b63ada9d85afaa7caf0fbf60"
+    },
+    {
+      "path": "animation/SKILL.md",
+      "sha256": "a7c5fcef13d4f68c017a3f5052194cea3b359e38fb0807eb308f8075b1f398d6"
+    },
+    {
+      "path": "animation/references/combat-animation.md",
+      "sha256": "9db8019516af22e7b5ec8a2cb7fcc4f4631029bcfeb01a4cb7be8dbb74b36c3f"
+    },
+    {
+      "path": "animation/references/walk-cycle.md",
+      "sha256": "5ac01bfacc8d3daa864362a70b3751cfd32a17710708f6f2c93bd1afee77dd6a"
+    },
+    {
+      "path": "anime-style/SKILL.md",
+      "sha256": "db0cd6332505265cca20828f5a4042db8fb5db5751fb3fc020c49b97f31ea74f"
+    },
+    {
+      "path": "anime-style/references/anime-proportion.md",
+      "sha256": "da1491ff6ab873a6b3caf0d61be916d667fc50c5a8cb6f45259c1cf13d13aee1"
+    },
+    {
+      "path": "anime-style/references/cel-shader-setup.md",
+      "sha256": "33358afbcd5a35a5768d206ee84d771369ef6d7542443cc6da652a677cd34c49"
+    },
+    {
+      "path": "apocalypse-worlds/SKILL.md",
+      "sha256": "20231b4b129f9c07fa169e47a53193152dbaa5b5a861ca283e7c3f63a849ac88"
+    },
+    {
+      "path": "apocalypse-worlds/references/dystopia-utopia.md",
+      "sha256": "bed1a7e8b4217d3d9546818f6f804843caecd66f3617f67242b2a67b6366bbac"
+    },
+    {
+      "path": "apocalypse-worlds/references/wasteland.md",
+      "sha256": "947d36ff9b2d24d55c1f98d289a88b72b07737868ee166c924520b2bd882c374"
+    },
+    {
+      "path": "archviz/SKILL.md",
+      "sha256": "3b74d2914d7ff31a017d1948fca6c746676f71b4ab80bc87c25c9a7aca1d28b8"
+    },
+    {
+      "path": "archviz/references/archviz-camera.md",
+      "sha256": "6c3697c0419fe740f653469cf9dd43bd303ae61bcc9f4c02402886fb1d021837"
+    },
+    {
+      "path": "archviz/references/archviz-lighting.md",
+      "sha256": "96a6f30417469bebb2181fde5ed8bae122164d4a7884219dd8d0b8075f686fcb"
+    },
+    {
+      "path": "asset-optimization/SKILL.md",
+      "sha256": "37a0f4a04b9015ca892a4c87529737e900e77e58f3022b886e932ab5cb28533c"
+    },
+    {
+      "path": "asset-optimization/references/lod-strategies.md",
+      "sha256": "3aeb430c3f00a7be39318d2959a9bc0fcbfa53e113fc3034ac0d1496c9830cc7"
+    },
+    {
+      "path": "biome-worlds/SKILL.md",
+      "sha256": "3989f679d289b1d4455fe9b40804a6351d61587caf893c90f04e25469a799423"
+    },
+    {
+      "path": "biome-worlds/references/biome-cheatsheet.md",
+      "sha256": "5472b732b9da60a1e24221d486fb8782d87179b82a8137c02d2d1311994328a1"
+    },
+    {
+      "path": "blender-director/SKILL.md",
+      "sha256": "ba10ae3243590f94fb114b6cb1e476f8f0510f0a99de100e8c14651d081bc008"
+    },
+    {
+      "path": "blender-director/references/skill-routing.md",
+      "sha256": "8ab89973765d191ecd3c31f26f1c04c3ac77d55f6984244e34b2402d2ee94a04"
+    },
+    {
+      "path": "blender-modeler/SKILL.md",
+      "sha256": "00835b5d2281ae056e4bd4b167540a10c39ae95d9a9a4f12828ce875dce8c12c"
+    },
+    {
+      "path": "blender-modeler/references/modifier-stack.md",
+      "sha256": "705b242c0c4f187ef76287a5048f7a28ea7f153c134ca48edcc015af796c900a"
+    },
+    {
+      "path": "blender-modeler/references/scene-organization.md",
+      "sha256": "fa659b29d4be872918c3cb45bce294e535e99baa6acb27c6bf3829d381cf21e5"
+    },
+    {
+      "path": "body-horror-style/SKILL.md",
+      "sha256": "a4fb0440ef386441a98eaafdae5b80e9488eae2ec7e8490036fbedfde05317d3"
+    },
+    {
+      "path": "body-horror-style/references/mutation-cues.md",
+      "sha256": "a0f709aaf05e8902006966b1df03d587f27914afffe365b4d095759e06d550d0"
+    },
+    {
+      "path": "brutalist-mood/SKILL.md",
+      "sha256": "b59a857a600d8c7c38ae7bf6663dad494ce64f30a03edae527bdb449774e3141"
+    },
+    {
+      "path": "brutalist-mood/references/brutalist-forms.md",
+      "sha256": "38f291c3036d6c4c90550764fd841c7e2de62cb561759cab97fa0ce52903e00a"
+    },
+    {
+      "path": "camera-cinematography/SKILL.md",
+      "sha256": "0838fe51a882af69b47d598b09ef3c921852e498a394d35b793d607826e43ece"
+    },
+    {
+      "path": "camera-cinematography/references/camera-move-library.md",
+      "sha256": "928db1846e42139845360bc5e6c5f8ec0165445ba15c7a262b01a2e175fcaf5b"
+    },
+    {
+      "path": "camera-cinematography/references/dof-guide.md",
+      "sha256": "4824aa3465476b94ea76070e33c4c0ae7d78065f71b4da88517e6fba38995b29"
+    },
+    {
+      "path": "camera-cinematography/references/lens-and-composition.md",
+      "sha256": "5d706c214dba9fa7f630f5e0634bb9b93ea76a7c77995d2d95d8633006a78375"
+    },
+    {
+      "path": "cartoon-style/SKILL.md",
+      "sha256": "9825cdd0501fed306ee94f05820d1a84198b9a007c50a16bf3a5aee4ea43b0fe"
+    },
+    {
+      "path": "cartoon-style/references/cartoon-shape-language.md",
+      "sha256": "79b93e6725c7b3dd0e7a314b7fd94bf0f5cb84d06850766b5d39c524fcc54d54"
+    },
+    {
+      "path": "character-archetypes/SKILL.md",
+      "sha256": "8a105e03c2b67e6d129cc72016640b0ba0e2cafd36bc8560b1d1c993bebf57d4"
+    },
+    {
+      "path": "character-archetypes/references/fantasy-ancestries.md",
+      "sha256": "271843960d85c73d5fa906f9e9631f9095fcbf68901e056c8b246a9d435d5999"
+    },
+    {
+      "path": "character-archetypes/references/horror-bodies.md",
+      "sha256": "73285b1fd654e71dc072e3708c482e5f5388f7f8c10753a116b9155aea4d700a"
+    },
+    {
+      "path": "character-archetypes/references/role-kits.md",
+      "sha256": "77a6c3dafde029fbf45aaf4958e99be8daba2a40b977e11157d26b3ac371881f"
+    },
+    {
+      "path": "character-archetypes/references/scifi-bodies.md",
+      "sha256": "c25128d42c574b2038e1197b45ff8a5d49423359a9b50de57b47bd502cddd8fb"
+    },
+    {
+      "path": "character-artist/SKILL.md",
+      "sha256": "bf51f1a2be3e8804b83a7ef97278e37308870aaff81c7aa2a3e012ff8c837054"
+    },
+    {
+      "path": "character-artist/references/body-proportions.md",
+      "sha256": "1e4b4259377a3e3d75047609ad54455978a5ac0fb44ef1e83765ebf18bc5be54"
+    },
+    {
+      "path": "character-artist/references/facial-topology.md",
+      "sha256": "4374fbe740605e9b736d92c15a51371e3bb8a068f32d4a3eb21d73a47a400d8e"
+    },
+    {
+      "path": "chibi-style/SKILL.md",
+      "sha256": "8359bbfaba12b298c4028c7a0bb1d1ed9a0c28ab40ea18d44e021c1ea28030fd"
+    },
+    {
+      "path": "chibi-style/references/chibi-proportions.md",
+      "sha256": "456405076c0acae6ae3bc6186faa1839f9c2c17635070bd498daf7bd043eaa5d"
+    },
+    {
+      "path": "cloth-sim/SKILL.md",
+      "sha256": "adc458f300a734c647ff3d4f83ea8c06fbb73859f0be89693d7057848175ea22"
+    },
+    {
+      "path": "cloth-sim/references/bake-targets.md",
+      "sha256": "b22280b49535d0adb569cc8ae8d9787c3816a7b6f34ef0277d00845d06a5da58"
+    },
+    {
+      "path": "cloth-sim/references/cloth-settings-presets.md",
+      "sha256": "ab3b21ac096692aaeba8699d609afcd5ee9d2431af719fb8aac1ed5b70bc0515"
+    },
+    {
+      "path": "cloth-sim/references/pin-and-collide.md",
+      "sha256": "2a67fb37f134ea44df0c2790d33b75c6f9aabc1229338fe367f466fc9abb12d6"
+    },
+    {
+      "path": "collision-proxy/SKILL.md",
+      "sha256": "35c3b05ea2b31591cfe9c480730e2963887d7dcc88c80eb891d0c4abdc820af6"
+    },
+    {
+      "path": "collision-proxy/references/collider-recipes.md",
+      "sha256": "28e5048f5b87f80e608e0dda668ff3b94dafb6c040e8a0b7afea803f27d2b4e9"
+    },
+    {
+      "path": "collision-proxy/references/engine-naming.md",
+      "sha256": "1fb5d09885ce99f4ede53f3f9c9506217aa0e3d95e74adf0d7408a48f4c3358d"
+    },
+    {
+      "path": "comic-book-style/SKILL.md",
+      "sha256": "82833b34215774d2ee2df3f2ef3055340322e3b0112f869e60fd6f6c4cd09735"
+    },
+    {
+      "path": "comic-book-style/references/ink-tone.md",
+      "sha256": "82e66dc1bc846836e762bbd54de742ef36d0be3e084569300ad2535e7ff0829b"
+    },
+    {
+      "path": "compositing/SKILL.md",
+      "sha256": "d33e636d269511fb3b4bb5769562ded33533d9d4b2dce7c67b128d6cbe65ddbd"
+    },
+    {
+      "path": "compositing/references/delivery-outputs.md",
+      "sha256": "9376ba656e36b8cf3d9b3ce09bc4ea357d2b4ef918c86ae06269af24938b0d39"
+    },
+    {
+      "path": "compositing/references/grade-presets.md",
+      "sha256": "b35116d7b8b4d4dfe379fbc7b37ee64b7adc4272a49fe04b7f8ece27261e3183"
+    },
+    {
+      "path": "compositing/references/pass-stack.md",
+      "sha256": "cd94dee28491713a5b08cf36f119586f77296b7b2f764a190bc530f4dba17e3b"
+    },
+    {
+      "path": "cosmic-eldritch-horror/SKILL.md",
+      "sha256": "e8300004e948d25dfe22fd203234b5788797790e81b71f2bdb8af27f5ba28621"
+    },
+    {
+      "path": "cosmic-eldritch-horror/references/eldritch-forms.md",
+      "sha256": "0faeb5fdaade59864d6551548caeef39e5b336afc6864a9f4aa3d5b2433777da"
+    },
+    {
+      "path": "cozy-wholesome-mood/SKILL.md",
+      "sha256": "66acfd75a99beb56174e5b318a8af23d364daede3f81999a0525d767ecd2e9c3"
+    },
+    {
+      "path": "cozy-wholesome-mood/references/cozy-palette.md",
+      "sha256": "d52c4e2a8b2081d30466a0808b2df1905e4db4768e149a3d32ad5dd0c5170181"
+    },
+    {
+      "path": "creature-artist/SKILL.md",
+      "sha256": "06176b12ab1b84fcfc0bc0d15952ff744948496908461a947da42c6f5ec3a0c7"
+    },
+    {
+      "path": "creature-artist/references/flying-creatures.md",
+      "sha256": "9fa9803d5c51c987ebc7e71d6b7a82a3b5d7eaf2b6c109f8d3ca076c220d99c4"
+    },
+    {
+      "path": "creature-artist/references/quadruped-anatomy.md",
+      "sha256": "04b15116073da0bf31e1c8824e6915cb811bbd7d1b1892fbf19d8204e3370641"
+    },
+    {
+      "path": "dark-gritty-mood/SKILL.md",
+      "sha256": "30de630a0278f4b0e8690bca0858f127448cfbb4b3884d45b54853f2a5f9c53e"
+    },
+    {
+      "path": "dark-gritty-mood/references/gritty-materials.md",
+      "sha256": "25ec84b1a6637c831f66f58de351a9b44e085383390ef6fc51e340de030b9aa5"
+    },
+    {
+      "path": "dream-surreal-mood/SKILL.md",
+      "sha256": "610484250488b7f5ce6ed0dc0ef2a5567a792550cda8de1209b84ebf65dc1003"
+    },
+    {
+      "path": "dream-surreal-mood/references/surreal-devices.md",
+      "sha256": "6a50e62a43322c61e5a25b2ea75f3aa0b7878e40edefef4698dfffac97a7ccbc"
+    },
+    {
+      "path": "dream-weirdcore-style/SKILL.md",
+      "sha256": "0d932dc319e043ae748bd99bee57b4a35d587f70633ce396ff6868a38ccb7d72"
+    },
+    {
+      "path": "dream-weirdcore-style/references/dreamcore-cues.md",
+      "sha256": "8edb025ed97b053a524fea93390b327e8d404ed3dc9ee01984ec54b94ebfab89"
+    },
+    {
+      "path": "environment-artist/SKILL.md",
+      "sha256": "989c55a26e5db78bf719bfbbe0ba00e0fb1319a4816bce07c08a11472b2cd321"
+    },
+    {
+      "path": "environment-artist/references/composition.md",
+      "sha256": "422dd5075cf943a3b506fbcd8ae806458f9a0811c14880ee84c9213f50a21277"
+    },
+    {
+      "path": "environment-artist/references/modular-kits.md",
+      "sha256": "90cf2c12a88065bb787a6748ce2178a7d73bf02d159aeac0907ece203690bd9b"
+    },
+    {
+      "path": "export-pipeline/SKILL.md",
+      "sha256": "5e754b14b0cad83a6a9fa939c64082be3b2358c74f4cdad637c8bd179d3314e1"
+    },
+    {
+      "path": "export-pipeline/references/engine-import.md",
+      "sha256": "a3df6b555aa8d55c2ae851537622804234f1613cab54003dfe93f307192cd153"
+    },
+    {
+      "path": "fantasy-worlds/SKILL.md",
+      "sha256": "6586b1353684f32be7a5aee74e7e0746b67d706d155e05395c69622b22412887"
+    },
+    {
+      "path": "fantasy-worlds/references/dark-fantasy.md",
+      "sha256": "7e1408aa4ffa6d1a55c40472d4de5265d3b2a25aa9654cfdc161001e61bf9165"
+    },
+    {
+      "path": "fantasy-worlds/references/high-fantasy.md",
+      "sha256": "4f9a16a88d970891d624b6fc1dcc202703f5fd01feab768d60302aebfa0399ad"
+    },
+    {
+      "path": "fantasy-worlds/references/medieval.md",
+      "sha256": "2a23cfce2b16c31cf0bdccfbe7a196bb3464ee35a0bfe87414ecd9b047cc3d08"
+    },
+    {
+      "path": "fantasy-worlds/references/urban-fantasy.md",
+      "sha256": "e70df9f50760789a916778611954347405b555c25b91efeae97d7a8c19a295da"
+    },
+    {
+      "path": "folk-horror-style/SKILL.md",
+      "sha256": "2244503d14789a67ef575110b5021532903649ee057b3d6b41d78cd93bce9987"
+    },
+    {
+      "path": "folk-horror-style/references/folk-motifs.md",
+      "sha256": "076d99093765dc3fe0a546ded7f55ee687dd24406e7dd1c304d2df84e4d18a19"
+    },
+    {
+      "path": "frutiger-aero-style/SKILL.md",
+      "sha256": "df1f254eb43008ec596929bf5a4637edca7890efacff01175b0ad29c08be8d4d"
+    },
+    {
+      "path": "frutiger-aero-style/references/aero-cues.md",
+      "sha256": "c20a6844fc591a645ef50ccc2f67142791912fd30ed2ed7d2076af1595864735"
+    },
+    {
+      "path": "genre-action-combat/SKILL.md",
+      "sha256": "ddc4f4337e4393a719686fbb361ea301068117785d437bc3786bd84dae6a5874"
+    },
+    {
+      "path": "genre-action-combat/references/combat-readability.md",
+      "sha256": "7bbd09cc139f4a601245f4f94a62431d9ddd3c1187088115ee381a677d122a56"
+    },
+    {
+      "path": "genre-card-party-idle/SKILL.md",
+      "sha256": "c99cc3778d6116478fb5e429145fbbf547f146caa49a61d2fbc7bd903a84b4ae"
+    },
+    {
+      "path": "genre-card-party-idle/references/table-stage.md",
+      "sha256": "6cdf98f0183ee8184c4c32bc8a15a314656fb8efe024520b6a4ef3d9e18f0d27"
+    },
+    {
+      "path": "genre-metroidvania-roguelike/SKILL.md",
+      "sha256": "76a2081f80e1cae07e0965de51a5598f27faa202c5bfa24dc6dc5ae7ab1d0adf"
+    },
+    {
+      "path": "genre-metroidvania-roguelike/references/module-kits.md",
+      "sha256": "7a864671fa732d9f5cb758c2abd011b46bfb120da286317da243aa797d88d70a"
+    },
+    {
+      "path": "genre-narrative-vn/SKILL.md",
+      "sha256": "1735186be7eac4a163bb386710935303140b9b643f9595a5e3597eb93f49f122"
+    },
+    {
+      "path": "genre-narrative-vn/references/vn-backgrounds.md",
+      "sha256": "9b4f95ec8568d9503de95e9c0c82804da7d7796e65568d3d6bc463755ef600a7"
+    },
+    {
+      "path": "genre-open-world-sandbox/SKILL.md",
+      "sha256": "13ecd9b25663d115e5295df190c1660c64e467362588ef7c7bd7f34ebf4bc589"
+    },
+    {
+      "path": "genre-open-world-sandbox/references/open-world-landmarks.md",
+      "sha256": "6dff673303ddef0d804a9ac739fad9fab9be60099bcdf4b5a301d4c4bbd710b2"
+    },
+    {
+      "path": "genre-puzzle-platformer/SKILL.md",
+      "sha256": "bc84121ef1cbaa8848d7f896e7de50984cafada33781d9cae949ad5b044b6fef"
+    },
+    {
+      "path": "genre-puzzle-platformer/references/platform-readability.md",
+      "sha256": "d97342f588a5d80d391b6a16e3ef0b66f15557f95d2b98a41b6f6fe1b93f2392"
+    },
+    {
+      "path": "genre-racing-sports/SKILL.md",
+      "sha256": "76d5979443d3c1064453a1d93c5c99668f7d98fff5081a7c12437b4cb04532c8"
+    },
+    {
+      "path": "genre-racing-sports/references/speed-readability.md",
+      "sha256": "5ce588434b65f3d19f33e4e9a3a10e7cc5627ed9dd82119964ebd3ed6eb751d8"
+    },
+    {
+      "path": "genre-rpg/SKILL.md",
+      "sha256": "677769b0c5ecaa6d88922a9f0e388ab78311f600480d076d459dbdd0dc7ef2d9"
+    },
+    {
+      "path": "genre-rpg/references/rpg-subtypes.md",
+      "sha256": "c127cfb9dbea69b24d1487f848cbdef5fb2adfe74ef95f9846cfc3fd3ed71337"
+    },
+    {
+      "path": "genre-shooter/SKILL.md",
+      "sha256": "2e26afab8838150687ed3120b5f9b62d8bf14f0ad7522f730699fc30ecd5f12e"
+    },
+    {
+      "path": "genre-shooter/references/br-extraction.md",
+      "sha256": "c21db93205a3ebfcfb47fe5d99f9c4a5e44495ef9d7171dd4b8e97ecd0045786"
+    },
+    {
+      "path": "genre-shooter/references/fps-tps.md",
+      "sha256": "e50e2e2f538a85b7bdd622765e5ba523bf1ca7d42ddbae6c2dff5fa4823927c2"
+    },
+    {
+      "path": "genre-soulslike/SKILL.md",
+      "sha256": "5aed9670100a27af1873f29eef7f0438d41c23b46711bac26d5399ca006352c4"
+    },
+    {
+      "path": "genre-soulslike/references/souls-spaces.md",
+      "sha256": "978f32f4ce746bd1b881082a2eb50c56b7ac4e1051890fd68c73827d94003482"
+    },
+    {
+      "path": "genre-stealth/SKILL.md",
+      "sha256": "c0f465acb37d661ee9712d85e2a164f8f4f4a2c4a4cdbabe2441ca499385737e"
+    },
+    {
+      "path": "genre-stealth/references/stealth-layout.md",
+      "sha256": "e5d8b693ffac5cd335a9ed06601f92a90c18b19c2c5f6f7e10c60e18dd2db9ec"
+    },
+    {
+      "path": "genre-strategy-sim/SKILL.md",
+      "sha256": "18caa20a9f0b306a2bcd72377b5bb82f2dc1a97d0de647e83caaf5269cdea1e5"
+    },
+    {
+      "path": "genre-strategy-sim/references/sim-props.md",
+      "sha256": "2c516e4fd208cca4bed7f22ca19396334f45860660d3c44537b37bb97cd2512a"
+    },
+    {
+      "path": "genre-strategy-sim/references/strategy-cameras.md",
+      "sha256": "7bc94f6d3bbd99352d4d55a5185445eabd9d59e4292ac0cdf7dd6f521fd48357"
+    },
+    {
+      "path": "genre-survival/SKILL.md",
+      "sha256": "489f09af57c57bfb89a7c08ed37f05ee68a25715953515465cf87859ff31fd53"
+    },
+    {
+      "path": "genre-survival/references/survival-reads.md",
+      "sha256": "8bb42faa63a060d15d59132342d52324850db4eba56ae45890b1fe6d5aaa0d9c"
+    },
+    {
+      "path": "geometry-nodes/SKILL.md",
+      "sha256": "f04add65d17201c3d58d09575fc1da7408e95e270b35614e66bf0928663196d9"
+    },
+    {
+      "path": "geometry-nodes/references/building-generators.md",
+      "sha256": "18fbd0a59cfb4fd6bc8b15e838699c389b8db48042145d211559839ea2f3ee83"
+    },
+    {
+      "path": "geometry-nodes/references/scatter-systems.md",
+      "sha256": "e5554a81f75cf9efb14d59d7be204a7e10e9720c9f693777b3c844f8c17a6957"
+    },
+    {
+      "path": "godot-export/SKILL.md",
+      "sha256": "262eeeffea3a67c7ab5c8165f8ec92f7605b63fd97c878acc92e4c25812ee96b"
+    },
+    {
+      "path": "godot-export/references/godot-checklist.md",
+      "sha256": "9949c5db48c5dcfb59d62869fe5c5429fea2ce6d5985f2f1b224ca3f98e98db2"
+    },
+    {
+      "path": "hair-groom/SKILL.md",
+      "sha256": "e812c1c8a205515a811dbbd405e2529250bacee7726e8efa222bbd5b58400476"
+    },
+    {
+      "path": "hair-groom/references/cinematic-vs-game.md",
+      "sha256": "038314ddd43e5488df1c2fb989cea30376f2e97a8ea280299bdc42d0ceeae684"
+    },
+    {
+      "path": "hair-groom/references/groom-flow-regions.md",
+      "sha256": "b7324d260b110ee3806ed148ab5ba689ac481778964d54fe51b69cc34dfe6959"
+    },
+    {
+      "path": "hair-groom/references/hair-card-atlas.md",
+      "sha256": "0644d49318c0cd12a75790e9b1041051916360fedb01fe4f703d250cb87b2e0f"
+    },
+    {
+      "path": "hand-painted-style/SKILL.md",
+      "sha256": "fd8c4418c2f3c51ddb494d51a558b935dc6c3de7aa9bf65f45349e4b1aa0022f"
+    },
+    {
+      "path": "hand-painted-style/references/paint-workflow.md",
+      "sha256": "e1bd3e0cc8c7e64c8702df3f8f582365ffe2d47551a838e3ba166cbbaf1b0cda"
+    },
+    {
+      "path": "hard-surface/SKILL.md",
+      "sha256": "353ea5be095fd3cc9d3b4651a23087e3b20b43eb8a0759f99c227031ae96cb37"
+    },
+    {
+      "path": "hard-surface/references/boolean-workflow.md",
+      "sha256": "ee7a74ab530d40741864218f8604861d70b856ce478943b784235b6c7831df0c"
+    },
+    {
+      "path": "hard-surface/references/greeble-patterns.md",
+      "sha256": "289815eab3a92ac2ebb071f75423945f5d00015b29e693dafa37fc3bd857cdb3"
+    },
+    {
+      "path": "hd-2d-style/SKILL.md",
+      "sha256": "99e8833cee66d720b662643f51eb5ca42643ed35228d953a178eafe86c25b9c3"
+    },
+    {
+      "path": "hd-2d-style/references/hd2d-stack.md",
+      "sha256": "e89724747037ac869dd941e96ad027b54d4becac7036aa916a58d7ac8857ec29"
+    },
+    {
+      "path": "historical-worlds/SKILL.md",
+      "sha256": "4c1dfa736de10462bd362e4f438ce3d8f1862aeb04502d7a3cfbd8b1b3cbb2d3"
+    },
+    {
+      "path": "historical-worlds/references/military-eras.md",
+      "sha256": "ff9fe32020c23210f460b7b016de7e3a20b8f73a7531d13cc684f45a872487de"
+    },
+    {
+      "path": "historical-worlds/references/period-materials.md",
+      "sha256": "7d2a678f234c48419f38c249aa26b8fb28c6c9464dba2b9a137434799bffbb7a"
+    },
+    {
+      "path": "horror-style/SKILL.md",
+      "sha256": "ba007d86309da1569e30972f04d67ff2f2ed405b3c6d6a806642c0180ecae847"
+    },
+    {
+      "path": "horror-style/references/analog-props.md",
+      "sha256": "b7559517815ef381d275ebd2ca93981b363041e8f0a806ffbf79458f5b69373f"
+    },
+    {
+      "path": "horror-style/references/horror-layouts.md",
+      "sha256": "5a344c78d4c45433647323b853156705a128290ceb78a474f9677d80f3f94192"
+    },
+    {
+      "path": "indie-horror-aesthetics/SKILL.md",
+      "sha256": "1017c5f6adf8b3b6cc83a7a41ce4fda573f662be6d026641ae6905da509f0e1e"
+    },
+    {
+      "path": "indie-horror-aesthetics/references/corporate-horror.md",
+      "sha256": "f7f9ad64c458b5c5335b11753fa511ccfa88b8a03c0b728c284c6235c5c16335"
+    },
+    {
+      "path": "indie-horror-aesthetics/references/fear-to-fathom.md",
+      "sha256": "a34dbadf1b6690824aa5a31d98e61cfaf65b7b69795d309a7819419a67c6019c"
+    },
+    {
+      "path": "indie-horror-aesthetics/references/location-horror.md",
+      "sha256": "88b729ffe460c015f102d380f9899a005193fe9ddfa903dbc8212484458cd977"
+    },
+    {
+      "path": "indie-horror-aesthetics/references/puppet-combo.md",
+      "sha256": "194b8e70bd71ac6d373b363d0f31798186caefa2eda1fcacdda9c0ffd3e248b2"
+    },
+    {
+      "path": "indie-horror-aesthetics/references/silent-hill.md",
+      "sha256": "64a6dd8966bd68f3fbfb5287ba9bda2f375810ab4391dbc3b4bbc12a94d5c78b"
+    },
+    {
+      "path": "isometric-style/SKILL.md",
+      "sha256": "e6d15bb0b630709116109a60176c96e284a6a7760aacd53c6578c1f6c3e04a91"
+    },
+    {
+      "path": "isometric-style/references/iso-camera.md",
+      "sha256": "c1fc1882705994c7945f66863b6d274c6e5790b113e470abbd719dfcf32f0ba3"
+    },
+    {
+      "path": "isometric-style/references/tile-footprints.md",
+      "sha256": "024eefec04a0e56d01e61419bb06307d7c8a2cfe6192947712963b5bdce15669"
+    },
+    {
+      "path": "lighting/SKILL.md",
+      "sha256": "a9ad1a183a4294c3e87101b63d26303ea499cfe8edc25c3b9a4c73f5e7b34232"
+    },
+    {
+      "path": "lighting/references/cinematic-light-rigs.md",
+      "sha256": "651883fdad2ebba49f12514e01fce10d8e465c047f6e820d3f3a689c23b31e5b"
+    },
+    {
+      "path": "lighting/references/horror-lighting-setups.md",
+      "sha256": "5b1b4767983ede817e27d63b5c772bf101842618d9cb4f023a4bf73561250c90"
+    },
+    {
+      "path": "liminal-space-style/SKILL.md",
+      "sha256": "b048ac56ef898ef3a4c528cc91581f51bb73e8a43442abf9d00a71f7ab31c6eb"
+    },
+    {
+      "path": "liminal-space-style/references/backrooms.md",
+      "sha256": "d3469dfc4f8e3ae3ac7c5a19c1e37d75a1c93403cd1080c1826bb94eb95f9c37"
+    },
+    {
+      "path": "liminal-space-style/references/empty-public.md",
+      "sha256": "42254744fd7a8bafc76caa0506640f1d70476c9bfbf75ac554c83b0c83f82f49"
+    },
+    {
+      "path": "lod-pipeline/SKILL.md",
+      "sha256": "8025238b3ef5238e9d5304d8014645df2889e0fc09aa5d86de5fea57eafd5b0e"
+    },
+    {
+      "path": "lod-pipeline/references/lod-budgets.md",
+      "sha256": "188a4f4f8d9859cf1fa06629921569a86ac3902eb1c9fe60bc80f73ee18432c8"
+    },
+    {
+      "path": "lod-pipeline/references/lod-validation.md",
+      "sha256": "8d49b435f95e690dbc1e94995bc6c4fc6070bb551fe24c08baefc16675e8dbfe"
+    },
+    {
+      "path": "lookdev/SKILL.md",
+      "sha256": "7eb0de0bebf2c3235f46272f93aafc66c72b10493e0e84d42a5cb7c79395e6ce"
+    },
+    {
+      "path": "lookdev/references/lookdev-checklist.md",
+      "sha256": "e32e5e812c5988fcdd4a88893c6df6a88158531b32349c46d642cd55ab785c57"
+    },
+    {
+      "path": "lookdev/references/lookdev-rig.md",
+      "sha256": "9ac339934e95926aa795742b97d4d28566550cff18118571800a854aa9eb5a56"
+    },
+    {
+      "path": "lowpoly-style/SKILL.md",
+      "sha256": "614123f0f61c42963be1fc854b87d6f4f57a1ac601c724bb81355dd83230d57f"
+    },
+    {
+      "path": "lowpoly-style/references/ps1-aesthetic.md",
+      "sha256": "f893f3290c8cdf8bc4fa8590a21c88abd3146404e7f100bb86c57b7f89335c94"
+    },
+    {
+      "path": "manga-style/SKILL.md",
+      "sha256": "32895485256920528b4d56794f4dfbbf4a317e6b5f0d328ea5088df438b6da08"
+    },
+    {
+      "path": "manga-style/references/manga-value-design.md",
+      "sha256": "7061dffe244006547aef61afe9d2b4bbcefc2c21212340ef97939b8da9a89a53"
+    },
+    {
+      "path": "mascot-puppet-horror/SKILL.md",
+      "sha256": "21de6064e1a8dafea6be9a4050f033d47b49db93db604dbd58f35eae075efd47"
+    },
+    {
+      "path": "mascot-puppet-horror/references/mascot-cues.md",
+      "sha256": "89b042062fba08685d05840fec75240dc683889ca966f7f6f1b25d0b9a39b55c"
+    },
+    {
+      "path": "materials/SKILL.md",
+      "sha256": "fc86c8f2e292791a3bc4f238ae0f2120c52d61b393ef922c55860dd2b78e43b6"
+    },
+    {
+      "path": "materials/references/procedural-patterns.md",
+      "sha256": "e425b825109d850269192b5c6a856c33a422974b94b03c1bf2df256376edeb40"
+    },
+    {
+      "path": "materials/references/surface-recipes.md",
+      "sha256": "ca3213fd8943042fc4f32c01912ba3c98e04fd836f074b05d6678f96ffa204e7"
+    },
+    {
+      "path": "minimalist-style/SKILL.md",
+      "sha256": "cd4cf9141a1c5c0b16b25c53c7fa9958addaddb4051e8eb9ce24f95565001b6d"
+    },
+    {
+      "path": "minimalist-style/references/reduction-rules.md",
+      "sha256": "12aa72a9f171c7a0fc89747bf85221c8e0f022b44aada31902700d427f8ac15d"
+    },
+    {
+      "path": "neon-retrofuturism/SKILL.md",
+      "sha256": "06cf7b0d833b698e2129bf4285791ff616c45a738af84f3212fdbc4c45a4aed5"
+    },
+    {
+      "path": "neon-retrofuturism/references/synthwave.md",
+      "sha256": "29fd2f3c100e8e8b5711cd9b2a1116407c36c279889263db78f97e7219feae6f"
+    },
+    {
+      "path": "neon-retrofuturism/references/vaporwave.md",
+      "sha256": "daa1bcd4e13f68a983c4ef0bada121565c9fc8ac044dbbb0b9421d97a2c71eaf"
+    },
+    {
+      "path": "noir-style/SKILL.md",
+      "sha256": "f8179d4612fa288606116dfa42ac95bdba5cc9117677dc092ef716070616e039"
+    },
+    {
+      "path": "noir-style/references/noir-lighting.md",
+      "sha256": "6a241fd94eb4b7f1592733c9c2fb7cc6fcc9aaef2434697de42b81ecb035ede4"
+    },
+    {
+      "path": "painterly-style/SKILL.md",
+      "sha256": "a5b263460a1a384d56151bedf7163611df1df6bcb9fe298b74066c87ffbadbbe"
+    },
+    {
+      "path": "painterly-style/references/oil-painting.md",
+      "sha256": "b3da6cd3f6565bc6ad3f1946a95d7e5b76175e46239f2f2662bea671d8fc98c5"
+    },
+    {
+      "path": "painterly-style/references/watercolor.md",
+      "sha256": "5974fc5e46330809e5fdbf305181d012b5e258c46f92863005eb43c18ef5cbf0"
+    },
+    {
+      "path": "physics-sim/SKILL.md",
+      "sha256": "fa6a137145e5917b819b9948fcbae3614d3373190175193269ad152c67082d7c"
+    },
+    {
+      "path": "physics-sim/references/destruction-pipeline.md",
+      "sha256": "d27703a48f8bd34f551a7cf1c304b838e68dcf30cb07dff4e7745cdbd89526e5"
+    },
+    {
+      "path": "physics-sim/references/rigid-body-presets.md",
+      "sha256": "f1a1bd9a809ca365b4f3d3093fbbc202d98777568f60f6853045865cd61d6411"
+    },
+    {
+      "path": "physics-sim/references/sim-bake-checklist.md",
+      "sha256": "643f42157009f8b653abee9382d126d5d49b7d9bbf46d49c1e434ad08ee8c406"
+    },
+    {
+      "path": "pixel-art-style/SKILL.md",
+      "sha256": "456abb3101ed885ec733ecbdeb9b9834b77d48e3fdb0b13a10e0040d54f15a34"
+    },
+    {
+      "path": "pixel-art-style/references/texel-rules.md",
+      "sha256": "766896b1e93681d63cfa56e2ff2704c90dfb66b752033baccdac1c7e87ebac24"
+    },
+    {
+      "path": "procedural-modeling/SKILL.md",
+      "sha256": "143556702f08e2bcab1d61dc38c0ee953bf90835483ebbaf1058c9e8c2364e03"
+    },
+    {
+      "path": "prop-artist/SKILL.md",
+      "sha256": "f8db44db9707474893cf265592242148cbe7b4a597eed1f017c25131fb2b91ff"
+    },
+    {
+      "path": "prop-artist/references/everyday-prop-checklist.md",
+      "sha256": "e62b07c0c62be963ba101bf1c91340204c750fc244a37f0a156618bc436920c6"
+    },
+    {
+      "path": "prop-artist/references/kitbash-library.md",
+      "sha256": "e1c50514a674920efe7ed745d1f21ebc1fb1bdde38ace132909e5524759fc5ea"
+    },
+    {
+      "path": "prop-artist/references/prop-tiers.md",
+      "sha256": "8f3427f8c38bc97780ab5f11c86a07d66c08c13b20ba4e7f995859e77eb4af56"
+    },
+    {
+      "path": "psx-horror-style/SKILL.md",
+      "sha256": "50e981f2544c40cebd765d13ea487568b9ff50ac173e38d167d5373fa303d815"
+    },
+    {
+      "path": "psx-horror-style/references/psx-horror-budgets.md",
+      "sha256": "052625a244d6b32ca228de8cb36718251298ea3697bf51e607d47523d46f815e"
+    },
+    {
+      "path": "psx-horror-style/references/psx-horror-palette.md",
+      "sha256": "3981ce818a6eb5f658da8e5e32a5f8ae02323ae0e0fd1133d22471350a6baa68"
+    },
+    {
+      "path": "qa-review/SKILL.md",
+      "sha256": "14bd366e4c7831973d67e74580ebfeafb1749ce1530ef64ba900d097ac38fce0"
+    },
+    {
+      "path": "qa-review/references/qa-verdict-template.md",
+      "sha256": "25ed0cd39ebb15385287b41f3f2ababe871b52e80887846013b6d7db5dc6e15f"
+    },
+    {
+      "path": "qa-review/references/screenshot-angles.md",
+      "sha256": "5134187e427027fc6fd4187df6be9168e8db361801b08683899ac6c89dfa4091"
+    },
+    {
+      "path": "realistic-style/SKILL.md",
+      "sha256": "1e61757ec4f9fed5502e7a2c145bf1a8b01da3a6e0988b32c042d1eeeab1b491"
+    },
+    {
+      "path": "realistic-style/references/pbr-values.md",
+      "sha256": "1da57036ca3897796b40c2c802fb0f8fe3a3300b101c78964a51366ce003954d"
+    },
+    {
+      "path": "realistic-style/references/scan-cleanup.md",
+      "sha256": "afedf1eed50739af7d1868155cd3c56356770638c6a49d477adb459498d6d266"
+    },
+    {
+      "path": "references/asset-pipeline.md",
+      "sha256": "f395dd0ca860c8021743b96fdb5d04af97d578cdfba3e7b2630cd5a56cfa8d05"
+    },
+    {
+      "path": "references/mcp-integration.md",
+      "sha256": "7a57483e961f901d0c0e611163615649b26383a55415c88286f962aa8fd9e29f"
+    },
+    {
+      "path": "references/mcp-tools.md",
+      "sha256": "88edc2aef19f075d5566cd13bb74c32968a149bc6462ebffabfe7ed43df5ddfb"
+    },
+    {
+      "path": "references/naming-conventions.md",
+      "sha256": "3573b3dfecf813c18821922c62e815d9969a0c68349813769a7c3f526aafb3e5"
+    },
+    {
+      "path": "references/polycount-budgets.md",
+      "sha256": "7745680c18fdc83ef06698b590c6af442a604766186a49a14861fa8d487a0a75"
+    },
+    {
+      "path": "references/reference-analysis-template.md",
+      "sha256": "757ea985ff38840b2c734d44b4c6cdaed38840271a794b393c2a5e8e950f253c"
+    },
+    {
+      "path": "references/reference-image-match.md",
+      "sha256": "3d43bbb8d05c0219a965b033012995efa62d3f6b85fb25dbffe6bdd44f48aa14"
+    },
+    {
+      "path": "references/validation-checklist.md",
+      "sha256": "f865c62f1ac66881d67734bd72849d26f81fbeced5bc0bfd1e7b9506a8baf148"
+    },
+    {
+      "path": "references/visual-match-checklist.md",
+      "sha256": "6b8e4431a718a314ae80cdb87cdec4b237f6a15b5d5debcbf088b8c685a31b79"
+    },
+    {
+      "path": "rendering/SKILL.md",
+      "sha256": "abf41a30b17a29cc09efcbecf9e163e7f0d30a2b5d6c2f2700acf85a788deff1"
+    },
+    {
+      "path": "rendering/references/npr-rendering.md",
+      "sha256": "9fef29b76905d04dbe5ab905b0073a14465531ef7d750491637d91563c1618ff"
+    },
+    {
+      "path": "rendering/references/render-passes.md",
+      "sha256": "3bd1590431349b76ccb82a3d3589779baa29b1426c42f900cca19c1332f1a313"
+    },
+    {
+      "path": "retopology/SKILL.md",
+      "sha256": "cbb994cb58dae09252fada1304f1de9f01a4eff1faec6dac5120427d10fff083"
+    },
+    {
+      "path": "retopology/references/facial-retopo.md",
+      "sha256": "84803d2408683f77ecdf56048c73232e85a5ae5fceeb8bc361809d8875149c2b"
+    },
+    {
+      "path": "retopology/references/game-cinematic-topo.md",
+      "sha256": "86a6325f1f6417fb2d944e6c7cc11cf05ec5c6ab254294a1028b9df667f95390"
+    },
+    {
+      "path": "retro-16bit-style/SKILL.md",
+      "sha256": "ed44909913fc534a1960533b82381a35baca326830a52f2969af2a52997f7223"
+    },
+    {
+      "path": "retro-16bit-style/references/sixteen-bit-notes.md",
+      "sha256": "21165b16ecc4ad3a14e2a5ae6cc2dd5d1cf3d58bff301e45c3c593906b7e9d26"
+    },
+    {
+      "path": "retro-8bit-style/SKILL.md",
+      "sha256": "0a079ab1525070e824d19da58f691a42ea9768e7ed17b37e6a0c2cf9d45eaa4a"
+    },
+    {
+      "path": "retro-8bit-style/references/eight-bit-constraints.md",
+      "sha256": "91181be429d6d86c1f5224e32bfe2c8ae3dbfadb4107a65476f7397e3f209f2e"
+    },
+    {
+      "path": "rigging/SKILL.md",
+      "sha256": "a5469b3a46f46e659b17e0afd0fb0b1c41751e60246205af785d1dc316a32f9a"
+    },
+    {
+      "path": "rigging/references/humanoid-rig.md",
+      "sha256": "975f962367b681d879273671fbc26c111bbfd370eb2751bee3f6ea6a045659b8"
+    },
+    {
+      "path": "rigging/references/mechanical-rig.md",
+      "sha256": "d6f9cbb73e44f0e54ec1d31ededf58b48c9a016ffc7051b6a543f083ef42410c"
+    },
+    {
+      "path": "scene-assembly/SKILL.md",
+      "sha256": "9aad0ebdeac897304989b9a06efdaa566a76962ef9409e6e4076474dec23e34f"
+    },
+    {
+      "path": "scene-assembly/references/collection-template.md",
+      "sha256": "cac0ee86159b18a1acacfc90d04c16261a5ddbe89dfcae5a813331ae603555e6"
+    },
+    {
+      "path": "scene-assembly/references/linking-overrides.md",
+      "sha256": "dabce0052c44b45b530430577e857f012b5edb22824f04dddd37e8c7aaeff0c1"
+    },
+    {
+      "path": "sci-fi-punk-worlds/SKILL.md",
+      "sha256": "e1aaeddf86711bad2547b8ef445347a3f51c1e580472a06c91612fc60e2356f9"
+    },
+    {
+      "path": "sci-fi-punk-worlds/references/cyberpunk.md",
+      "sha256": "9bbe9d9f2c63fcaa17a3381f89b47f29ab47dce5ae2a7022ba546f8f079e2514"
+    },
+    {
+      "path": "sci-fi-punk-worlds/references/diesel-atom.md",
+      "sha256": "da418e28eb332691a712316de1059e6961b5cf21ba8dbd6e39c4aba8da526a22"
+    },
+    {
+      "path": "sci-fi-punk-worlds/references/hard-space.md",
+      "sha256": "24c30fe300fa1a516a2a5c7033284d85e1ed8d57bc95406fb12fa74d4b2b1906"
+    },
+    {
+      "path": "sci-fi-punk-worlds/references/solar-bio-clock.md",
+      "sha256": "c2576dbd0deaf7f0b8b10ee518737db4e3e22535c750fdd45f91263b4d227677"
+    },
+    {
+      "path": "sci-fi-punk-worlds/references/steampunk.md",
+      "sha256": "2ff823e9b2404803fb9af32c0bd038f55efc409d5dbf5235c18f7b07877a916e"
+    },
+    {
+      "path": "sculpting/SKILL.md",
+      "sha256": "fa84c5b530fe66ab335c6c766ffb10e49152b05b45adfbe316b0de306e3a98a0"
+    },
+    {
+      "path": "sculpting/references/brush-guide.md",
+      "sha256": "84fe39b75498e31709e2f9b98b62eb671e1e4b6eecb6a949e1270fbc210e0f80"
+    },
+    {
+      "path": "set-dressing/SKILL.md",
+      "sha256": "c35d19573a97282de73f1fe1e1ab9e447d279052a98db76c8faec8a3cd3fbd6b"
+    },
+    {
+      "path": "set-dressing/references/density-map.md",
+      "sha256": "cd0cf82bb1da84a5919ef27c197650116f6967cfb8256c44d3d7af10ff1132ad"
+    },
+    {
+      "path": "set-dressing/references/story-clusters.md",
+      "sha256": "6749d8e2abfdd2ecb59bfb976b893ed1e5fe618e64810866c27ea1c5da2a3714"
+    },
+    {
+      "path": "stop-motion-craft-style/SKILL.md",
+      "sha256": "4459f37cfbbd0f9c812fa9c36c1a7206296413ec998ddb5d25f5299c29443cce"
+    },
+    {
+      "path": "stop-motion-craft-style/references/claymation.md",
+      "sha256": "48a8cb12df2d092d53ff63433e77ce949dea8be34388cda5e40f218727e7c6d1"
+    },
+    {
+      "path": "stop-motion-craft-style/references/paper-craft.md",
+      "sha256": "a003368df85a64fd21c5638ab71124fb391aa2ad3b7e9812d0cd24b8e6765baa"
+    },
+    {
+      "path": "stylized-style/SKILL.md",
+      "sha256": "3e819081e503a6de37ae4f2e9ffc2fa54ba4b08808eeb764c2f2a19519094129"
+    },
+    {
+      "path": "stylized-style/references/npr-shaders.md",
+      "sha256": "acba8c1818ab1099f4ad0ad7cacd8126b3274fd0ba6da55a30001b391e0d519c"
+    },
+    {
+      "path": "stylized-style/references/palette-examples.md",
+      "sha256": "31dfc76206c76ad5831636e56020879573eda56a695948860b5b235a6e85fa9a"
+    },
+    {
+      "path": "texture-workflow/SKILL.md",
+      "sha256": "9f8b86bc7fb7350d3195c7a641fa6fc33e6350fbf1364ed55330ff8b04249a9b"
+    },
+    {
+      "path": "texture-workflow/references/bake-troubleshooting.md",
+      "sha256": "13d12f59de2a70e76b02f6e611acd9582c283ba6d829cbe3fa513f361d04a026"
+    },
+    {
+      "path": "texture-workflow/references/orm-packing.md",
+      "sha256": "9b8b1cac124820d8d0fe0e6d4f610d55532caaffd446e6a3aed1a47f26eb5d6c"
+    },
+    {
+      "path": "unity-export/SKILL.md",
+      "sha256": "a3d58deb6512e979a4a3cdcfeafde97c6bfb5c743975025bd58279a73bcb452a"
+    },
+    {
+      "path": "unity-export/references/unity-checklist.md",
+      "sha256": "07828d5975162227f2324d723e58deff43821e488da33b3772cd517a5c7d9a92"
+    },
+    {
+      "path": "unity-export/references/unity-materials.md",
+      "sha256": "90b3edb37a5b1d535c8bddb02df9d28eeaad2ea16d0b931294c8366d74fc728b"
+    },
+    {
+      "path": "unreal-export/SKILL.md",
+      "sha256": "9109f7964bb14d3bbad2a5f97fc7a0612317f5790dff638642801d1ea81f5a01"
+    },
+    {
+      "path": "unreal-export/references/ucx-naming.md",
+      "sha256": "dbe9bcb9f1ac477c0b0dccc912e15e5c9eb221c7e1abe678d5b3aa2e22191a65"
+    },
+    {
+      "path": "unreal-export/references/unreal-checklist.md",
+      "sha256": "5b8c6f5cbeac3bd7c7c8d18df65d0a16f8e4b39a54876625cf7bd0d88ce531c8"
+    },
+    {
+      "path": "uv-workflow/SKILL.md",
+      "sha256": "1e55a08843199640cc9d6a957ff40f96d077c00d74d6e1d95b81da8adceaba8b"
+    },
+    {
+      "path": "uv-workflow/references/texel-density.md",
+      "sha256": "3b0b6bcb6468f1f630496176fe28ecd128f1638028260ba6f546324ddf9f3dcf"
+    },
+    {
+      "path": "uv-workflow/references/trim-sheets.md",
+      "sha256": "5b16006a6b4fe5107404ec404b9c27f9393613e2d6fdbdd63ab04dd2458b08e4"
+    },
+    {
+      "path": "vector-style/SKILL.md",
+      "sha256": "ed736c9aaeb13152087dd743e3b3d9dadbbc14b10f764545413bb596338767e9"
+    },
+    {
+      "path": "vector-style/references/vector-rules.md",
+      "sha256": "cbe438c8cdeb66a345c8754782fde60004e03fe657dc02d71b4c6d8dc69689ce"
+    },
+    {
+      "path": "vegetation-artist/SKILL.md",
+      "sha256": "3b1f43f0f456b95f5c00f1372f64db75f34967c581b02068d80ee6ef63d476ec"
+    },
+    {
+      "path": "vegetation-artist/references/leaf-atlas.md",
+      "sha256": "40b60d3d2ea7ac44feb1641574fb96c6929d84e4379ea7c43db21fede26ff677"
+    },
+    {
+      "path": "vegetation-artist/references/tree-lod.md",
+      "sha256": "658a4689ef1071cfbe3330dce7b44b5641f54971274bdb450a32a4097bef3a9c"
+    },
+    {
+      "path": "vegetation-artist/references/wind-vertex-colors.md",
+      "sha256": "d4c65000899c94ca72fc7c701ce87c21db859927b6ba41ecfba6feb6e2fb16a9"
+    },
+    {
+      "path": "vehicle-artist/SKILL.md",
+      "sha256": "5a2414566399167883d947e0cbf5149ca056b52334d2a5ad341948f6241db6b8"
+    },
+    {
+      "path": "vehicle-artist/references/proportion-blockout.md",
+      "sha256": "19b62ebf639cb0a8f920f19b3e5563b9fce34640900b84b75a121dc8627e3008"
+    },
+    {
+      "path": "vehicle-artist/references/vehicle-lod-targets.md",
+      "sha256": "fee8c1c527aaef49787339537b5e1cc162dfdd0fdb5b1603c6d96607816f74e6"
+    },
+    {
+      "path": "vehicle-artist/references/vehicle-object-split.md",
+      "sha256": "fbe75056f19a9f2a13ea3ed200cb23a2be0401a68c2c884d0412c5c88a4ed79b"
+    },
+    {
+      "path": "vfx-fx/SKILL.md",
+      "sha256": "4ea783380362cab44aa635f5cc967e46d6b1bf74061341a576aa4f37b3c72b0c"
+    },
+    {
+      "path": "vfx-fx/references/fx-timing-brief.md",
+      "sha256": "e230decf5efb23bf26310a1ff63175f3ec156b7a9052f88af4888a809f2aa821"
+    },
+    {
+      "path": "vfx-fx/references/game-fx-export.md",
+      "sha256": "bfe4e4e16350ebafcea1a2c3264d909df06bf24f5a58b3d4e8f6cd909b5bba09"
+    },
+    {
+      "path": "vfx-fx/references/volume-domain-rules.md",
+      "sha256": "d52798361bd001faf7a578143f6dded239f064600093a43f63e0d594be72be54"
+    },
+    {
+      "path": "visual-console-eras/SKILL.md",
+      "sha256": "1f8b5bd4909902ae48f3408cc8f5aa15f027fe95a35dc4929318a15ba315be6a"
+    },
+    {
+      "path": "visual-console-eras/references/crt-vhs-film.md",
+      "sha256": "ef930b57e4fb88e674b9124393ab19180e8abac3a09abb1bb87d9d018214a6e7"
+    },
+    {
+      "path": "visual-console-eras/references/ps1-ps2.md",
+      "sha256": "4a3a75bcbf8c806a9330cae49cb8f1a38eb72e79092d908065847e3961d118df"
+    },
+    {
+      "path": "visual-console-eras/references/ps3-ps5.md",
+      "sha256": "7570e9bacc5eb1ad09a1a8624b497af6064cdb416ae77b0aa336823f239dd48b"
+    },
+    {
+      "path": "voxel-style/SKILL.md",
+      "sha256": "1c1f73db79a3b1bab0a6ca90805a766328b1200965c6b4d70a34268514e52309"
+    },
+    {
+      "path": "voxel-style/references/voxel-characters.md",
+      "sha256": "1e83c229b038898335710cbe6d0101eaa29d243114d91df0f72f55564c3f528b"
+    },
+    {
+      "path": "voxel-style/references/voxel-grid.md",
+      "sha256": "70d5feccae4eba8f329c0ea959e50c3535bb2d71d2bdce5fe23bb7488c2ec190"
+    }
+  ]
+}
