@@ -44,7 +44,7 @@ namespace Town.Unity.Dragonsleep
             get
             {
                 var f = _input?.focusController?.focusedElement as VisualElement;
-                return f != null && (f == _input || _input.Contains(f));
+                return f != null && ((f == _input || _input.Contains(f)) || (_planGoal != null && (f == _planGoal || _planGoal.Contains(f))));
             }
         }
 
@@ -248,6 +248,7 @@ namespace Town.Unity.Dragonsleep
             _root.Add(_modal);
             SetMode(LoomMode.Speak);
             ApplyArtDirection();
+            BuildPlanEntry();
         }
 
         // ================= 每帧 =================
@@ -255,6 +256,14 @@ namespace Town.Unity.Dragonsleep
         void Update()
         {
             if (Game == null || _clock == null || Game.Session == null) return;
+            RefreshArtState();
+            RefreshPlanControls();
+            // Core 的异步执行尚未接入主线程桥；等待时不枚举它正在写入的世界或轨迹。
+            if (Game.Busy)
+            {
+                if (ModalOpen && Input.GetKeyDown(KeyCode.Escape)) CloseModal();
+                return;
+            }
             var w = Game.Session.World;
             _clock.text = w.ClockText;
             RefreshPips();
@@ -262,7 +271,6 @@ namespace Town.Unity.Dragonsleep
             RefreshQuest(w);
             RefreshPlates();
             RefreshWarning(w);
-            RefreshArtState();
             _nearby.text = Game.NearestActorId != null ? "Enter　与 " + Game.ActorName(Game.NearestActorId).Split('（')[0] + " 交谈" : "";
             if (_lens.style.display == DisplayStyle.Flex)
             {
@@ -277,6 +285,7 @@ namespace Town.Unity.Dragonsleep
             if (Input.GetKeyDown(KeyCode.Tab)) ToggleLens();
             if (Input.GetKeyDown(KeyCode.J)) ShowJournal();
             if (Input.GetKeyDown(KeyCode.M)) ShowMap();
+            if (Input.GetKeyDown(KeyCode.P)) ShowPlan();
             if ((Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)) && !Game.Busy)
             {
                 if (Game.NearestActorId != null) SetMode(LoomMode.Speak);
@@ -394,6 +403,7 @@ namespace Town.Unity.Dragonsleep
 
         VisualElement Card(float width)
         {
+            _planPanelOpen = false;
             _modal.Clear();
             var card = new VisualElement
             {
@@ -412,6 +422,7 @@ namespace Town.Unity.Dragonsleep
         bool _craftConfirmation;
         void CloseModal()
         {
+            _planPanelOpen = false;
             _modal.style.display = DisplayStyle.None;
             if (_craftConfirmation) { _craftConfirmation = false; Game.DecideCraft(false); }
         }

@@ -12,7 +12,7 @@ namespace Town.Unity.Dragonsleep
     /// 《龙眠镇》局内入口：把 Core 的 DragonsleepSession 接到场景（地点、角色、雏龙）和织言镜界面上。
     /// 默认使用离线规则提供方，进入 Play 不会产生任何费用。
     /// </summary>
-    public sealed class DragonsleepGame : MonoBehaviour
+    public sealed partial class DragonsleepGame : MonoBehaviour
     {
         public DsPlayerController Player;
         public Transform PlacesRoot;
@@ -65,8 +65,7 @@ namespace Town.Unity.Dragonsleep
         void Update()
         {
             if (Player == null) return;
-            UpdatePlace();
-            DrainRuleEvents();
+            if (!Busy) { UpdatePlace(); DrainRuleEvents(); }
             UpdateNearestActor();
             bool typing = Hud != null && (Hud.Typing || Hud.ReadingPanelOpen);
             Player.InputBlocked = typing || Busy || Ending != null;
@@ -123,6 +122,12 @@ namespace Town.Unity.Dragonsleep
         public IEnumerable<string> TravelTargets => _places.Keys;
 
         public void TravelTo(string place)
+        {
+            if (Busy) return;
+            SyncPlayerPlace(place);
+        }
+
+        void SyncPlayerPlace(string place)
         {
             if (!_places.TryGetValue(place, out var p) || Player == null) return;
             Player.Teleport(p.position + new Vector3(-3f, 0.2f, -3f));
@@ -206,6 +211,9 @@ namespace Town.Unity.Dragonsleep
 
         public void Restart()
         {
+            if (Busy) { Hud?.Toast("请先等待当前操作结束；规划请求可以取消。"); return; }
+            ActivePlan?.Abandon(); ActivePlan = null;
+            PlanNotice = ""; PlanResultOffset = 0;
             Session.Restart();
             Ending = null;
             _dayStartTrace = 0;

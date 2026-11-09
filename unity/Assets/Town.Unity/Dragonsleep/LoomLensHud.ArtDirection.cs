@@ -118,8 +118,8 @@ namespace Town.Unity.Dragonsleep
 
         void RefreshArtState()
         {
-            _location.text = "龙眠镇  /  " + Game.PlaceName;
             bool busy = Game.Busy;
+            if (!busy) _location.text = "龙眠镇  /  " + Game.PlaceName;
             _sendButton.SetEnabled(!busy && Game.Ending == null);
             _input.SetEnabled(!busy && Game.Ending == null);
             foreach (var b in _modes) b.SetEnabled(!busy && Game.Ending == null);
