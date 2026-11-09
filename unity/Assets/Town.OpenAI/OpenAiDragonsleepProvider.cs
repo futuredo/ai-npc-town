@@ -85,13 +85,10 @@ namespace Town.OpenAI
             TokenUsageLite usage = null;
             if (response["usage"] is JObject u)
             {
-                var usageFull = new Town.Core.Brain.TokenUsage
-                {
-                    InputTokens = (int?)u["input_tokens"] ?? 0,
-                    CachedInputTokens = (int?)u["input_tokens_details"]?["cached_tokens"] ?? 0,
-                    OutputTokens = (int?)u["output_tokens"] ?? 0,
-                };
-                usage = new TokenUsageLite { Input = usageFull.InputTokens, Output = usageFull.OutputTokens, Usd = OpenAiPolicy.EstimateUsd(usageFull) };
+                int input = (int?)u["input_tokens"] ?? 0;
+                int cached = (int?)u["input_tokens_details"]?["cached_tokens"] ?? 0;
+                int output = (int?)u["output_tokens"] ?? 0;
+                usage = new TokenUsageLite { Input = input, Output = output, Usd = OpenAiPolicy.EstimateUsd(input, cached, output) };
             }
             var content = (response["output"] as JArray ?? new JArray()).OfType<JObject>()
                 .Where(x => (string)x["type"] == "message")

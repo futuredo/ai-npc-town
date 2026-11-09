@@ -22,9 +22,14 @@ namespace Town.OpenAI
         public static decimal? EstimateUsd(TokenUsage usage)
         {
             if (usage == null) return null;
-            int cached = Math.Max(0, Math.Min(usage.InputTokens, usage.CachedInputTokens));
-            return ((usage.InputTokens - cached) * InputUsdPerMillion +
-                cached * CachedInputUsdPerMillion + usage.OutputTokens * OutputUsdPerMillion) / 1000000m;
+            return EstimateUsd(usage.InputTokens, usage.CachedInputTokens, usage.OutputTokens);
+        }
+
+        public static decimal EstimateUsd(int inputTokens, int cachedInputTokens, int outputTokens)
+        {
+            int cached = Math.Max(0, Math.Min(inputTokens, cachedInputTokens));
+            return ((inputTokens - cached) * InputUsdPerMillion +
+                cached * CachedInputUsdPerMillion + outputTokens * OutputUsdPerMillion) / 1000000m;
         }
     }
 }
