@@ -343,11 +343,11 @@ namespace Town.Core.Dragonsleep
         {
             var branch = new DsPlanBranch { Selection = selection ?? new Dictionary<string, string>() };
             var w = from.Restore();
-            w.ForcedRoll = 0.9999; w.DryRun = true;
+            var executor = new DsExecutor(new DsFixedRoll(0.9999), DsExecutionMode.PlanPreview);
             int spent = from.Spent, budget = from.PhaseBudget;
             foreach (var step in steps)
             {
-                string fail = SimulateStep(w, ref spent, budget, step, out var reasonCode);
+                string fail = SimulateStep(w, ref spent, budget, step, executor, out var reasonCode);
                 if (fail != null)
                 {
                     branch.FailedStep = step.Id; branch.Reason = fail; branch.EndClock = w.ClockText;
@@ -363,18 +363,22 @@ namespace Town.Core.Dragonsleep
             return branch;
         }
 
-        static string SimulateStep(DsWorld w, ref int spent, int budget, DsPlanStep step, out DsReason reasonCode)
+        static string SimulateStep(DsWorld w, ref int spent, int budget, DsPlanStep step, DsExecutor executor, out DsReason reasonCode)
         {
             reasonCode = new DsReason("deadline_passed");
             if (w.Whelp.WithMother)
             { reasonCode = new DsReason("goal_already_reached"); return "小烬已经与母亲团聚，后续步骤多余"; }
             if (w.FinalDawn) return "第三个黎明已至，来不及执行";
             // 与实际执行一致：时间推进到深夜时先过完这一夜（居民行动在试运行中视为未知、不模拟）。
-            if (w.Phase == DayPhase.Night) { spent = 0; PassNight(w); if (w.FinalDawn) return w.Whelp.WithMother ? null : "第三个黎明已至，来不及执行"; }
+            if (w.Phase == DayPhase.Night)
+            {
+                spent = 0; PassNight(w, executor);
+                if (w.FinalDawn) return w.Whelp.WithMother ? null : "第三个黎明已至，来不及执行";
+            }
             var t = new AiTrace();
             if (step.Place != "" && step.Place != w.PlayerPlace)
             {
-                DsRules.EnterPlace(w, step.Place, t);
+                executor.EnterPlace(w, step.Place, t);
                 if (t.FailureCode != null || t.Verdict.Kind != VerdictKind.Accepted)
                 { reasonCode = t.Verdict.ReasonCode; return "前往" + Name(w, step.Place) + "失败：" + t.Verdict.Reason; }
             }
@@ -384,13 +388,13 @@ namespace Town.Core.Dragonsleep
                 case "act":
                 {
                     var act = new AiTrace();
-                    DsRules.Adjudicate(w, step.ToProposal(w.PlayerPlace), act);
+                    DsRules.Adjudicate(w, step.ToProposal(w.PlayerPlace), act, executor.RollSource, executor.Mode);
                     reasonCode = act.Verdict.ReasonCode;
                     if (act.FailureCode != null) return act.Verdict.Reason;
                     if (act.Verdict.Kind == VerdictKind.Rejected || (act.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide"))
                         return act.Verdict.Reason;
                     int cost = DsExecutor.TimeCost(AiTaskKind.Adjudicate, step.Verb, w, act);
-                    DsExecutor.ApplyTime(w, ref spent, budget, cost, act);
+                    DsExecutor.ApplyTime(w, ref spent, budget, cost, act, executor.RollSource);
                     return null;
                 }
                 default:
@@ -403,19 +407,19 @@ namespace Town.Core.Dragonsleep
                     {
                         spent = 0;
                         bool night = w.Advance();
-                        DsRules.PhaseStart(w, t);
-                        if (night) PassNight(w);
+                        executor.PhaseStart(w, t);
+                        if (night) PassNight(w, executor);
                     }
                     return null;
                 }
             }
         }
 
-        static void PassNight(DsWorld w)
+        static void PassNight(DsWorld w, DsExecutor executor)
         {
             var t = new AiTrace();
             w.Advance();
-            DsRules.PhaseStart(w, t);
+            executor.PhaseStart(w, t);
             if (w.FinalDawn)
                 DsRules.Direct(w, new Dictionary<string, object> { ["event"] = "mother_descends", ["intensity"] = 1.0, ["reason"] = "试运行" }, t);
         }

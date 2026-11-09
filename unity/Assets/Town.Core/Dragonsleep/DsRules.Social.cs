@@ -58,7 +58,7 @@ namespace Town.Core.Dragonsleep
 
         // ---------------- N5 多智能体 ----------------
 
-        public static void AgentPlan(DsWorld w, string npcId, Dictionary<string, object> p, AiTrace t)
+        public static void AgentPlan(DsWorld w, string npcId, Dictionary<string, object> p, AiTrace t, IDsRoll rolls = null)
         {
             var a = w.Actors[npcId];
             string verb = p.Str("verb"), place = p.Str("place") ?? a.Place, target = p.Str("target") ?? "";
@@ -88,7 +88,7 @@ namespace Town.Core.Dragonsleep
                         bool playerHid = wh.Hidden && w.Flags.ContainsKey("whelp_hidden_by_player");
                         double chance = (wh.Hidden ? 0.25 : 0.45) + (knows ? 0.2 : 0) - (guarded ? 0.2 : 0) - (playerHid ? 0.15 : 0);
                         chance = Math.Max(0.05, chance);
-                        double roll = w.NextRoll();
+                        double roll = DsRoll.Next(w, rolls);
                         t.Verdict.Roll = roll; t.Verdict.Difficulty = 1 - chance;
                         if (roll < chance)
                         {

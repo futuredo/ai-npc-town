@@ -9,6 +9,15 @@ namespace Town.Core.Dragonsleep
     {
         public const string RulesVersion = "dragonsleep-rules-6";
         readonly Dictionary<string, DsExecutionReceipt> _committed = new Dictionary<string, DsExecutionReceipt>();
+        public IDsRoll RollSource { get; }
+        public DsExecutionMode Mode { get; }
+
+        public DsExecutor(IDsRoll rolls = null, DsExecutionMode mode = DsExecutionMode.Live)
+        { RollSource = rolls ?? DsSeededRoll.Instance; Mode = mode; }
+
+        internal void EnterPlace(DsWorld world, string place, AiTrace trace) => DsRules.EnterPlace(world, place, trace, RollSource);
+        internal void PhaseStart(DsWorld world, AiTrace trace) => DsRules.PhaseStart(world, trace, RollSource);
+
         public void Reset() => _committed.Clear();
 
         public DsExecutionPlan Prepare(DsWorld world, int spent, int phaseBudget, AiTaskKind kind,
@@ -31,8 +40,8 @@ namespace Town.Core.Dragonsleep
                     switch (kind)
                     {
                         case AiTaskKind.Dialogue: DsRules.Dialogue(candidate, actorId, copy, trial); break;
-                        case AiTaskKind.Adjudicate: DsRules.Adjudicate(candidate, copy, trial); break;
-                        case AiTaskKind.AgentPlan: DsRules.AgentPlan(candidate, actorId, copy, trial); break;
+                        case AiTaskKind.Adjudicate: DsRules.Adjudicate(candidate, copy, trial, RollSource, Mode); break;
+                        case AiTaskKind.AgentPlan: DsRules.AgentPlan(candidate, actorId, copy, trial, RollSource); break;
                         case AiTaskKind.Direct: DsRules.Direct(candidate, copy, trial); break;
                         case AiTaskKind.Craft: DsRules.Craft(candidate, copy, trial); break;
                         case AiTaskKind.Plan: EvaluatePlan(before, copy, trial); break;
@@ -41,7 +50,7 @@ namespace Town.Core.Dragonsleep
                     if (trial.FailureCode == null)
                     {
                         timeCost = TimeCost(kind, copy.Str("verb"), candidate, trial);
-                        ApplyTime(candidate, ref nextSpent, phaseBudget, timeCost, trial);
+                        ApplyTime(candidate, ref nextSpent, phaseBudget, timeCost, trial, RollSource);
                         // 一次事务只增长一个版本；包括掷骰、时间、日志、旗标等隐式变化。
                         candidate.Version = world.Version;
                         if (DsWorldSnapshot.Capture(candidate, nextSpent, phaseBudget).Hash != before.Hash) candidate.Version++;
@@ -91,12 +100,12 @@ namespace Town.Core.Dragonsleep
             return cost;
         }
 
-        internal static void ApplyTime(DsWorld candidate, ref int spent, int phaseBudget, int cost, AiTrace trial)
+        internal static void ApplyTime(DsWorld candidate, ref int spent, int phaseBudget, int cost, AiTrace trial, IDsRoll rolls = null)
         {
             if (cost <= 0) return;
             string clockBefore = candidate.ClockText + " / 剩余 " + (phaseBudget - spent);
             spent += cost;
-            while (spent >= phaseBudget) { spent -= phaseBudget; candidate.Advance(); AppendPhaseStart(candidate, trial); }
+            while (spent >= phaseBudget) { spent -= phaseBudget; candidate.Advance(); AppendPhaseStart(candidate, trial, rolls); }
             trial.Changes.Add(new WorldChange { Path = "world.time", Before = clockBefore,
                 After = candidate.ClockText + " / 剩余 " + (phaseBudget - spent), Note = "消耗 " + cost + " 点时间" });
         }
@@ -127,10 +136,10 @@ namespace Town.Core.Dragonsleep
         }
 
         /// <summary>行动消耗时间跨入新时段时，同一事务内执行换岗巡逻。</summary>
-        static void AppendPhaseStart(DsWorld candidate, AiTrace trial)
+        static void AppendPhaseStart(DsWorld candidate, AiTrace trial, IDsRoll rolls)
         {
             var patrol = new AiTrace();
-            DsRules.PhaseStart(candidate, patrol);
+            DsRules.PhaseStart(candidate, patrol, rolls);
             trial.Changes.AddRange(patrol.Changes);
             trial.Verdict.Notes.AddRange(patrol.Verdict.Notes);
             if (!string.IsNullOrEmpty(patrol.Presented)) trial.Verdict.Notes.Add("换岗：" + patrol.Presented);

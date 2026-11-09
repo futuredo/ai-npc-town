@@ -88,6 +88,8 @@ internal static class PlanResearch
             "unity/Assets/Town.Core/Dragonsleep/DsRules.Effects.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Social.cs",
             "unity/Assets/Town.Core/Dragonsleep/DsRules.Director.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Craft.cs",
             "unity/Assets/Town.Core/Dragonsleep/DsRules.Travel.cs", "unity/Assets/Town.Core/Dragonsleep/BaselinePlanner.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsRoll.cs", "unity/Assets/Town.Core/Dragonsleep/DsExecutor.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsGuards.cs", "unity/Assets/Town.Core/Dragonsleep/DsWorld.cs",
             "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs"
         };
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(

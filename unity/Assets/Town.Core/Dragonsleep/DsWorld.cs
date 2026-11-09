@@ -97,13 +97,6 @@ namespace Town.Core.Dragonsleep
         public readonly List<string> PublicNews = new List<string>();
         public DsWhelp Whelp = new DsWhelp();
 
-        /// <summary>
-        /// 仅计划静态校验的试运行副本使用：固定掷骰（假设每次都成功、不被看见），且跳过依赖未知岗哨的前置条件。
-        /// 不进入快照，正式世界与回放永远为空。
-        /// </summary>
-        internal double? ForcedRoll;
-        internal bool DryRun;
-
         public IEnumerable<DsBelief> BeliefsOf(string owner) => Beliefs.Where(b => b.Owner == owner);
         public DsBelief Belief(string id) => Beliefs.FirstOrDefault(b => b.Id == id);
         public IEnumerable<DsItem> Inventory(string holder) => Items.Values.Where(i => i.Holder == holder);
@@ -124,16 +117,7 @@ namespace Town.Core.Dragonsleep
         }
 
         /// <summary>同一种子 + 同一计数 → 同一结果，用于重放与对比实验。</summary>
-        public double NextRoll()
-        {
-            if (ForcedRoll.HasValue) { RollCounter++; return ForcedRoll.Value; }
-            unchecked
-            {
-                uint x = (uint)(Seed * 2654435761u) ^ (uint)(++RollCounter * 40503u);
-                x ^= x << 13; x ^= x >> 17; x ^= x << 5;
-                return (x % 10000u) / 10000.0;
-            }
-        }
+        public double NextRoll() => DsRoll.Next(this);
 
         public static string PhaseName(DayPhase p) => DsMoment.PhaseName(p);
 

@@ -74,11 +74,11 @@ namespace Town.Core.Dragonsleep
         /// 巡逻检查：玩家带着雏龙进入有卫兵的地点，或所在地点换上新岗时调用。
         /// 被看见 → 雏龙被押进王城铁笼。返回给玩家的一句话；无事返回 null。
         /// </summary>
-        public static string Patrol(DsWorld w, AiTrace t)
+        public static string Patrol(DsWorld w, AiTrace t, IDsRoll rolls = null)
         {
             if (!WhelpWithPlayer(w) || !IsWatched(w, w.PlayerPlace, out var reason)) return null;
             double chance = SightChance(w, out var notes);
-            double roll = w.NextRoll();
+            double roll = DsRoll.Next(w, rolls);
             t.Verdict.Notes.Add(reason + "；" + string.Join("，", notes) + $"；看见概率 {chance:0.00}，掷骰 {roll:0.00}");
             if (roll >= chance) return reason + "，但没人注意到你身边的小烬。";
             Capture(w, t, "osric");

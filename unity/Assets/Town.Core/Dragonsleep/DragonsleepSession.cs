@@ -28,7 +28,7 @@ namespace Town.Core.Dragonsleep
         public event Action<DsRuleEvent> RuleEventCompleted;
         private int _ruleSequence;
 
-        private readonly DsExecutor _executor = new DsExecutor();
+        private readonly DsExecutor _executor;
         private int _sequence;
         private int _spent;
         private DsExecutionPlan _pendingCraft;
@@ -49,9 +49,11 @@ namespace Town.Core.Dragonsleep
         private readonly Dictionary<string, string> _latestByActor = new Dictionary<string, string>();
         private readonly SemaphoreSlim _gate = new SemaphoreSlim(1, 1);
 
-        public DragonsleepSession(IAiProvider provider, int seed = 20261108)
+        public DragonsleepSession(IAiProvider provider, int seed = 20261108,
+            IDsRoll rolls = null, DsExecutionMode executionMode = DsExecutionMode.Live)
         {
             Provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _executor = new DsExecutor(rolls, executionMode);
             World = DsContent.NewWorld(seed);
         }
 
@@ -76,7 +78,7 @@ namespace Town.Core.Dragonsleep
         public DsRuleEvent EnterPlace(string place)
         {
             if (World.PlayerPlace == place || !_gate.Wait(0)) return null;
-            try { return RunRuleLocked("enter:" + place, (w, t) => DsRules.EnterPlace(w, place, t)); }
+            try { return RunRuleLocked("enter:" + place, (w, t) => _executor.EnterPlace(w, place, t)); }
             finally { _gate.Release(); }
         }
 
@@ -166,7 +168,7 @@ namespace Town.Core.Dragonsleep
                 bool advanced = false;
                 if (!night) { night = w.Advance(); advanced = true; }
                 _spent = 0;
-                if (advanced) RunRuleLocked("phase_start", DsRules.PhaseStart);
+                if (advanced) RunRuleLocked("phase_start", _executor.PhaseStart);
                 if (!night) return result;
                 foreach (var id in w.Actors.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList())
                 {
@@ -176,7 +178,7 @@ namespace Town.Core.Dragonsleep
                 result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
                 if (World != w || ct.IsCancellationRequested) return result;
                 w.Advance();
-                RunRuleLocked("phase_start", DsRules.PhaseStart);
+                RunRuleLocked("phase_start", _executor.PhaseStart);
                 if (w.FinalDawn) result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
                 return result;
             }

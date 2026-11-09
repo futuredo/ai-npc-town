@@ -19,7 +19,8 @@ namespace Town.Core.Dragonsleep
             ["lead"] = 0.3, ["release"] = 0.05, ["rescue"] = 0.55, ["confide"] = 0.05,
         };
 
-        public static void Adjudicate(DsWorld w, Dictionary<string, object> p, AiTrace t)
+        public static void Adjudicate(DsWorld w, Dictionary<string, object> p, AiTrace t,
+            IDsRoll rolls = null, DsExecutionMode mode = DsExecutionMode.Live)
         {
             string verb = p.Str("verb"), target = p.Str("target") ?? "", itemId = p.Str("item") ?? "", place = p.Str("place") ?? "";
             var laws = p.StrList("laws");
@@ -51,7 +52,7 @@ namespace Town.Core.Dragonsleep
                 if (wh.CapturedBy == null) { Reject(t, "小烬没有被关起来，用不着救", "rescue_not_needed"); return; }
                 if (wh.CapturedBy != "osric" || wh.Place != w.PlayerPlace) { Reject(t, "小烬不在这里的笼子里", "rescue_target_absent"); return; }
                 // 计划试运行不读取未来岗哨（玩家并不知道），这一条到真正执行时才检查。
-                if (!w.DryRun && DsGuards.IsWatched(w, w.PlayerPlace, out var guarded))
+                if (mode != DsExecutionMode.PlanPreview && DsGuards.IsWatched(w, w.PlayerPlace, out var guarded))
                 { Reject(t, guarded + "，现在下手等于自投罗网", "place_guarded", w.PlayerPlace); return; }
             }
             else if (targetWhelp && (wh.Place != w.PlayerPlace || wh.CapturedBy != null))
@@ -135,7 +136,8 @@ namespace Town.Core.Dragonsleep
             modelDifficulty = Clamp(modelDifficulty, 0, 1);
             double final = Clamp(0.7 * engine + 0.3 * modelDifficulty, 0.05, 0.95);
             if (Math.Abs(engine - modelDifficulty) > 0.35) t.Verdict.Notes.Add($"模型估计 {modelDifficulty:0.00} 与规则 {engine:0.00} 分歧较大");
-            double roll = verb == "observe" || verb == "wait" || verb == "buy" || verb == "release" || verb == "confide" ? 1.0 : w.NextRoll();
+            double roll = verb == "observe" || verb == "wait" || verb == "buy" || verb == "release" || verb == "confide"
+                ? 1.0 : DsRoll.Next(w, rolls);
             bool success = roll >= final;
             t.Verdict.Difficulty = final;
             t.Verdict.Roll = roll;

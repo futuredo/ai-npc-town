@@ -5,7 +5,7 @@ namespace Town.Core.Dragonsleep
     public static partial class DsRules
     {
         /// <summary>玩家进入新地点：跟随的雏龙一起移动；总管在场会惊吓暴露的雏龙；随后卫兵巡逻检查。</summary>
-        public static void EnterPlace(DsWorld w, string place, AiTrace t)
+        public static void EnterPlace(DsWorld w, string place, AiTrace t, IDsRoll rolls = null)
         {
             t.Verdict.Kind = VerdictKind.Accepted;
             if (!w.Places.ContainsKey(place)) { Fail(t, "unknown_entity", "未知地点：" + place); return; }
@@ -40,7 +40,7 @@ namespace Town.Core.Dragonsleep
                     lines.Add("小烬看见奥斯里克，吓得直往你身后躲");
                 }
             }
-            string patrol = DsGuards.Patrol(w, t);
+            string patrol = DsGuards.Patrol(w, t, rolls);
             if (patrol != null) lines.Add(patrol);
             if (wh.CapturedBy != null && bring) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "雏龙被卫兵发现"; }
             else t.Verdict.Reason = bring ? "带着雏龙抵达" : "抵达";
@@ -48,11 +48,11 @@ namespace Town.Core.Dragonsleep
         }
 
         /// <summary>新时段开始：岗位轮换后，对玩家所在地点做一次巡逻检查。</summary>
-        public static void PhaseStart(DsWorld w, AiTrace t)
+        public static void PhaseStart(DsWorld w, AiTrace t, IDsRoll rolls = null)
         {
             t.Verdict.Kind = VerdictKind.Accepted;
             t.Verdict.Reason = "换岗";
-            string patrol = DsGuards.Patrol(w, t);
+            string patrol = DsGuards.Patrol(w, t, rolls);
             if (patrol != null && w.Whelp.CapturedBy != null) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "雏龙被卫兵发现"; }
             t.Presented = patrol ?? "";
         }
