@@ -26,7 +26,7 @@ namespace Town.Core.Dragonsleep
                 case AiTaskKind.Adjudicate: reply = Adjudicate(perception, input); break;
                 case AiTaskKind.AgentPlan: reply = Agent(perception); break;
                 case AiTaskKind.Direct: reply = Direct(perception); break;
-                case AiTaskKind.Plan: reply = BaselinePlanner.Plan(perception, input, packet.LocalPlanContext); break;
+                case AiTaskKind.Plan: reply = BaselinePlanner.Plan(perception, input, packet.LocalPlanContext).ToRecord(); break;
                 default: reply = Craft(perception, input); break;
             }
             string raw = MiniJson.Write(reply);

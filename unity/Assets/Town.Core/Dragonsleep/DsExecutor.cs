@@ -30,7 +30,8 @@ namespace Town.Core.Dragonsleep
             // 独立副本：规则中剔除非法引用不改写原始模型提案。
             var copy = (Dictionary<string, object>)MiniJson.Parse(MiniJson.Write(proposal));
             string identity = DsWorldSnapshot.Digest(kind + "|" + actorId + "|" + MiniJson.Write(proposal));
-            string error = DsProposalValidator.Check(kind, copy);
+            // 提供方的 JSON 在此边界只解析一次；后续计划规则只接受类型化数据。
+            string error = DsProposalValidator.Check(kind, copy, out var typedPlan);
             int timeCost = 0, nextSpent = spent;
             if (error != null) Fail(trial, "schema_invalid", error);
             else
@@ -44,7 +45,7 @@ namespace Town.Core.Dragonsleep
                         case AiTaskKind.AgentPlan: DsRules.AgentPlan(candidate, actorId, copy, trial, RollSource); break;
                         case AiTaskKind.Direct: DsRules.Direct(candidate, copy, trial); break;
                         case AiTaskKind.Craft: DsRules.Craft(candidate, copy, trial); break;
-                        case AiTaskKind.Plan: EvaluatePlan(before, copy, trial); break;
+                        case AiTaskKind.Plan: EvaluatePlan(before, typedPlan, trial); break;
                         default: Fail(trial, "task_not_supported", "未知任务类型"); break;
                     }
                     if (trial.FailureCode == null)
@@ -111,9 +112,8 @@ namespace Town.Core.Dragonsleep
         }
 
         /// <summary>计划只做整体校验，不改候选世界：结构/引用问题直接拦截，不可行给出原因。</summary>
-        static void EvaluatePlan(DsWorldSnapshot before, Dictionary<string, object> proposal, AiTrace trial)
+        static void EvaluatePlan(DsWorldSnapshot before, DsPlan plan, AiTrace trial)
         {
-            DsPlan.TryParse(proposal, out var plan);
             var report = DsPlanValidator.Validate(before, plan);
             trial.PlanReport = report;
             if (report.Code != null) { Fail(trial, report.Code, string.Join("；", report.Issues.Take(4))); return; }
@@ -219,7 +219,11 @@ namespace Town.Core.Dragonsleep
     public static class DsProposalValidator
     {
         public static string Check(AiTaskKind kind, Dictionary<string, object> p)
+            => Check(kind, p, out _);
+
+        internal static string Check(AiTaskKind kind, Dictionary<string, object> p, out DsPlan plan)
         {
+            plan = null;
             string[] strings, arrays, numbers;
             switch (kind)
             {
@@ -232,7 +236,7 @@ namespace Town.Core.Dragonsleep
                     strings = new[] { "verb", "place", "target", "reason" }; arrays = new[] { "share" }; numbers = Array.Empty<string>(); break;
                 case AiTaskKind.Direct: strings = new[] { "event", "reason" }; arrays = Array.Empty<string>(); numbers = new[] { "intensity" }; break;
                 case AiTaskKind.Craft: strings = new[] { "name", "look" }; arrays = new[] { "consume", "tags" }; numbers = new[] { "potency" }; break;
-                case AiTaskKind.Plan: return DsPlan.TryParse(p, out _);
+                case AiTaskKind.Plan: return DsPlan.TryParse(p, out plan);
                 default: return "未知任务";
             }
             foreach (string key in strings)

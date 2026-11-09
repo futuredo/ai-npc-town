@@ -65,11 +65,10 @@ namespace Town.Core.Tests
             s.World.Items["pact_page"].Holder = "player";
             var per = ContextBuilder.PlanPerception(s.World, 4, null);
             var local = new DsPlanLocalContext(new DsReason("actor_absent", actor));
-            var revised = BaselinePlanner.Plan(per, "请梅伦帮忙", local);
-            DsPlan.TryParse(revised, out var plan);
+            var plan = BaselinePlanner.Plan(per, "请梅伦帮忙", local);
             Assert.IsTrue(plan.Steps.Where(x => x.Target == actor).All(x => x.Place == alternate));
             per["replan"] = new Dictionary<string, object> { ["reason"] = "梅伦修女不在这里；皮普不在这里" };
-            DsPlan.TryParse(BaselinePlanner.Plan(per, "请梅伦帮忙"), out var ordinary);
+            var ordinary = BaselinePlanner.Plan(per, "请梅伦帮忙");
             Assert.IsTrue(ordinary.Steps.Where(x => x.Target == actor).All(x => x.Place == normal), "中文不再控制分支");
         }
 

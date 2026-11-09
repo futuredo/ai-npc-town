@@ -14,7 +14,7 @@ namespace Town.Core.Dragonsleep
         static readonly DsMoment DuskD3 = new DsMoment(3, DayPhase.Dusk);
         static readonly DsMoment FinalDawn = new DsMoment(4, DayPhase.Dawn);
 
-        public static Dictionary<string, object> Plan(Dictionary<string, object> per, string input, DsPlanLocalContext local = null)
+        public static DsPlan Plan(Dictionary<string, object> per, string input, DsPlanLocalContext local = null)
         {
             string here = (per.Str("where") ?? "").Split('（')[0];
             DsMoment.TryParse(per.Str("time"), out var moment);
@@ -35,18 +35,19 @@ namespace Town.Core.Dragonsleep
             string marenAt = reason.Is("actor_absent", "maren") ? "catacombs" : "cathedral";
             string pipAt = reason.Is("actor_absent", "pip") ? "market" : "docks";
 
-            var steps = new List<Dictionary<string, object>>();
+            var steps = new List<DsPlanStep>();
             int acts = 0;
             void Add(string op, string verb = "", string target = "", string item = "", string place = "", string until = "",
                 string[] useLaws = null, string[] cites = null, string when = "", string why = "")
             {
-                var l = (useLaws ?? new string[0]).Where(laws.Contains).Cast<object>().ToList();
-                var c = (cites ?? new string[0]).Where(x => facts.Contains(x) || laws.Contains(x) || x.StartsWith("obs_")).Cast<object>().ToList();
-                steps.Add(new Dictionary<string, object>
+                var step = new DsPlanStep
                 {
-                    ["id"] = "s" + (steps.Count + 1), ["op"] = op, ["verb"] = verb, ["target"] = target, ["item"] = item,
-                    ["place"] = place, ["until"] = until, ["laws"] = l, ["cites"] = c, ["when"] = when, ["why"] = why,
-                });
+                    Id = "s" + (steps.Count + 1), Op = op, Verb = verb, Target = target, Item = item,
+                    Place = place, Until = until, When = when, Why = why,
+                };
+                step.Laws.AddRange((useLaws ?? new string[0]).Where(laws.Contains));
+                step.Cites.AddRange((cites ?? new string[0]).Where(x => facts.Contains(x) || laws.Contains(x) || x.StartsWith("obs_")));
+                steps.Add(step);
                 if (op == "act" && when == "") acts++;
             }
 
@@ -129,30 +130,34 @@ namespace Town.Core.Dragonsleep
                 Add("wait", place: "workshop", until: DuskD3.ToString(), cites: new[] { "obs_deadline", "law_guards_dusk" }, why: "在工坊躲到最后的黄昏");
             Add("wait", place: "skull_hill", until: FinalDawn.ToString(), cites: new[] { "obs_deadline" }, why: "在龙骨岗等母亲降临");
 
-            var choice = status == "caged_castle" || status == "with_mother" ? null : new Dictionary<string, object>
+            var choice = status == "caged_castle" || status == "with_mother" ? null : new DsPlanChoice
             {
-                ["id"] = "helper", ["question"] = "要把计划托付给谁？",
-                ["options"] = options.Take(3).Select(o => (object)new Dictionary<string, object> { ["id"] = o.id, ["label"] = o.label }).ToList(),
+                Id = "helper", Question = "要把计划托付给谁？",
             };
+            if (choice != null)
+                choice.Options.AddRange(options.Take(3).Select(o => new DsPlanOption { Id = o.id, Label = o.label }));
             // 没选到的选项对应步骤保留；取舍只有 1 个有效选项时去掉。
-            if (choice != null && ((List<object>)choice["options"]).Count < 2) choice = null;
-            if (choice == null) steps.RemoveAll(x => (string)x["when"] != "");
+            if (choice != null && choice.Options.Count < 2) choice = null;
+            if (choice == null) steps.RemoveAll(x => x.When != "");
             string summary = (status == "caged_castle" ? "趁黄昏换岗撬开铁笼救出小烬，" : bond < 0.4 && !status.StartsWith("following") ? "先用熏鱼取得小烬信任，" : "") +
                              "用斗篷遮好带在身边，躲在工坊，最后的黄昏上龙骨岗等母亲。";
             // 取舍里非首选项对应的步骤，在 when 中已标注；基线最多 14 步。
             if (steps.Count > DsPlan.MaxSteps) steps = steps.Take(DsPlan.MaxSteps).ToList();
-            for (int i = 0; i < steps.Count; i++) steps[i]["id"] = "s" + (i + 1);
+            for (int i = 0; i < steps.Count; i++) steps[i].Id = "s" + (i + 1);
             return Wrap(input, summary, steps, choice);
         }
 
-        static Dictionary<string, object> Wrap(string input, string summary, List<Dictionary<string, object>> steps, Dictionary<string, object> choice) =>
-            new Dictionary<string, object>
+        static DsPlan Wrap(string input, string summary, List<DsPlanStep> steps, DsPlanChoice choice)
+        {
+            var plan = new DsPlan
             {
-                ["goal"] = string.IsNullOrWhiteSpace(input) ? "把小烬安全送回母亲身边" : (input.Length > 200 ? input.Substring(0, 200) : input),
-                ["summary"] = summary,
-                ["choices"] = choice == null ? new List<object>() : new List<object> { choice },
-                ["steps"] = steps.Cast<object>().ToList(),
+                Goal = string.IsNullOrWhiteSpace(input) ? "把小烬安全送回母亲身边" : (input.Length > 200 ? input.Substring(0, 200) : input),
+                Summary = summary,
             };
+            if (choice != null) plan.Choices.Add(choice);
+            plan.Steps.AddRange(steps);
+            return plan;
+        }
 
         static HashSet<string> Ids(Dictionary<string, object> per, string key) =>
             new HashSet<string>(((per.TryGetValue(key, out var v) ? v as List<object> : null) ?? new List<object>())
