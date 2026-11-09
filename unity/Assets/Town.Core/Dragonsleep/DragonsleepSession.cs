@@ -23,6 +23,10 @@ namespace Town.Core.Dragonsleep
         /// <summary>阶段推进时触发（UI 用它逐段点亮织机）。</summary>
         public event Action<AiTrace, AiStage> StageChanged;
         public event Action<AiTrace> TraceCompleted;
+        /// <summary>无模型参与的世界规则事件（移动、换岗巡逻），各自带实际执行回执。</summary>
+        public readonly List<DsRuleEvent> RuleEvents = new List<DsRuleEvent>();
+        public event Action<DsRuleEvent> RuleEventCompleted;
+        private int _ruleSequence;
 
         private readonly DsExecutor _executor = new DsExecutor();
         private int _sequence;
@@ -60,8 +64,39 @@ namespace Town.Core.Dragonsleep
             _spent = 0;
             _latestByActor.Clear();
             Traces.Clear();
+            RuleEvents.Clear(); _ruleSequence = 0;
             _executor.Reset();
             _pendingCraft = null; _pendingCraftTrace = null;
+        }
+
+        /// <summary>
+        /// 玩家走进某个地点（Unity 按实际位置调用）。规则事务：跟随的雏龙同行、巡逻检查。
+        /// 会话忙于等待模型时返回 null，调用方下一帧再试，不绕过事务直接改世界。
+        /// </summary>
+        public DsRuleEvent EnterPlace(string place)
+        {
+            if (World.PlayerPlace == place || !_gate.Wait(0)) return null;
+            try { return RunRuleLocked("enter:" + place, (w, t) => DsRules.EnterPlace(w, place, t)); }
+            finally { _gate.Release(); }
+        }
+
+        DsRuleEvent RunRuleLocked(string label, Action<DsWorld, AiTrace> rule)
+        {
+            var w = World;
+            string id = $"S{w.SessionGen}-R{++_ruleSequence}";
+            var plan = _executor.PrepareRule(w, _spent, PhaseBudget, id, label, rule);
+            var ev = new DsRuleEvent { RequestId = id, Label = label, Clock = w.ClockText };
+            ev.Receipt = _executor.Commit(plan, w, ref _spent, PhaseBudget);
+            ev.Verdict = plan.Evaluation.Verdict;
+            ev.FailureCode = plan.FailureCode ?? (ev.Receipt.Status == "stale_state" ? ev.Receipt.Status : null);
+            ev.Presented = plan.Evaluation.Presented;
+            if (ev.Receipt.Applied) ev.Changes.AddRange(plan.Evaluation.Changes);
+            if (ev.Receipt.Applied || !string.IsNullOrEmpty(ev.Presented))
+            {
+                RuleEvents.Add(ev);
+                RuleEventCompleted?.Invoke(ev);
+            }
+            return ev;
         }
 
         public bool Busy => _gate.CurrentCount == 0;
@@ -87,6 +122,7 @@ namespace Town.Core.Dragonsleep
             if (Busy) throw new InvalidOperationException("busy");
             World = snapshot.Restore(); _spent = snapshot.Spent; PhaseBudget = snapshot.PhaseBudget;
             _sequence = 0; _latestByActor.Clear(); Traces.Clear(); _executor.Reset();
+            RuleEvents.Clear(); _ruleSequence = 0;
             _pendingCraft = null; _pendingCraftTrace = null;
         }
 
@@ -126,8 +162,11 @@ namespace Town.Core.Dragonsleep
             {
                 var result = new List<AiTrace>();
                 var w = World;
-                bool night = w.Phase == DayPhase.Night || w.Advance();
+                bool night = w.Phase == DayPhase.Night;
+                bool advanced = false;
+                if (!night) { night = w.Advance(); advanced = true; }
                 _spent = 0;
+                if (advanced) RunRuleLocked("phase_start", DsRules.PhaseStart);
                 if (!night) return result;
                 foreach (var id in w.Actors.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList())
                 {
@@ -137,6 +176,7 @@ namespace Town.Core.Dragonsleep
                 result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
                 if (World != w || ct.IsCancellationRequested) return result;
                 w.Advance();
+                RunRuleLocked("phase_start", DsRules.PhaseStart);
                 if (w.FinalDawn) result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
                 return result;
             }
@@ -348,5 +388,28 @@ namespace Town.Core.Dragonsleep
                 ["estimated_usd"] = usd,
             };
         }
+    }
+
+    /// <summary>一次世界规则事务的记录：叙述只来自规则，状态差异来自回执。</summary>
+    public sealed class DsRuleEvent
+    {
+        public string RequestId;
+        public string Label;
+        public string Clock;
+        public string Presented = "";
+        public string FailureCode;
+        public Verdict Verdict = new Verdict();
+        public DsExecutionReceipt Receipt;
+        public readonly List<WorldChange> Changes = new List<WorldChange>();
+        public bool WhelpCaptured => Changes.Any(c => c.Path == "whelp.captured_by" && !string.IsNullOrEmpty(c.After));
+        /// <summary>是否值得告诉玩家：雏龙状态变化或有巡逻判定。普通走动不打扰。</summary>
+        public bool Notable => Changes.Any(c => c.Path.StartsWith("whelp.", StringComparison.Ordinal) && c.Path != "whelp.place") ||
+                               Verdict.Notes.Count > 0 || Verdict.Kind != VerdictKind.Accepted;
+        public Dictionary<string, object> ToRecord() => new Dictionary<string, object>
+        {
+            ["type"] = "world_rule", ["request_id"] = RequestId, ["label"] = Label, ["clock"] = Clock,
+            ["presented"] = Presented, ["failure"] = FailureCode, ["verdict"] = Verdict.Kind.ToString(),
+            ["notes"] = Verdict.Notes.Cast<object>().ToList(), ["receipt"] = Receipt?.ToRecord()
+        };
     }
 }

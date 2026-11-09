@@ -113,6 +113,8 @@ namespace Town.Core.Dragonsleep
         static readonly (string[] words, string verb)[] Verbs =
         {
             (new[] { "使用", "点亮", "激活" }, "use"),
+            (new[] { "救", "撬开", "打开铁笼", "打开笼" }, "rescue"), (new[] { "带上", "带它", "跟我", "跟着我", "领着" }, "lead"),
+            (new[] { "留在", "放下它", "让它待" }, "release"),
             (new[] { "买", "购" }, "buy"), (new[] { "喂" }, "feed"), (new[] { "引", "诱", "吸引", "撒" }, "lure"), (new[] { "出示", "展示", "给他看", "给她看" }, "show"),
             (new[] { "给", "递", "送" }, "give"), (new[] { "偷", "拿", "取", "捡" }, "take"), (new[] { "搜", "找", "翻" }, "search"),
             (new[] { "藏" }, "hide"), (new[] { "溜", "潜" }, "sneak"), (new[] { "等" }, "wait"), (new[] { "看", "观察", "打量", "听" }, "observe"),
@@ -130,6 +132,7 @@ namespace Town.Core.Dragonsleep
                     string name = p.Split('：')[1];
                     if (input.Contains(name.Substring(0, 2))) target = p.Split('：')[0];
                 }
+            if (target == "" && (verb == "lead" || verb == "release" || verb == "rescue")) target = "whelp";
             if (target == "" && (verb == "lure" || verb == "feed") && (per["things_here"] as List<object>).Cast<string>().Any(s => s.StartsWith("whelp"))) target = "whelp";
             var laws = new List<object>();
             foreach (var l in (per["known_laws"] as List<object>).Cast<string>())
@@ -137,7 +140,7 @@ namespace Town.Core.Dragonsleep
                 string lawId = l.Split('：')[0];
                 if ((lawId == "law_whelp_fish" && input.Contains("鱼")) || (lawId == "law_dragon_ember" && (input.Contains("余烬") || input.Contains("灰"))) ||
                     (lawId == "law_fear_noise" && (input.Contains("安静") || input.Contains("耐心") || input.Contains("慢慢"))) ||
-                    (lawId == "law_guards_dusk" && input.Contains("换岗")) || (lawId == "law_dragon_iron" && input.Contains("铁")))
+                    (lawId == "law_guards_dusk" && (input.Contains("换岗") || input.Contains("黄昏"))) || (lawId == "law_dragon_iron" && input.Contains("铁")))
                     laws.Add(lawId);
             }
             return new Dictionary<string, object>

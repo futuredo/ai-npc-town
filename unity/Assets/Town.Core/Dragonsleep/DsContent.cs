@@ -70,7 +70,7 @@ namespace Town.Core.Dragonsleep
             L(w, "law_dragon_iron", "龙厌恶冷铁，碰到会虚弱、恐惧。", new[] { "iron" }, new[] { "iron" }, false);
             L(w, "law_dragon_ember", "龙靠余烬气味辨认亲族。", new[] { "ember", "lure:dragon" }, null, false);
             L(w, "law_fear_noise", "受惊的动物会躲得更深；安静和耐心让它们靠近。", new[] { "quiet", "patience" }, new[] { "noise", "force" }, true);
-            L(w, "law_guards_dusk", "卫兵在黄昏换岗，城门有片刻无人。", new[] { "sneak" }, null, false);
+            L(w, "law_guards_dusk", "卫兵在黄昏换岗，城门和各处岗哨有片刻无人。", new[] { "sneak", "rescue" }, null, false);
             L(w, "law_loom", "织言机只织造与材料相称的东西：材料越少，造物越弱。", null, null, true);
 
             // ---- 物件 ----

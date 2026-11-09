@@ -7,7 +7,7 @@ namespace Town.Core.Dragonsleep
     /// <summary>规则只能修改私有候选世界；本类是 Session 内唯一的提案提交入口。</summary>
     public sealed class DsExecutor
     {
-        public const string RulesVersion = "dragonsleep-rules-3";
+        public const string RulesVersion = "dragonsleep-rules-4";
         readonly Dictionary<string, DsExecutionReceipt> _committed = new Dictionary<string, DsExecutionReceipt>();
         public void Reset() => _committed.Clear();
 
@@ -45,7 +45,7 @@ namespace Town.Core.Dragonsleep
                         {
                             string clockBefore = candidate.ClockText + " / 剩余 " + (phaseBudget - spent);
                             nextSpent += timeCost;
-                            while (nextSpent >= phaseBudget) { nextSpent -= phaseBudget; candidate.Advance(); }
+                            while (nextSpent >= phaseBudget) { nextSpent -= phaseBudget; candidate.Advance(); AppendPhaseStart(candidate, trial); }
                             trial.Changes.Add(new WorldChange { Path = "world.time", Before = clockBefore,
                                 After = candidate.ClockText + " / 剩余 " + (phaseBudget - nextSpent), Note = "消耗 " + timeCost + " 点时间" });
                         }
@@ -63,6 +63,39 @@ namespace Town.Core.Dragonsleep
             }
             var after = DsWorldSnapshot.Capture(candidate, nextSpent, phaseBudget);
             return new DsExecutionPlan(before, after, trial, identity, timeCost);
+        }
+
+        /// <summary>
+        /// 无模型参与的世界规则事务（玩家移动、换岗巡逻）。同样在候选世界里执行，
+        /// 经过完整状态核对与去重后一次提交，并产生实际差异回执。
+        /// </summary>
+        public DsExecutionPlan PrepareRule(DsWorld world, int spent, int phaseBudget, string requestId, string label, Action<DsWorld, AiTrace> rule)
+        {
+            if (string.IsNullOrEmpty(requestId)) throw new ArgumentException("requestId");
+            var before = DsWorldSnapshot.Capture(world, spent, phaseBudget);
+            var trial = new AiTrace { Kind = AiTaskKind.Adjudicate, ActorId = "world", RequestId = requestId };
+            var candidate = before.Restore();
+            try
+            {
+                rule(candidate, trial);
+                candidate.Version = world.Version;
+                if (trial.FailureCode == null && DsWorldSnapshot.Capture(candidate, spent, phaseBudget).Hash != before.Hash) candidate.Version++;
+            }
+            catch (Exception e) when (e is ArgumentException || e is InvalidOperationException || e is KeyNotFoundException)
+            { Fail(trial, "execution_error", "世界规则执行失败，未提交任何变化（" + e.GetType().Name + "）"); }
+            if (trial.FailureCode != null) { candidate = before.Restore(); trial.Changes.Clear(); }
+            var after = DsWorldSnapshot.Capture(candidate, spent, phaseBudget);
+            return new DsExecutionPlan(before, after, trial, DsWorldSnapshot.Digest("rule|" + label + "|" + before.Hash), 0);
+        }
+
+        /// <summary>行动消耗时间跨入新时段时，同一事务内执行换岗巡逻。</summary>
+        static void AppendPhaseStart(DsWorld candidate, AiTrace trial)
+        {
+            var patrol = new AiTrace();
+            DsRules.PhaseStart(candidate, patrol);
+            trial.Changes.AddRange(patrol.Changes);
+            trial.Verdict.Notes.AddRange(patrol.Verdict.Notes);
+            if (!string.IsNullOrEmpty(patrol.Presented)) trial.Verdict.Notes.Add("换岗：" + patrol.Presented);
         }
 
         public DsExecutionReceipt Commit(DsExecutionPlan plan, DsWorld world, ref int spent, int phaseBudget)

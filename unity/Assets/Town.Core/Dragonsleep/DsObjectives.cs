@@ -81,7 +81,9 @@ namespace Town.Core.Dragonsleep
                 (o.Done ? r.Completed : r.Missed).Add(o.Text);
             r.Night.AddRange(list.Where(t => t.Kind == AiTaskKind.AgentPlan || t.Kind == AiTaskKind.Direct).Select(t => t.Presented));
             var wh = w.Whelp;
-            r.Whelp = wh.CapturedBy != null ? "小烬被" + w.Actors[wh.CapturedBy].Name + "抓走了。"
+            r.Whelp = wh.CapturedBy == "osric" && wh.Place == "castle" ? "小烬被关进了王城的铁笼。也许还来得及把它救出来。"
+                : wh.CapturedBy != null ? "小烬被" + w.Actors[wh.CapturedBy].Name + "抓走了。"
+                : wh.Following ? "小烬跟在你身边，在" + w.Places[wh.Place] + "。"
                 : wh.Hidden && w.Flags.ContainsKey("whelp_hidden_by_player") ? "小烬安全地藏在你的斗篷下，还活着，还在等妈妈。"
                 : wh.Hidden ? "小烬仍躲在旧船屋里，没人找到它——暂时。"
                 : "小烬暴露在外面，但侥幸没人发现它。";

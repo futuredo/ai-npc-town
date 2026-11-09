@@ -9,7 +9,7 @@ namespace Town.Core.Dragonsleep
     /// </summary>
     public static class ContextBuilder
     {
-        public static readonly string[] AdjudicateVerbs = { "buy", "lure", "feed", "give", "take", "search", "hide", "sneak", "show", "use", "observe", "wait", "unsupported" };
+        public static readonly string[] AdjudicateVerbs = { "buy", "lure", "feed", "give", "take", "search", "hide", "sneak", "show", "use", "lead", "release", "rescue", "observe", "wait", "unsupported" };
         public static readonly string[] AgentVerbs = { "move", "search", "tell", "guard", "wait" };
         public static readonly string[] GmEvents = { "none", "omen_roar", "guard_sweep", "snowfall", "rumor_spreads", "mother_descends" };
         public static readonly string[] CraftTags = { "light", "ember", "lure:dragon", "quiet", "calm", "iron", "warmth", "truth", "binding", "sound" };
@@ -42,8 +42,14 @@ namespace Town.Core.Dragonsleep
             string place = w.PlayerPlace;
             var present = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Where(x => x.Place == place).Select(x => (object)(x.Id + "：" + x.Name)).ToList();
             var visible = new List<object>();
-            if (w.Whelp.CapturedBy == null && w.Whelp.Place == place)
-                visible.Add(w.Whelp.Hidden ? "whelp：旧船屋里偶尔冒出一缕烟，有窸窣声" : "whelp：一条蓝色雏龙，正警惕地看着你");
+            var wh = w.Whelp;
+            if (wh.CapturedBy == null && wh.Place == place)
+                visible.Add(wh.Following ? (wh.Hidden ? "whelp：小烬裹在你的斗篷里，跟着你" : "whelp：小烬跟在你脚边")
+                    : wh.Hidden && w.Flags.ContainsKey("whelp_hidden_by_player") ? "whelp：小烬藏在你安排的地方"
+                    : wh.Hidden ? "whelp：旧船屋里偶尔冒出一缕烟，有窸窣声" : "whelp：一条蓝色雏龙，正警惕地看着你");
+            else if (wh.CapturedBy == "osric" && wh.Place == place)
+                visible.Add("whelp：小烬被锁在王城的冷铁笼里");
+            DsGuards.IsWatched(w, place, out var guards);
             foreach (var item in w.Items.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Where(i => i.Holder == "place:" + place))
                 visible.Add(item.Id + "：" + item.Name);
             return new Dictionary<string, object>
@@ -55,6 +61,7 @@ namespace Town.Core.Dragonsleep
                 ["people_here"] = present,
                 ["for_sale"] = w.Items.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Where(i => w.Actors.TryGetValue(i.Holder, out var h) && h.Place == place && i.Tags.Any(t => t.StartsWith("price:"))).Select(i => (object)(i.Id + "：" + i.Name + "（" + i.Holder + "，" + i.Tags.First(t => t.StartsWith("price:")).Substring(6) + " 银币）")).ToList(),
                 ["things_here"] = visible,
+                ["guards_here"] = guards ?? "此刻看不到卫兵",
                 ["known_laws"] = w.Laws.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal).Where(l => w.KnowsLaw(l.Id)).Select(l => (object)(l.Id + "：" + l.Text)).ToList(),
                 ["places"] = w.Places.Keys.OrderBy(x => x, System.StringComparer.Ordinal).Cast<object>().ToList(),
             };
@@ -142,7 +149,8 @@ namespace Town.Core.Dragonsleep
                     p.Instructions = "你是《龙眠镇》的“织言机”，负责把玩家的开放行动理解成结构化提案，由规则引擎最终裁决。" +
                         "verb 只能取 verbs 中的值；购买用 buy，item 填 for_sale 里的物件。使用已织造物品的 light/calm/quiet/lure:dragon 效果用 use。target/item/place 必须是感知里出现的 ID（没有就填空字符串）。" +
                         "laws 只引用 known_laws 中与行动相关的规律 ID。difficulty 是你估计的难度 0~1。" +
-                        "hide 表示为身边的雏龙安排藏身处，可用已有斗篷遮盖；feed 喂食，lure 诱引，search 翻找，sneak 潜行。能力在这些动词内时应提出尝试，不要因不确定成功率拒绝，成功与否由规则掷骰。" +
+                        "hide 表示为身边的雏龙安排藏身处，可用已有斗篷遮盖；feed 喂食，lure 诱引，search 翻找，sneak 潜行（会让接下来同一时段的行进更隐蔽）。" +
+                        "lead 带上身边的雏龙同行，release 让跟着的雏龙留在当前地点，rescue 把被关在笼里的雏龙救出来；前往别处由玩家亲自走过去，不是行动动词。能力在这些动词内时应提出尝试，不要因不确定成功率拒绝，成功与否由规则掷骰。" +
                         "不能执行或没有合适动词时用 unsupported，不能偷偷换成 observe/wait。注意否定、条件和先后关系；一次只执行一个明确的当下动作。明确说现在不做、只计划明天的动作不能执行。" +
                         "narration 用一句中文描述玩家的尝试，不要宣布结果——结果由规则决定。" + Guard;
                     break;

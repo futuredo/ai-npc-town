@@ -49,7 +49,8 @@ namespace Town.Core.Dragonsleep
                 {
                     ["place"] = w.Whelp.Place, ["hidden"] = w.Whelp.Hidden, ["hunger"] = w.Whelp.Hunger,
                     ["fear"] = w.Whelp.Fear, ["trust"] = w.Whelp.TrustPlayer,
-                    ["captured_by"] = w.Whelp.CapturedBy, ["with_mother"] = w.Whelp.WithMother
+                    ["captured_by"] = w.Whelp.CapturedBy, ["with_mother"] = w.Whelp.WithMother,
+                    ["following"] = w.Whelp.Following
                 }
             };
             return new DsWorldSnapshot(MiniJson.Write(data), spent, budget);
@@ -102,7 +103,8 @@ namespace Town.Core.Dragonsleep
             w.PublicNews.AddRange(d.StrList("public_news"));
             var h = d.Obj("whelp");
             w.Whelp = new DsWhelp { Place = h.Str("place"), Hidden = Bool(h, "hidden"), Hunger = Float(h, "hunger"),
-                Fear = Float(h, "fear"), TrustPlayer = Float(h, "trust"), CapturedBy = h.Str("captured_by"), WithMother = Bool(h, "with_mother") };
+                Fear = Float(h, "fear"), TrustPlayer = Float(h, "trust"), CapturedBy = h.Str("captured_by"), WithMother = Bool(h, "with_mother"),
+                Following = h.ContainsKey("following") && Bool(h, "following") };
             return w;
         }
 

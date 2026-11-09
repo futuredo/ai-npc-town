@@ -33,6 +33,7 @@ namespace Town.Unity.Dragonsleep
         readonly Dictionary<string, Transform> _actors = new Dictionary<string, Transform>();
         string _exportPath;
         int _dayStartTrace;
+        int _ruleEventsSeen;
         Animator _whelpAnimator;
         Coroutine _whelpReaction;
         readonly System.Threading.CancellationTokenSource _lifetime = new System.Threading.CancellationTokenSource();
@@ -65,6 +66,7 @@ namespace Town.Unity.Dragonsleep
         {
             if (Player == null) return;
             UpdatePlace();
+            DrainRuleEvents();
             UpdateNearestActor();
             bool typing = Hud != null && (Hud.Typing || Hud.ReadingPanelOpen);
             Player.InputBlocked = typing || Busy || Ending != null;
@@ -82,7 +84,25 @@ namespace Town.Unity.Dragonsleep
             }
             if (best == "castle_gate") best = "castle";
             if (best == "dragon_skull") best = "skull_hill";
-            if (best != null && Session.World.Places.ContainsKey(best)) Session.World.PlayerPlace = best;
+            // 移动也是规则事务：跟随的雏龙同行、卫兵巡逻。会话忙时返回 null，下一帧再试。
+            if (best != null && best != Session.World.PlayerPlace && Session.World.Places.ContainsKey(best)) Session.EnterPlace(best);
+        }
+
+        /// <summary>只在主线程、会话空闲时读取新的世界规则事件（夜间换岗由后台线程产生）。</summary>
+        void DrainRuleEvents()
+        {
+            if (Session.Busy) return;
+            var events = Session.RuleEvents;
+            if (_ruleEventsSeen > events.Count) _ruleEventsSeen = 0;   // 新局
+            bool changed = false;
+            for (; _ruleEventsSeen < events.Count; _ruleEventsSeen++)
+            {
+                var ev = events[_ruleEventsSeen];
+                try { File.AppendAllText(_exportPath, MiniJson.Write(ev.ToRecord()) + "\n"); } catch (IOException) { }
+                if (ev.Notable && !string.IsNullOrEmpty(ev.Presented)) Hud?.Toast(ev.Presented);
+                changed |= ev.Receipt != null && ev.Receipt.Applied;
+            }
+            if (changed) ReflectWorld();
         }
 
         void UpdateNearestActor()
@@ -189,6 +209,7 @@ namespace Town.Unity.Dragonsleep
             Session.Restart();
             Ending = null;
             _dayStartTrace = 0;
+            _ruleEventsSeen = 0;
             ReflectWorld();
             Hud?.Toast("新的一局开始了。旧局未返回的请求将被丢弃。");
         }

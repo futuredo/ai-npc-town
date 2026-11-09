@@ -66,6 +66,8 @@ namespace Town.Core.Dragonsleep
         public float TrustPlayer;
         public string CapturedBy;
         public bool WithMother;
+        /// <summary>跟随玩家：玩家进入新地点时，雏龙一起移动（由规则写入，不由模型宣称）。</summary>
+        public bool Following;
     }
 
     /// <summary>龙眠镇的世界真值。只有规则引擎能写；模型只看到分区后的 PerceptionView。</summary>

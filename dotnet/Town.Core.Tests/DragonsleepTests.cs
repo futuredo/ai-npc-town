@@ -270,6 +270,8 @@ namespace Town.Core.Tests
             Assert.AreEqual("far_sea", DsEndings.Evaluate(w).Id);
             w = DsContent.NewWorld();
             w.Whelp.Hidden = false; w.Whelp.TrustPlayer = 0.6f; w.Items["pact_page"].Holder = "player"; w.Actors["maren"].Trust = 0.7f;
+            Assert.AreEqual("unresolved", DsEndings.Evaluate(w).Id, "信任与契约本身不等于归巢：雏龙必须真的回到母亲身边");
+            w.Whelp.WithMother = true;
             Assert.AreEqual("new_pact", DsEndings.Evaluate(w).Id);
         }
 

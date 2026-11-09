@@ -94,6 +94,7 @@ namespace Town.Core.Dragonsleep
         {
             ["buy"] = 0.05, ["lure"] = 0.6, ["feed"] = 0.5, ["give"] = 0.15, ["take"] = 0.35, ["search"] = 0.5,
             ["hide"] = 0.45, ["sneak"] = 0.6, ["show"] = 0.2, ["use"] = 0.15, ["observe"] = 0.1, ["wait"] = 0.05,
+            ["lead"] = 0.3, ["release"] = 0.05, ["rescue"] = 0.55,
         };
 
         public static void Adjudicate(DsWorld w, Dictionary<string, object> p, AiTrace t)
@@ -117,8 +118,19 @@ namespace Town.Core.Dragonsleep
                 if (!reachable) { Reject(t, "你身边没有「" + item.Name + "」"); return; }
             }
             bool targetWhelp = target == "whelp";
-            if (targetWhelp && (w.Whelp.Place != w.PlayerPlace || w.Whelp.CapturedBy != null))
-            { Reject(t, "这里没有雏龙的踪迹"); return; }
+            var wh = w.Whelp;
+            if (verb == "rescue")
+            {
+                if (!targetWhelp) { Reject(t, "救出只针对被关起来的雏龙"); return; }
+                if (wh.CapturedBy == null) { Reject(t, "小烬没有被关起来，用不着救"); return; }
+                if (wh.CapturedBy != "osric" || wh.Place != w.PlayerPlace) { Reject(t, "小烬不在这里的笼子里"); return; }
+                if (DsGuards.IsWatched(w, w.PlayerPlace, out var guarded)) { Reject(t, guarded + "，现在下手等于自投罗网"); return; }
+            }
+            else if (targetWhelp && (wh.Place != w.PlayerPlace || wh.CapturedBy != null))
+            {
+                Reject(t, wh.CapturedBy == "osric" && wh.Place == w.PlayerPlace ? "小烬被锁在王城的铁笼里，得先把它救出来" : "这里没有雏龙的踪迹");
+                return;
+            }
             DsActor targetActor = null;
             if (!targetWhelp && target != "" && !w.Items.ContainsKey(target) && !w.Places.ContainsKey(target))
             {
@@ -139,6 +151,16 @@ namespace Town.Core.Dragonsleep
             { Reject(t, "需要明确一个尚未持有、能够拿取的物件"); return; }
             if (verb == "hide" && !targetWhelp)
             { Reject(t, "当前只能安排雏龙的藏身处"); return; }
+            if (verb == "lead")
+            {
+                if (!targetWhelp) { Reject(t, "只能带上身边的雏龙"); return; }
+                if (wh.Following) { Reject(t, "小烬已经跟着你了"); return; }
+                if (wh.Hidden && !w.Flags.ContainsKey("whelp_hidden_by_player")) { Reject(t, "小烬还躲在船屋深处，得先让它现身"); return; }
+                if (wh.TrustPlayer < 0.4f) { Reject(t, $"小烬还不够信任你（{wh.TrustPlayer:0.00}，至少要 0.40），不肯跟你走"); return; }
+                if (wh.Fear >= 0.85f) { Reject(t, "小烬吓坏了，缩成一团不肯动"); return; }
+            }
+            if (verb == "release" && (!targetWhelp || !wh.Following))
+            { Reject(t, "小烬并没有跟着你"); return; }
             if (verb == "use" && (item == null || item.Holder != "player" || !item.Crafted))
             { Reject(t, "需要持有一件已经织成的物件"); return; }
             if (verb == "use" && !item.Tags.Overlaps(new[] { "light", "quiet", "calm", "lure:dragon" }))
@@ -168,7 +190,7 @@ namespace Town.Core.Dragonsleep
             if (targetWhelp && item != null && item.Tags.Contains("iron") && !laws.Contains("law_dragon_iron"))
             { engine += 0.3; t.Verdict.Notes.Add("冷铁让雏龙恐惧（未知规律仍然生效）难度 +0.30"); }
             if (targetWhelp && verb == "take") engine += 0.2;
-            if (targetWhelp && (verb == "hide" || verb == "feed" || verb == "lure") && w.Whelp.TrustPlayer > 0)
+            if (targetWhelp && (verb == "hide" || verb == "feed" || verb == "lure" || verb == "lead") && w.Whelp.TrustPlayer > 0)
             {
                 double bonus = Math.Min(0.3, w.Whelp.TrustPlayer * 0.5);
                 engine -= bonus;
@@ -179,7 +201,7 @@ namespace Town.Core.Dragonsleep
             modelDifficulty = Clamp(modelDifficulty, 0, 1);
             double final = Clamp(0.7 * engine + 0.3 * modelDifficulty, 0.05, 0.95);
             if (Math.Abs(engine - modelDifficulty) > 0.35) t.Verdict.Notes.Add($"模型估计 {modelDifficulty:0.00} 与规则 {engine:0.00} 分歧较大");
-            double roll = verb == "observe" || verb == "wait" || verb == "buy" ? 1.0 : w.NextRoll();
+            double roll = verb == "observe" || verb == "wait" || verb == "buy" || verb == "release" ? 1.0 : w.NextRoll();
             bool success = roll >= final;
             t.Verdict.Difficulty = final;
             t.Verdict.Roll = roll;
@@ -222,7 +244,8 @@ namespace Town.Core.Dragonsleep
                     return food ? "一颗蓝色的小脑袋从船屋门缝里探出来，鼻孔冒着细烟，盯着你手里的东西。" : "它探出头看了你一眼。";
                 case "search":
                     if (!ok) return "你翻找了一阵，一无所获。";
-                    if (whelp || (wh.Place == w.PlayerPlace && wh.Hidden && wh.CapturedBy == null))
+                    // 跟着玩家的雏龙不需要“搜出来”；只有藏在原处、尚未现身的它才会被翻到。
+                    if ((whelp && !wh.Following) || (wh.Place == w.PlayerPlace && wh.Hidden && !wh.Following && wh.CapturedBy == null))
                     {
                         wh.Hidden = false;
                         t.Changes.Add(new WorldChange { Path = "whelp.hidden", Before = "true", After = "false" });
@@ -269,6 +292,19 @@ namespace Town.Core.Dragonsleep
                         Set(t, "maren.trust", ref actor.Trust, actor.Trust + 0.3f);
                         return "梅伦修女的脸一下子白了。她认得这页纸。";
                     }
+                    if (item.Tags.Contains("pact") && actor.Id == "osric")
+                    {
+                        Set(t, "osric.trust", ref actor.Trust, actor.Trust + 0.2f);
+                        if (wh.CapturedBy == "osric" && actor.Trust >= 0.5f)
+                        {
+                            wh.CapturedBy = null; wh.Following = true;
+                            t.Changes.Add(new WorldChange { Path = "whelp.captured_by", Before = "osric", After = "", Note = "总管开笼" });
+                            t.Changes.Add(new WorldChange { Path = "whelp.following", Before = "false", After = "true" });
+                            w.Flags["osric_released"] = w.ClockText;
+                            return "奥斯里克盯着契约看了很久，终于挥手让卫兵打开铁笼：“……把它带走。”";
+                        }
+                        return "奥斯里克的眉头拧紧了：“这页纸……谁知道是不是伪造的。”";
+                    }
                     return actor.Name + "看了看「" + item.Name + "」。";
                 case "hide":
                     if (!whelp) return ok ? "你把东西藏好了。" : "没找到合适的地方。";
@@ -276,8 +312,42 @@ namespace Town.Core.Dragonsleep
                     if (ok) { wh.Hidden = true; w.Flags["whelp_hidden_by_player"] = w.ClockText; t.Changes.Add(new WorldChange { Path = "whelp.hidden", Before = "false", After = "true", Note = "玩家藏好" }); }
                     return ok ? "你用斗篷盖住它，它乖乖缩成一团。" : "它挣扎着不肯待在原处。";
                 case "sneak":
-                    if (ok) { w.Flags["snuck:" + w.PlayerPlace] = w.ClockText; t.Changes.Add(new WorldChange { Path = "flags.snuck", Before = "", After = w.PlayerPlace }); }
-                    return ok ? "没人注意到你。" : "一名卫兵转过头来：“谁在那儿？”";
+                    if (ok)
+                    {
+                        w.Flags["snuck:" + w.PlayerPlace] = w.ClockText;
+                        w.Flags["sneaking"] = w.ClockText;
+                        t.Changes.Add(new WorldChange { Path = "flags.snuck", Before = "", After = w.PlayerPlace, Note = "本时段接下来的行进更隐蔽" });
+                    }
+                    return ok ? "没人注意到你。接下来这段路你会走得格外小心。" : "一名卫兵转过头来：“谁在那儿？”";
+                case "lead":
+                    if (!ok) { Set(t, "whelp.fear", ref wh.Fear, wh.Fear + 0.1f); return "小烬往后缩了缩，还不肯跟你走。"; }
+                    wh.Following = true;
+                    t.Changes.Add(new WorldChange { Path = "whelp.following", Before = "false", After = "true", Note = "跟随玩家" });
+                    return wh.Hidden ? "小烬在斗篷下拱了拱，愿意跟你走了。" : "小烬抖了抖翅膀，跟在你脚边。";
+                case "release":
+                    wh.Following = false;
+                    t.Changes.Add(new WorldChange { Path = "whelp.following", Before = "true", After = "false", Note = "留在" + w.PlayerPlace });
+                    return "你让小烬留在" + w.Places[w.PlayerPlace] + "，它乖乖待在原地。";
+                case "rescue":
+                {
+                    var osric = w.Actors["osric"];
+                    if (!ok)
+                    {
+                        Set(t, "osric.trust", ref osric.Trust, osric.Trust - 0.3f);
+                        Set(t, "whelp.fear", ref wh.Fear, wh.Fear + 0.1f);
+                        w.Tension = Math.Min(1, w.Tension + 0.15f);
+                        w.Flags["rescue_failed"] = w.ClockText;
+                        return "铁锁没能撬开，脚步声已经近了——你只好先退走。";
+                    }
+                    wh.CapturedBy = null; wh.Following = true; wh.Hidden = false;
+                    t.Changes.Add(new WorldChange { Path = "whelp.captured_by", Before = "osric", After = "", Note = "救出" });
+                    t.Changes.Add(new WorldChange { Path = "whelp.following", Before = "false", After = "true" });
+                    Set(t, "whelp.fear", ref wh.Fear, wh.Fear + 0.15f);
+                    Set(t, "osric.trust", ref osric.Trust, osric.Trust - 0.2f);
+                    w.Tension = Math.Min(1, w.Tension + 0.1f);
+                    w.Flags["whelp_rescued"] = w.ClockText;
+                    return "铁笼的门吱呀一声开了，小烬一头扎进你怀里。";
+                }
                 case "observe":
                     var hints = new List<string>();
                     if (wh.Place == w.PlayerPlace && wh.CapturedBy == null) hints.Add(wh.Hidden ? "旧船屋门缝里飘出一缕细烟" : "雏龙正警惕地盯着你");
@@ -324,8 +394,7 @@ namespace Town.Core.Dragonsleep
                         t.Verdict.Roll = roll; t.Verdict.Difficulty = 1 - chance;
                         if (roll < chance)
                         {
-                            wh.CapturedBy = npcId;
-                            t.Changes.Add(new WorldChange { Path = "whelp.captured_by", Before = "", After = npcId });
+                            DsGuards.Capture(w, t, npcId);
                             w.Tension = Math.Min(1, w.Tension + 0.25f);
                             line += "——并且抓住了雏龙！";
                         }
@@ -394,6 +463,8 @@ namespace Town.Core.Dragonsleep
                     break;
                 case "guard_sweep":
                     w.Flags["guard_sweep"] = w.ClockText;
+                    // 夜里下令，次日清晨开始搜；白天下令则当天生效。
+                    w.Flags["guard_sweep_day"] = (w.Phase == DayPhase.Night ? w.Day + 1 : w.Day).ToString();
                     w.Tension = Math.Min(1, w.Tension + 0.1f);
                     text = "王城的卫兵提着灯，挨家挨户敲门。";
                     break;
@@ -408,6 +479,12 @@ namespace Town.Core.Dragonsleep
                 case "mother_descends":
                     w.Flags["mother_descended"] = w.ClockText;
                     text = "第三个黎明。苍穹之母收拢双翼，落在龙骨岗上。";
+                    if (w.Whelp.CapturedBy == null && w.Whelp.Place == "skull_hill")
+                    {
+                        w.Whelp.WithMother = true; w.Whelp.Following = false;
+                        t.Changes.Add(new WorldChange { Path = "whelp.with_mother", Before = "false", After = "true", Note = "在龙骨岗与母亲相会" });
+                        text += "小烬从岩石后扑出来，冲着母亲尖叫。";
+                    }
                     break;
                 default:
                     text = "这一夜无事。";
@@ -494,6 +571,60 @@ namespace Town.Core.Dragonsleep
             t.Verdict.Kind = granted.Count == tags.Count && mats.Count == consume.Count ? VerdictKind.Accepted : VerdictKind.Partial;
             t.Verdict.Reason = $"消耗 {mats.Count} 样材料，织成 {granted.Count} 项效果";
             t.Presented = "织言机的梭子亮起蓝光——「" + item.Name + "」成形了。" + look;
+        }
+
+        // ---------------- 世界规则（无模型参与） ----------------
+
+        /// <summary>玩家进入新地点：跟随的雏龙一起移动；总管在场会惊吓暴露的雏龙；随后卫兵巡逻检查。</summary>
+        public static void EnterPlace(DsWorld w, string place, AiTrace t)
+        {
+            t.Verdict.Kind = VerdictKind.Accepted;
+            if (!w.Places.ContainsKey(place)) { Fail(t, "unknown_entity", "未知地点：" + place); return; }
+            if (w.FinalDawn) { Reject(t, "第三个黎明已至，一切交由苍穹之母裁决"); return; }
+            if (place == w.PlayerPlace) { t.Verdict.Reason = "仍在原地"; t.Presented = ""; return; }
+            var wh = w.Whelp;
+            var lines = new List<string>();
+            t.Changes.Add(new WorldChange { Path = "player.place", Before = w.PlayerPlace, After = place });
+            bool bring = wh.Following && wh.CapturedBy == null && wh.Place == w.PlayerPlace;
+            w.PlayerPlace = place;
+            if (bring)
+            {
+                t.Changes.Add(new WorldChange { Path = "whelp.place", Before = wh.Place, After = place, Note = "跟随玩家" });
+                wh.Place = place;
+                bool exposed = !wh.Hidden;
+                if (exposed && w.Actors["osric"].Place == place)
+                {
+                    Set(t, "whelp.fear", ref wh.Fear, wh.Fear + 0.2f);
+                    if (wh.Fear >= 0.9f)
+                    {
+                        wh.Following = false; wh.Hidden = true;
+                        t.Changes.Add(new WorldChange { Path = "whelp.following", Before = "true", After = "false", Note = "受惊逃走" });
+                        t.Changes.Add(new WorldChange { Path = "whelp.place", Before = place, After = "docks", Note = "逃回旧船屋" });
+                        wh.Place = "docks";
+                        w.Flags["whelp_fled"] = w.ClockText;
+                        t.Verdict.Kind = VerdictKind.Partial;
+                        t.Verdict.Reason = "雏龙受惊逃回码头";
+                        t.Presented = "小烬一看见奥斯里克就尖叫着挣脱，扑腾着朝码头逃去了。";
+                        return;
+                    }
+                    lines.Add("小烬看见奥斯里克，吓得直往你身后躲");
+                }
+            }
+            string patrol = DsGuards.Patrol(w, t);
+            if (patrol != null) lines.Add(patrol);
+            if (wh.CapturedBy != null && bring) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "雏龙被卫兵发现"; }
+            else t.Verdict.Reason = bring ? "带着雏龙抵达" : "抵达";
+            t.Presented = "你来到" + w.Places[place] + (bring ? "，小烬跟在身边" : "") + "。" + (lines.Count > 0 ? string.Join("；", lines) + "。" : "");
+        }
+
+        /// <summary>新时段开始：岗位轮换后，对玩家所在地点做一次巡逻检查。</summary>
+        public static void PhaseStart(DsWorld w, AiTrace t)
+        {
+            t.Verdict.Kind = VerdictKind.Accepted;
+            t.Verdict.Reason = "换岗";
+            string patrol = DsGuards.Patrol(w, t);
+            if (patrol != null && w.Whelp.CapturedBy != null) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "雏龙被卫兵发现"; }
+            t.Presented = patrol ?? "";
         }
 
         // ---------------- 工具 ----------------

@@ -23,10 +23,15 @@ namespace Town.Core.Dragonsleep
                 return pactKnown
                     ? new Ending { Id = "iron_cage_saved", Title = "铁笼前的契约", Text = "母龙的火焰已在城门前燃起。你高举契约页，奥斯里克终于打开了铁笼——小镇被烧去半边，但活了下来。" }
                     : new Ending { Id = "iron_cage", Title = "铁笼", Text = "雏龙在王城的铁笼里哀鸣。第三个黎明，龙眠镇在火中度过。" };
-            if (!wh.Hidden && wh.TrustPlayer >= 0.4f && (pactKnown || ember))
-                return pactKnown && w.Actors["maren"].Trust >= 0.6f
-                    ? new Ending { Id = "new_pact", Title = "新约", Text = "梅伦修女当众念出被撕下的契约。母龙低下头，让小烬钻进她的翼下。三百年的谎言，在龙骨岗上结束了。" }
-                    : new Ending { Id = "homecoming", Title = "归巢", Text = "小烬循着余烬的气味扑向母亲。苍穹之母看了你很久，然后带着孩子飞回雪峰。" };
+            // 归巢必须是“雏龙真的回到了母亲身边”这一事实；信物与契约只决定母龙的态度。
+            if (wh.WithMother)
+            {
+                if (pactKnown && w.Actors["maren"].Trust >= 0.6f)
+                    return new Ending { Id = "new_pact", Title = "新约", Text = "梅伦修女当众念出被撕下的契约。母龙低下头，让小烬钻进她的翼下。三百年的谎言，在龙骨岗上结束了。" };
+                if (pactKnown || ember)
+                    return new Ending { Id = "homecoming", Title = "归巢", Text = "小烬循着余烬的气味扑向母亲。苍穹之母看了你很久，然后带着孩子飞回雪峰。" };
+                return new Ending { Id = "homecoming_wary", Title = "归巢·余怒", Text = "小烬回到了母亲翼下。苍穹之母闻不到亲族的余烬，也听不到镇子的歉意——她带走孩子，在钟楼上留下一道焦痕。" };
+            }
             return new Ending { Id = "unresolved", Title = "未竟", Text = "母龙在龙骨岗上等到正午，没有等到她的孩子。她仰天长啸，离去时掀翻了钟楼。" };
         }
     }
