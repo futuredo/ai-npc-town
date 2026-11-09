@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Town.Sandbox", "Town.Sandbo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Town.Research", "Town.Research\Town.Research.csproj", "{52BA5624-9293-46DB-B821-2ABA5EBE98C8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PieGame.AI.Kernel", "PieGame.AI.Kernel\PieGame.AI.Kernel.csproj", "{C2D217CC-1E84-423F-9430-2247E0C842F7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PieGame.AI.Kernel.Tests", "PieGame.AI.Kernel.Tests\PieGame.AI.Kernel.Tests.csproj", "{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +29,30 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Debug|x64.Build.0 = Debug|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Release|x64.ActiveCfg = Release|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Release|x64.Build.0 = Release|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Debug|x86.Build.0 = Debug|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Release|x86.ActiveCfg = Release|Any CPU
+		{C2D217CC-1E84-423F-9430-2247E0C842F7}.Release|x86.Build.0 = Release|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Debug|x64.Build.0 = Debug|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Release|x64.ActiveCfg = Release|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Release|x64.Build.0 = Release|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Debug|x86.Build.0 = Debug|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Release|x86.ActiveCfg = Release|Any CPU
+		{0E358CF6-1B36-487D-8DDD-C56E24DDCB19}.Release|x86.Build.0 = Release|Any CPU
 		{EDB57F40-F64E-451A-B260-82C961B8B2C4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EDB57F40-F64E-451A-B260-82C961B8B2C4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EDB57F40-F64E-451A-B260-82C961B8B2C4}.Debug|x64.ActiveCfg = Debug|Any CPU
