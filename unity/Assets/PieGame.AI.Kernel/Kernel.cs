@@ -14,6 +14,7 @@ namespace PieGame.AI.Kernel
         private readonly Dictionary<string, Receipt> _committed = new Dictionary<string, Receipt>(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _externalIdentities = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<string, string> _candidateIdentities = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Preparation> _confirmations = new Dictionary<string, Preparation>(StringComparer.Ordinal);
         private bool _inPort;
         private long _generation;
         public event Action<Receipt> Completed;
@@ -71,6 +72,7 @@ namespace PieGame.AI.Kernel
                 _committed.Clear();
                 _externalIdentities.Clear();
                 _candidateIdentities.Clear();
+                _confirmations.Clear();
             }
         }
 
@@ -95,7 +97,31 @@ namespace PieGame.AI.Kernel
             catch (HostRejection) { return Failed(request, "host_rejected", cancellation); }
         }
 
-        public Receipt Commit(Preparation preparation, CancellationToken cancellation = default)
+        /// <summary>Returns an opaque capability for this exact preparation, or null if it is no longer eligible.</summary>
+        public string IssueConfirmation(Preparation preparation)
+        {
+            if (preparation == null) throw new ArgumentNullException(nameof(preparation));
+            lock (_gate)
+            {
+                CheckReentry();
+                var request = preparation.Request;
+                if (!ReferenceEquals(request.Owner, this)) throw new ArgumentException(nameof(preparation));
+                if (!preparation.RequiresConfirmation || preparation.Cancellation.IsCancellationRequested ||
+                    request.Generation != _generation || _committed.ContainsKey(request.Id) || Protocol.Hash(Read()) != request.BeforeDigest)
+                    return null;
+                string token = Guid.NewGuid().ToString("N");
+                _confirmations.Add(token, preparation);
+                return token;
+            }
+        }
+
+        public Receipt Commit(Preparation preparation, CancellationToken cancellation = default) =>
+            CommitCore(preparation, null, false, cancellation);
+
+        public Receipt Confirm(Preparation preparation, string token, CancellationToken cancellation = default) =>
+            CommitCore(preparation, token, true, cancellation);
+
+        private Receipt CommitCore(Preparation preparation, string token, bool confirming, CancellationToken cancellation)
         {
             if (preparation == null) throw new ArgumentNullException(nameof(preparation));
             Receipt receipt;
@@ -106,7 +132,11 @@ namespace PieGame.AI.Kernel
                 CheckReentry();
                 var request = preparation.Request;
                 if (!ReferenceEquals(request.Owner, this)) throw new ArgumentException(nameof(preparation));
-                if (_committed.TryGetValue(request.Id, out var prior) && request.Generation == _generation)
+                if (confirming && cancelled) receipt = Make(request, "cancelled", request.BeforeDigest);
+                else if (confirming && (token == null || !_confirmations.TryGetValue(token, out var granted) ||
+                    !ReferenceEquals(granted, preparation)))
+                    receipt = Make(request, "confirmation_invalid", request.BeforeDigest);
+                else if (_committed.TryGetValue(request.Id, out var prior) && request.Generation == _generation)
                     receipt = new Receipt(request.Id, preparation.Candidate != null &&
                         _candidateIdentities[request.Id] == preparation.Candidate.Identity ? "duplicate" : "request_conflict",
                         prior.BeforeDigest, prior.AfterDigest, first: cancellation, second: preparation.Cancellation, prior: prior);
@@ -115,10 +145,11 @@ namespace PieGame.AI.Kernel
                 else if (preparation.Candidate == null) receipt = preparation.Receipt;
                 else if (request.Generation != _generation) receipt = Make(request, "stale_session", request.BeforeDigest);
                 else if (Protocol.Hash(Read()) != request.BeforeDigest) receipt = Make(request, "stale_state", request.BeforeDigest);
-                else if (preparation.RequiresConfirmation) receipt = Make(request, "confirmation_required", request.BeforeDigest);
+                else if (preparation.RequiresConfirmation && !confirming) receipt = Make(request, "confirmation_required", request.BeforeDigest);
                 else
                 {
                     Write(preparation.Candidate.State);
+                    _confirmations.Clear();
                     receipt = new Receipt(request.Id, "committed", request.BeforeDigest, preparation.Candidate.AfterDigest,
                         first: cancellation, second: preparation.Cancellation);
                     _committed.Add(request.Id, receipt);
@@ -153,6 +184,7 @@ namespace PieGame.AI.Kernel
                     string afterDigest = Protocol.Hash(after ?? throw new ArgumentNullException(nameof(after)));
                     string externalIdentity = Protocol.Hash(expectedDigest + ":" + after);
                     Write(after);
+                    _confirmations.Clear();
                     receipt = new Receipt(id, "committed", expectedDigest, afterDigest, first: cancellation);
                     _committed.Add(id, receipt);
                     _externalIdentities.Add(id, externalIdentity);
