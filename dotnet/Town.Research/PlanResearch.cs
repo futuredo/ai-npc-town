@@ -47,59 +47,96 @@ internal static class PlanResearch
         Console.CancelKeyPress += (_, e) => { e.Cancel = true; cancellation.Cancel(); };
         var ct = cancellation.Token;
         OpenAiDragonsleepProvider online = null;
+        var first = new List<Dictionary<string, object>>();
+        var episodes = new List<Episode>();
+        var calls = new List<AiTrace>();
+        string status = "running";
+        void Observe(DragonsleepSession session, string scope)
+        {
+            var before = new Dictionary<string, DsWorldSnapshot>();
+            session.StageChanged += (t, stage) =>
+            { if (t.Kind == AiTaskKind.Plan && stage == AiStage.Context) before[t.RequestId] = session.CaptureState(); };
+            session.TraceCompleted += t =>
+            {
+                if (t.Kind != AiTaskKind.Plan) return;
+                calls.Add(t);
+                var row = new Dictionary<string, object>
+                {
+                    ["scope"] = scope, ["trace"] = t.ToRecord(),
+                    ["before"] = before.TryGetValue(t.RequestId, out var snap) ? MiniJson.Parse(snap.Json) : null,
+                    ["instructions"] = t.Prompt?.Instructions,
+                    ["prompt"] = t.Prompt?.Sections.Select(x => (object)new Dictionary<string, object>
+                        { ["name"] = x.Name, ["text"] = x.Text, ["untrusted"] = x.Untrusted }).ToList(),
+                };
+                File.AppendAllText(Path.Combine(dir, "plan-calls.jsonl"), MiniJson.Write(row) + "\n");
+            };
+        }
+        async Task AddEpisode(Task<Episode> pending)
+        {
+            var e = await pending;
+            episodes.Add(e);
+            File.AppendAllText(Path.Combine(dir, "episodes.jsonl"), MiniJson.Write(EpisodeRecord(e)) + "\n");
+            WriteSummary(dir, live, holdout, cases, first, episodes, calls, status);
+            if (e.PlanTraces.Any(t => Fatal(t.Provider?.Error))) throw new InvalidOperationException("provider_failure");
+        }
+        var sourceFiles = new[] { "dotnet/Town.Research/PlanCases.cs", "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs", "unity/Assets/Town.OpenAI/OpenAiDragonsleepProvider.cs" };
+        File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(
+            sourceFiles.ToDictionary(f => f, f => DsWorldSnapshot.Digest(File.ReadAllText(Path.Combine(root, f)))), Formatting.Indented));
         try
         {
             if (live) online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
             IAiProvider Planner() => online == null ? (IAiProvider)new RuleProvider() : new RoutingProvider(online, new RuleProvider(), new[] { AiTaskKind.Plan }) { FallbackOnBudget = false };
-            Console.WriteLine($"M2 计划研究；规划={(live ? OpenAiPolicy.Model + "（仅计划请求联网，居民/GM 离线）" : "离线基线")}；{(holdout ? "新措辞集" : "冻结集")} {cases.Count} 例；整局种子 {seeds}。");
+            Console.WriteLine($"归巢计划研究；规划={(live ? OpenAiPolicy.Model + "（仅计划请求联网，居民/GM 离线）" : "离线基线")}；{(holdout ? "新措辞集" : "冻结集")} {cases.Count} 例；整局种子 {seeds}。");
 
             // ---------- A. 首个计划 ----------
-            var first = new List<Dictionary<string, object>>();
             foreach (var c in cases)
             {
                 var b = new DragonsleepSession(new RuleProvider(), 7); c.Setup(b);
+                if (!live) Observe(b, "first:" + c.Id);
                 var bt = await b.PlanAsync(c.Input, null, ct);
                 var s = new DragonsleepSession(Planner(), 7); c.Setup(s);
+                if (live) Observe(s, "first:" + c.Id);
                 var t = live ? await s.PlanAsync(c.Input, null, ct) : bt;
                 var row = FirstRow(c, t, bt);
                 first.Add(row);
                 File.WriteAllText(Path.Combine(dir, c.Id + ".plan.json"), MiniJson.Write(t.ToRecord(), true));
                 Console.WriteLine($"{c.Id}: 可执行={row["executable"]} 断言={row["check"]} 团聚={row["reaches_goal"]} 基线可执行={row["baseline_executable"]} 无效引用={row["invalid_references"]} {t.TotalMillis:0}ms {t.FailureCode}");
-                if (t.Provider?.Error != null) { Console.WriteLine("服务故障，批次停止。"); return 1; }
+                WriteSummary(dir, live, holdout, cases, first, episodes, calls, status);
+                if (Fatal(t.Provider?.Error)) { status = "provider_failed"; Console.WriteLine("服务故障，批次停止；已保留全部完成记录。"); return 1; }
             }
 
             // ---------- B/C/D. 整局 ----------
-            var episodes = new List<Episode>();
             var goal = "把小烬安全送回母亲身边，避开卫兵。";
             for (int seed = 1; seed <= seeds; seed++)
             {
                 foreach (var sc in new[] { "fresh", "informed", "bonded_docks", "caged" })
-                    episodes.Add(await Play(Planner, "full", sc, goal, seed, null, null, ct));
+                    await AddEpisode(Play(Planner, "full", sc, goal, seed, null, null, ct, Observe));
                 foreach (var opt in new[] { "maren", "pip", "none" })
-                    episodes.Add(await Play(Planner, "social", "pact_escort", goal, seed, opt, null, ct));
+                    await AddEpisode(Play(Planner, "social", "pact_escort", goal, seed, opt, null, ct, Observe));
                 // 世界已变：从第 2 步起第一次成功后，GM 下令搜城（公开消息），剩余计划须作废并重规划。
-                episodes.Add(await Play(Planner, "perturb_stale", "informed", goal, seed, null, async (run, n) =>
+                await AddEpisode(Play(Planner, "perturb_stale", "informed", goal, seed, null, async (run, n) =>
                 {
                     if (n < 2) return false;   // 第 2 步起第一次成功之后注入一次
                     var t = await run.Session.RunWithProviderAsync(AiTaskKind.Direct, "gm", null,
                         new Fixed("{\"event\":\"guard_sweep\",\"intensity\":0.8,\"reason\":\"研究扰动：搜城\"}"), ct);
                     return t.Changes.Any(x => x.Path == "gm.event" && x.After == "guard_sweep");
-                }, ct));
+                }, ct, Observe));
                 // 前置条件：梅伦对你戒心很重，出示契约后信任仍不足，托付时被拒（掷骰前判定）。
-                episodes.Add(await Play(Planner, "perturb_precondition", "pact_escort", goal, seed, "maren", null, ct,
+                await AddEpisode(Play(Planner, "perturb_precondition", "pact_escort", goal, seed, "maren", null, ct, Observe,
                     s => s.World.Actors["maren"].Trust = 0.05f));
                 Console.WriteLine($"种子 {seed} 完成：累计 {episodes.Count} 局");
             }
-            foreach (var e in episodes)
-                File.AppendAllText(Path.Combine(dir, "episodes.jsonl"), MiniJson.Write(EpisodeRecord(e)) + "\n");
-            WriteSummary(dir, live, holdout, cases, first, episodes);
+            status = "completed";
+            WriteSummary(dir, live, holdout, cases, first, episodes, calls, status);
             PrintSummary(first, episodes);
             return 0;
         }
         catch (Exception e) when (e is IOException || e is UnauthorizedAccessException || e is InvalidOperationException || e is OperationCanceledException)
-        { Console.Error.WriteLine("实验已停止（" + e.GetType().Name + "）；已完成样本保存在报告目录，未输出可能含凭据的异常详情。"); return 2; }
-        finally { online?.Dispose(); Console.WriteLine("报告：" + dir); }
+        { status = "stopped_" + e.GetType().Name; Console.Error.WriteLine("实验已停止（" + e.GetType().Name + "）；已完成样本保存在报告目录，未输出可能含凭据的异常详情。"); return 2; }
+        finally { online?.Dispose(); WriteSummary(dir, live, holdout, cases, first, episodes, calls, status); Console.WriteLine("报告：" + dir); }
     }
+
+    static bool Fatal(string error) => error != null && error != "incomplete_response" && error != "refusal";
 
     static Dictionary<string, object> FirstRow(PlanCase c, AiTrace t, AiTrace bt)
     {
@@ -120,11 +157,12 @@ internal static class PlanResearch
     }
 
     static async Task<Episode> Play(Func<IAiProvider> planner, string kind, string scenario, string goal, int seed, string option,
-        Func<DsPlanRun, int, Task<bool>> perturb, CancellationToken ct, Action<DragonsleepSession> extra = null)
+        Func<DsPlanRun, int, Task<bool>> perturb, CancellationToken ct, Action<DragonsleepSession, string> observe, Action<DragonsleepSession> extra = null)
     {
         var s = new DragonsleepSession(planner(), seed * 7919 + 13);
         PlanCases.Scenarios[scenario](s);
         extra?.Invoke(s);
+        observe(s, kind + ":" + scenario + ":" + option + ":seed=" + seed);
         var e = new Episode { Kind = kind, Scenario = scenario, Seed = seed, Option = option };
         string input = option == "maren" ? goal + "我想请梅伦修女同行。" : option == "pip" ? goal + "请皮普帮忙望风。" : option == "none" ? goal + "谁也别告诉。" : goal;
         var run = new DsPlanRun(s, input);
@@ -135,6 +173,8 @@ internal static class PlanResearch
         while (e.PlanCalls < MaxPlanCalls && !ct.IsCancellationRequested)
         {
             e.PlanCalls = run.PlanTraces.Count;
+            if (run.LatestPlanTrace?.Provider?.Error != null)
+            { e.Note += "提供方失败，不自动重试：" + run.LatestPlanTrace.Provider.Error + "；"; run.Abandon(); break; }
             if (run.Status == "awaiting_confirmation")
             {
                 var sel = new Dictionary<string, string>();
@@ -160,7 +200,7 @@ internal static class PlanResearch
                 if (run.PlanTraces.Count >= 2 && run.PlanTraces.Skip(run.PlanTraces.Count - 2).All(t => t.PlanReport == null || !t.PlanReport.Executable))
                 { run.Abandon(); e.Note += "连续两次无可执行计划，放弃；"; }
             }
-            else if (run.Status == "planning") { if (run.PlanTraces.Count >= 3) break; await run.ProposeAsync(ct); }
+            else if (run.Status == "planning") { e.Note += "首个计划不可行，不在相同状态静默重抽；"; run.Abandon(); break; }
             else break;
             e.PlanCalls = run.PlanTraces.Count;
         }
@@ -193,19 +233,25 @@ internal static class PlanResearch
         ["ending"] = e.Ending, ["plan_calls"] = e.PlanCalls, ["steps"] = e.Steps, ["perturbed"] = e.Perturbed,
         ["osric_knew_plan"] = e.OsricKnew, ["ally_maren"] = e.AllyMaren, ["ally_pip"] = e.AllyPip,
         ["receipts_consistent"] = e.ReceiptsConsistent, ["note"] = e.Note,
+        ["plan_traces"] = e.PlanTraces.Select(t => (object)t.ToRecord()).ToList(),
+        ["accepted_request_ids"] = e.Runs.SelectMany(r => r.AcceptedRequestIds).Cast<object>().ToList(),
+        ["replan_truth"] = e.ReplanTruth.Select(x => (object)new Dictionary<string, object> { ["request_id"] = x.Record.NewRequestId, ["dead_end"] = x.DeadEnd, ["failure"] = x.Record.Failure.ToString() }).ToList(),
         ["runs"] = e.Runs.Select(r => (object)r.ToRecord()).ToList(),
     };
 
-    static void WriteSummary(string dir, bool live, bool holdout, List<PlanCase> cases, List<Dictionary<string, object>> first, List<Episode> episodes)
+    static void WriteSummary(string dir, bool live, bool holdout, List<PlanCase> cases, List<Dictionary<string, object>> first, List<Episode> episodes, List<AiTrace> calls, string status)
     {
-        var replans = episodes.SelectMany(e => e.Runs.SelectMany(r => r.Replans)).ToList();
         var steps = episodes.SelectMany(e => e.Runs.SelectMany(r => r.Results)).ToList();
-        var planTraces = first.Count == 0 ? new List<double>() : episodes.SelectMany(e => e.PlanTraces).Select(t => t.TotalMillis).OrderBy(x => x).ToList();
-        var usd = episodes.SelectMany(e => e.PlanTraces).Select(t => t.Provider?.EstimatedUsd).ToList();
+        var planTraces = calls.Select(t => t.TotalMillis).OrderBy(x => x).ToList();
+        var usd = calls.Select(t => t.Provider?.EstimatedUsd).ToList();
         File.WriteAllText(Path.Combine(dir, "summary.json"), JsonConvert.SerializeObject(new
         {
-            utc = DateTime.UtcNow, live, holdout, model = live ? OpenAiPolicy.Model : "offline-baseline", rulesVersion = DsExecutor.RulesVersion,
+            utc = DateTime.UtcNow, status, live, holdout, model = live ? OpenAiPolicy.Model : "offline-baseline", rulesVersion = DsExecutor.RulesVersion,
             caseFingerprint = PlanCases.Fingerprint(cases),
+            allCalls = new { count = calls.Count, inputTokens = calls.Sum(t => t.Provider?.InputTokens ?? 0), outputTokens = calls.Sum(t => t.Provider?.OutputTokens ?? 0),
+                unknownCosts = usd.Count(x => !x.HasValue), overFiveSeconds = calls.Count(t => t.TotalMillis > 5000),
+                errors = calls.Where(t => t.FailureCode != null).GroupBy(t => t.FailureCode).ToDictionary(g => g.Key, g => g.Count()),
+                incompleteReasons = calls.Where(t => t.Provider?.IncompleteReason != null).GroupBy(t => t.Provider.IncompleteReason).ToDictionary(g => g.Key, g => g.Count()) },
             firstPlan = new
             {
                 total = first.Count, executable = first.Count(r => (bool)r["executable"]), check = first.Count(r => (bool)r["check"]),
@@ -230,6 +276,7 @@ internal static class PlanResearch
             },
             latencyMs = new { count = planTraces.Count, median = Pct(planTraces, 0.5), p95 = Pct(planTraces, 0.95) },
             estimatedUsd = usd.Any(x => !x.HasValue) ? (decimal?)null : usd.Sum(x => x ?? 0m),
+            knownEstimatedUsd = usd.Where(x => x.HasValue).Sum(x => x.Value),
             notes = "离线基线只读计划感知；居民/GM 始终离线。扰动由研究脚本经正式管线注入，并在报告中标明。费用为估算，未知不记零。",
         }, Formatting.Indented));
     }
@@ -239,7 +286,6 @@ internal static class PlanResearch
     static void PrintSummary(List<Dictionary<string, object>> first, List<Episode> episodes)
     {
         var steps = episodes.SelectMany(e => e.Runs.SelectMany(r => r.Results)).ToList();
-        var replans = episodes.SelectMany(e => e.Runs.SelectMany(r => r.Replans)).ToList();
         Console.WriteLine($"首个计划可执行 {first.Count(r => (bool)r["executable"])}/{first.Count}，断言 {first.Count(r => (bool)r["check"])}，基线可执行 {first.Count(r => (bool)r["baseline_executable"])}。");
         foreach (var g in steps.Where(r => r.Failure != DsPlanFailure.None).GroupBy(r => r.Failure))
             Console.WriteLine($"失败 {DsPlanRun.Label(g.Key)}：{g.Count()} 次");

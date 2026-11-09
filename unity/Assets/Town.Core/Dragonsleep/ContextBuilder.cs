@@ -198,14 +198,17 @@ namespace Town.Core.Dragonsleep
                     break;
                 case AiTaskKind.Plan:
                     p.SchemaName = "ds_plan_v1";
-                    p.Instructions = "你是《龙眠镇》的“织言机”，把玩家的目标拆成一份可执行的多步计划，由规则引擎逐步执行并给回执。" +
-                        "步骤 op：act 用 verbs 中的一个动词（含义同语义判定：buy/lure/feed/hide/lead/release/rescue/confide/sneak/search/show/give/take/use/observe/wait），" +
-                        "go 只是走到 place，wait 在 place 一直等到 until（写成“第3天·黄昏”这样的时刻，只能是清晨/正午/黄昏）。act/wait 填 place 时会先走过去。" +
-                        "target/item/place 只能用感知里出现的 ID；item 必须在 known_items 中；laws 只能用 known_laws；cites 写这一步依据的 known_facts/known_laws/observations ID。" +
-                        "不要假设你不知道的卫兵岗位、居民动向或物件下落；不知道就安排能获得信息或降低风险的步骤。掷骰可能失败，计划要留余地。" +
-                        "遇到真正的关键取舍（例如找谁帮忙、走哪条路）时放进 choices（2–3 个选项，第一个是你推荐的），相关步骤的 when 写“取舍id=选项id”，其余步骤 when 留空。" +
-                        "最多 14 步，why 用不超过 20 字说明目的。有 replan 字段时，这是上一份计划失败后的重新规划：先读失败原因，从当前状态出发，不要重复已失败的做法，不要重做已完成的步骤。" +
-                        "goal 复述玩家目标，summary 用一句话概括计划。" + Guard;
+                    p.Instructions = "你是《龙眠镇》的织言机，按玩家感知提出可执行计划，成功只能由执行回执确认。" +
+                        "ID只取冒号或括号前的英文部分，例如pip、docks；雏龙小烬的ID固定为whelp。地点只填place，不填target。空字段用空串或空数组。" +
+                        "op=go移动到place；op=wait先走到place再等until（如第3天·黄昏，只能清晨/正午/黄昏）；op=act先走到place再执行verb。移动不等于带上雏龙。" +
+                        "动作语义：buy在卖家处买item；lure让身边雏龙现身并加0.2信任，不消耗食物；feed消耗已持有食物，加0.35信任并安抚。" +
+                        "lead在雏龙所在处让它开始跟随，需现身、信任至少0.4且未吓坏；已经following不要重复lead。hide只藏身边雏龙，需信任至少0.3，可用travel_cloak；hide不启动跟随。" +
+                        "rescue只从铁笼救出whelp，成功自动跟随；use只用于已经织成的物品，斗篷用hide。show向居民出示持有物；confide是托付护送，不是问路：梅伦需要先show契约且足够信任，皮普要求雏龙信任至少0.4。" +
+                        "laws仅known_laws；item仅known_items；cites仅known_facts/known_laws/observations的ID。不能引用假设的岗哨、未知物件或居民位置；只在有依据的地点找人。" +
+                        "遵循已知契约和居民要求；不要用空泛observe冒充取得新信息。计划要算行动耗时、食物消耗、先带上再移动，并用wait抵达母龙降临时刻。" +
+                        "只有玩家尚未作决定且确有必要才给choices，首项为推荐；相关when=取舍id=选项id，其余when为空。已明确的求助意图直接安排，不强造分支。" +
+                        "最多14步，但输出总预算仅768 tokens：尽量合并移动到行动的place，优先不超过8步；goal和summary各不超过12字，why最多4字，cites每步至多1条。" +
+                        "有replan时从当前状态接续，读失败原因，已完成步骤不重做；无效前置条件换办法，掷骰失败可在条件改善后再试。" + Guard;
                     break;
                 case AiTaskKind.Craft:
                     p.SchemaName = "ds_craft_v1";

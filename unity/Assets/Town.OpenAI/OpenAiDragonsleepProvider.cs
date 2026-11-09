@@ -93,17 +93,25 @@ namespace Town.OpenAI
                 };
                 usage = new TokenUsageLite { Input = usageFull.InputTokens, Output = usageFull.OutputTokens, Usd = OpenAiPolicy.EstimateUsd(usageFull) };
             }
-            if ((string)response["status"] != "completed") return Fail("incomplete_response", usage);
             var content = (response["output"] as JArray ?? new JArray()).OfType<JObject>()
                 .Where(x => (string)x["type"] == "message")
                 .SelectMany(x => (x["content"] as JArray ?? new JArray()).OfType<JObject>()).ToArray();
+            if ((string)response["status"] != "completed")
+            {
+                var incomplete = Fail("incomplete_response", usage);
+                incomplete.ResponseStatus = (string)response["status"];
+                incomplete.IncompleteReason = (string)response["incomplete_details"]?["reason"];
+                // 保留截断文本作为失败证据；Error 仍使 Core 在解析/执行前停止。
+                incomplete.RawText = string.Concat(content.Where(x => (string)x["type"] == "output_text").Select(x => (string)x["text"]));
+                return incomplete;
+            }
             if (content.Any(x => (string)x["type"] == "refusal")) return Fail("refusal", usage);
             var texts = content.Where(x => (string)x["type"] == "output_text").ToArray();
             if (texts.Length != 1 || texts[0]["text"]?.Type != JTokenType.String) return Fail("missing_output", usage);
             // 不在这里校验内容：结构/引用/白名单统一交给 Core 管线，真实与离线走同一套规则。
             return new ProviderResult
             {
-                ProviderName = Name, RawText = (string)texts[0]["text"], Simulated = false,
+                ProviderName = Name, RawText = (string)texts[0]["text"], Simulated = false, ResponseStatus = "completed",
                 InputTokens = usage?.Input, OutputTokens = usage?.Output, EstimatedUsd = usage?.Usd,
             };
         }

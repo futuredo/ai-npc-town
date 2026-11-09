@@ -28,6 +28,12 @@ internal static class Program
                 args.Any(x => x != "--plan" && x != "--live" && x != "--holdout" && !x.StartsWith("--seeds="))) { Console.Error.WriteLine("用法：--plan [--holdout] [--seeds=N] [--live]"); return 2; }
             return await PlanResearch.Run(root, args.Contains("--live"), seeds, args.Contains("--holdout"));
         }
+        var recovery = args.FirstOrDefault(x => x.StartsWith("--plan-recovery="));
+        if (recovery != null)
+        {
+            if (args.Any(x => x != recovery && x != "--live")) return 2;
+            return await PlanRecovery.Run(root, recovery.Substring(16), args.Contains("--live"));
+        }
         bool live = args.Contains("--live");
         string filter = args.FirstOrDefault(x=>x.StartsWith("--cases="))?.Substring(8);
         if (args.Any(x=>x!="--live"&&x!="--holdout"&&!x.StartsWith("--cases=")&&!x.StartsWith("--seed="))) { Console.Error.WriteLine("用法：无参数离线；--live 显式真实实验；--cases=id,id；--holdout 新措辞集；--seed=N；--journey --three-nights；--replay 目录"); return 2; }

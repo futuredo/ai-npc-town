@@ -64,6 +64,8 @@ namespace Town.Core.Dragonsleep
         public string ProviderName;
         public string RawText;
         public string Error;
+        public string ResponseStatus;
+        public string IncompleteReason;
         public int? InputTokens;
         public int? OutputTokens;
         /// <summary>估算费用（美元）。null 表示未知，不能当成 0。</summary>
@@ -191,6 +193,7 @@ namespace Town.Core.Dragonsleep
                 ["input_tokens"] = Provider?.InputTokens, ["output_tokens"] = Provider?.OutputTokens,
                 ["estimated_usd"] = Provider?.EstimatedUsd, ["prompt_sections"] = sections,
                 ["raw"] = Provider?.RawText, ["issues"] = new List<object>(ValidationIssues),
+                ["response_status"] = Provider?.ResponseStatus, ["incomplete_reason"] = Provider?.IncompleteReason,
                 ["verdict"] = Verdict.Kind.ToString(), ["reason"] = Verdict.Reason, ["roll"] = Verdict.Roll,
                 ["difficulty"] = Verdict.Difficulty, ["changes"] = changes, ["presented"] = Presented,
                 ["receipt"] = Receipt?.ToRecord(), ["craft_decision"] = CraftDecision, ["rules_version"] = DsExecutor.RulesVersion,

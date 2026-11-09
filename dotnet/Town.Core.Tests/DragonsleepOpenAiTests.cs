@@ -32,6 +32,7 @@ namespace Town.Core.Tests
             Content = new StringContent(new JObject
             {
                 ["status"] = status,
+                ["incomplete_details"] = status == "incomplete" ? new JObject { ["reason"] = "max_output_tokens" } : null,
                 ["output"] = new JArray(new JObject { ["type"] = "message", ["content"] = new JArray(new JObject { ["type"] = "output_text", ["text"] = modelJson }) }),
                 ["usage"] = new JObject { ["input_tokens"] = 900, ["output_tokens"] = 80, ["input_tokens_details"] = new JObject { ["cached_tokens"] = 0 } }
             }.ToString())
@@ -119,6 +120,11 @@ namespace Town.Core.Tests
             var t = Session(http, new Budget()).SpeakAsync("marta", "你好").Result;
             Assert.AreEqual("incomplete_response", t.FailureCode);
             Assert.IsNotNull(t.Provider.EstimatedUsd, "截断时仍有 usage，费用可估算");
+            Assert.AreEqual("{\"say\":\"半句", t.Provider.RawText, "保留失败原文，不能把截断样本丢失");
+            Assert.AreEqual("incomplete", t.Provider.ResponseStatus);
+            Assert.AreEqual("max_output_tokens", t.Provider.IncompleteReason);
+            Assert.IsNull(t.Receipt, "截断结果不可执行");
+            Assert.AreEqual(1, http.Calls, "不重试截断请求");
         }
 
         [TestCase(AiTaskKind.Adjudicate)]
