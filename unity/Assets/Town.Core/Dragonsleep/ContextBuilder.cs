@@ -77,6 +77,9 @@ namespace Town.Core.Dragonsleep
                 ["known_laws"] = w.Laws.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal)
                     .Where(l => w.KnowsLaw(l.Id)).Select(l => (object)(l.Id + "：" + l.Text)).ToList(),
                 ["places"] = w.Places.Keys.OrderBy(x => x, System.StringComparer.Ordinal).Cast<object>().ToList(),
+                ["pact_custody"] = w.Flags.ContainsKey("pact_custody:maren") ? "maren" : "",
+                ["public_cooperation_requests"] = w.Flags.ContainsKey("requested:pact_custody:maren")
+                    ? new[] { "梅伦已提出：交付契约原件保管核验（give pact_page maren），再托付护送；原件不再由你持有。" } : new string[0],
             };
         }
 
@@ -122,6 +125,7 @@ namespace Town.Core.Dragonsleep
                 ["companions"] = new[] { "maren", "pip" }.Where(id => w.Flags.ContainsKey("ally:" + id)).Cast<object>().ToList(),
                 ["shown_by_player"] = w.Flags.Keys.Where(k => k.StartsWith("shown:", System.StringComparison.Ordinal))
                     .OrderBy(k => k, System.StringComparer.Ordinal).Select(k => (object)k.Substring(6)).ToList(),
+                ["pact_custody"] = here["pact_custody"], ["public_cooperation_requests"] = here["public_cooperation_requests"],
                 ["inventory"] = here["inventory"], ["people_here"] = here["people_here"], ["guards_here"] = here["guards_here"],
                 ["known_people"] = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal)
                     .Select(x => (object)(x.Id + "：" + x.Name + "，" + x.Role)).ToList(),
@@ -173,6 +177,9 @@ namespace Town.Core.Dragonsleep
             result.Add("当前库存之外的食物不可直接使用；一次feed成功后食物已消耗。动作成功/失败以后都必须以新的当前状态重新计算。");
             var helpers = (List<object>)view["companions"];
             if (helpers.Count > 0) result.Add("已经答应帮助的居民：" + string.Join(",", helpers) + "；不必重复confide。");
+            if (((IEnumerable<object>)view["known_items"]).Cast<string>().Any(x => x.StartsWith("pact_page：", System.StringComparison.Ordinal)))
+                result.Add("梅伦可先看契约再决定，或接受give pact_page maren原件保管核验后再confide；交付会失去原件控制权，不能再向总管show。重复show不刷信任；试运行假设合作，实际是否愿意须由托付回执确认。");
+            result.AddRange(((IEnumerable<string>)view["public_cooperation_requests"]).Cast<object>());
             return result;
         }
 
@@ -272,7 +279,8 @@ namespace Town.Core.Dragonsleep
                         "lure使当地雏龙现身并加0.2信任，不消耗，item可空；feed消耗持有食物、加0.35信任，不能再用已吃掉的鱼。信任已足够且可见时不必买鱼或喂食。" +
                         "lead需雏龙在当地且现身、信任至少0.4且未吓坏；following不用再lead。hide需雏龙在当地、信任至少0.3，可用travel_cloak；每次安抚0.1，吓坏时可先hide两次再lead。hide不启动跟随。" +
                         "信任从0起只lure一次是0.2，还不能hide/lead；至少lure两次到0.4，或lure后feed。hide不增加信任。left_at:X表示留在X，必须在X操作；following_cloaked不必重复hide。" +
-                        "rescue只从铁笼救出whelp，成功自动跟随；use只用于已经织成的物品，斗篷用hide。show向居民出示持有物；confide是托付护送，不是问路：梅伦需要先show契约且足够信任，皮普要求雏龙信任至少0.4。" +
+                        "rescue只从铁笼救出whelp，成功自动跟随；use只用于已织物，斗篷用hide。confide是托付护送：梅伦可先show契约建立合作，" +
+                        "或give pact_page maren交付原件核验后再confide；原件不再持有就不能show总管。重复show不刷信任。皮普要求雏龙信任至少0.4。" +
                         "laws仅known_laws；item仅known_items；cites仅known_facts/known_laws/observations的ID。不能引用假设的岗哨、未知物件或居民位置；只在有依据的地点找人。" +
                         "rescue仅whelp_status=caged_castle可用；其他状态不可rescue。caged时按已知换岗规律等待再救，不可在看到卫兵时原地反复撬锁。传闻在船屋时去docks用lure，不能先假设已被关。" +
                         "完整归巢从终点倒推：末步wait(place=skull_hill,until=第4天·清晨)；" +

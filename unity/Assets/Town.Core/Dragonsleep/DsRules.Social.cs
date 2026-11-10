@@ -8,9 +8,9 @@ namespace Town.Core.Dragonsleep
     {
         /// <summary>
         /// 把护送计划托付给在场居民：对方从此知道计划（进入其认知，夜里可能转告他人）。
-        /// 梅伦要看过契约页且信任足够才肯同行；皮普要看到小烬信任你才肯望风；其他人只会记下。
+        /// 梅伦接受已建立的信任或原件保管核验；皮普要看到小烬信任你才肯望风；其他人只会记下。
         /// </summary>
-        static string Confide(DsWorld w, DsActor actor, AiTrace t)
+        static string Confide(DsWorld w, DsActor actor, AiTrace t, bool preview = false)
         {
             string id = "b_plan_" + actor.Id;
             if (w.Belief(id) == null)
@@ -24,17 +24,27 @@ namespace Town.Core.Dragonsleep
             switch (actor.Id)
             {
                 case "maren":
-                    if (w.Flags.ContainsKey("shown:pact_page:maren") && actor.Trust >= 0.5f)
+                    bool custody = w.Flags.ContainsKey("pact_custody:maren");
+                    bool shown = w.Flags.ContainsKey("shown:pact_page:maren");
+                    // 试运行只能条件性假设合作：不能用隐藏的信任/远处持有人形成预测反馈。
+                    bool willing = preview ? custody || shown
+                        : (custody && w.Items["pact_page"].Holder == "maren") || (shown && actor.Trust >= 0.5f);
+                    if (willing)
                     {
                         w.Flags["ally:maren"] = w.ClockText;
                         t.Changes.Add(new WorldChange { Path = "flags.ally", Before = "", After = "maren", Note = "以教会名义同行" });
                         t.Verdict.Reason = "梅伦愿意同行";
+                        if (preview) t.Verdict.Notes.Add("梅伦是否合作需实际托付确认；此处不读取私有信任");
                         return "梅伦按住那页契约：“教会欠她一个交代。这一程，我以教会的名义陪你走。”";
                     }
                     t.Verdict.Kind = VerdictKind.Partial;
-                    t.Verdict.Reason = "梅伦需要凭据才肯冒险";
-                    t.Verdict.ReasonCode = new DsReason("confide_evidence_required", actor.Id);
-                    return "梅伦犹豫良久：“没有凭据，我不能拿教会的名誉冒险。”她记下了你的打算。";
+                    t.Verdict.Reason = shown ? "梅伦看过凭据，但仍要求保管原件核验才肯同行" : "梅伦尚未见到契约凭据";
+                    t.Verdict.ReasonCode = new DsReason(shown ? "confide_custody_required" : "confide_evidence_required", actor.Id);
+                    // 仅记录这次实际说出口的条件，不把私有信任数值变成玩家知识。
+                    w.Flags["requested:pact_custody:maren"] = w.ClockText;
+                    t.Changes.Add(new WorldChange { Path = "flags.requested", Before = "", After = "pact_custody:maren", Note = "公开提出合作条件" });
+                    return shown ? "梅伦摇头：“我认得这页纸，但看过不代表能冒险。把契约原件交我保管核验，我才肯以教会名义同行。”"
+                        : "梅伦说：“先让我看到契约，或把原件交我保管核验。没有凭据，我不能以教会名义同行。”";
                 case "pip":
                     if (wh.TrustPlayer >= 0.4f && wh.CapturedBy == null)
                     {

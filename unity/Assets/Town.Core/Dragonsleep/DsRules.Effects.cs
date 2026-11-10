@@ -6,7 +6,7 @@ namespace Town.Core.Dragonsleep
 {
     public static partial class DsRules
     {
-        static string Effects(DsWorld w, string verb, DsItem item, bool whelp, DsActor actor, bool ok, AiTrace t)
+        static string Effects(DsWorld w, string verb, DsItem item, bool whelp, DsActor actor, bool ok, AiTrace t, DsExecutionMode mode)
         {
             var wh = w.Whelp;
             switch (verb)
@@ -60,13 +60,27 @@ namespace Town.Core.Dragonsleep
                     if (item.Holder.StartsWith("place:"))
                     { if (ok) Move(t, item, "player"); return ok ? "你拿走了「" + item.Name + "」。" : "你没能拿到「" + item.Name + "」。"; }
                     var owner = w.Actors[item.Holder];
-                    if (ok) { Move(t, item, "player"); return "你趁" + owner.Name + "不注意，拿走了「" + item.Name + "」。"; }
+                    if (ok)
+                    {
+                        if (item.Id == "pact_page" && owner.Id == "maren" && w.Flags.Remove("pact_custody:maren"))
+                        {
+                            w.Flags.Remove("ally:maren");
+                            t.Changes.Add(new WorldChange { Path = "flags.pact_custody", Before = "maren", After = "", Note = "取回原件，保管合作失效" });
+                        }
+                        Move(t, item, "player"); return "你趁" + owner.Name + "不注意，拿走了「" + item.Name + "」。";
+                    }
                     Set(t, owner.Id + ".trust", ref owner.Trust, owner.Trust - 0.3f);
                     return owner.Name + "一把按住你的手：“干什么？”";
                 case "give":
                     if (actor == null) return "没有人接。";
                     if (!ok) return actor.Name + "没有接过东西，你仍持有它。";
                     Move(t, item, actor.Id);
+                    if (item.Id == "pact_page" && actor.Id == "maren")
+                    {
+                        w.Flags["pact_custody:maren"] = w.ClockText;
+                        t.Changes.Add(new WorldChange { Path = "flags.pact_custody", Before = "", After = "maren", Note = "交付原件保管核验" });
+                        return "梅伦收好契约原件：“我会保管核验。有它作教会的凭据，你再托付护送时，我愿意同行。”你不再持有原件。";
+                    }
                     Set(t, actor.Id + ".trust", ref actor.Trust, actor.Trust + 0.1f);
                     return actor.Name + "接过了「" + item.Name + "」。";
                 case "use":
@@ -87,16 +101,21 @@ namespace Town.Core.Dragonsleep
                 case "show":
                     if (actor == null) return "四下无人。";
                     if (!ok) return actor.Name + "没有留意你出示的东西。";
-                    w.Flags["shown:" + item.Id + ":" + actor.Id] = w.ClockText;
-                    t.Changes.Add(new WorldChange { Path = "flags.shown", Before = "", After = item.Id + "→" + actor.Id });
-                    if (item.Tags.Contains("pact") && actor.Id == "maren")
+                    string shownKey = "shown:" + item.Id + ":" + actor.Id;
+                    bool firstShown = !w.Flags.ContainsKey(shownKey);
+                    if (firstShown || item.Id != "pact_page")
                     {
-                        Set(t, "maren.trust", ref actor.Trust, actor.Trust + 0.3f);
-                        return "梅伦修女的脸一下子白了。她认得这页纸。";
+                        w.Flags[shownKey] = w.ClockText;
+                        t.Changes.Add(new WorldChange { Path = "flags.shown", Before = "", After = item.Id + "→" + actor.Id });
                     }
-                    if (item.Tags.Contains("pact") && actor.Id == "osric")
+                    if (item.Id == "pact_page" && actor.Id == "maren")
                     {
-                        Set(t, "osric.trust", ref actor.Trust, actor.Trust + 0.2f);
+                        if (firstShown) Set(t, "maren.trust", ref actor.Trust, actor.Trust + 0.3f);
+                        return firstShown ? "梅伦修女的脸一下子白了。她认得这页纸。" : "梅伦说：“这页契约我已经看过了。”重复出示没有改变她的决定。";
+                    }
+                    if (item.Id == "pact_page" && actor.Id == "osric")
+                    {
+                        if (firstShown) Set(t, "osric.trust", ref actor.Trust, actor.Trust + 0.2f);
                         if (wh.CapturedBy == "osric" && actor.Trust >= 0.5f)
                         {
                             wh.CapturedBy = null; wh.Following = true;
@@ -156,7 +175,7 @@ namespace Town.Core.Dragonsleep
                     return "铁笼的门吱呀一声开了，小烬一头扎进你怀里。";
                 }
                 case "confide":
-                    return Confide(w, actor, t);
+                    return Confide(w, actor, t, mode == DsExecutionMode.PlanPreview);
                 case "observe":
                     var hints = new List<string>();
                     if (wh.Place == w.PlayerPlace && wh.CapturedBy == null) hints.Add(wh.Hidden ? "旧船屋门缝里飘出一缕细烟" : "雏龙正警惕地盯着你");

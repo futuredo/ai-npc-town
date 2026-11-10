@@ -162,6 +162,8 @@ namespace Town.Unity.Dragonsleep
                     : result.Status == "void" ? "已作废，未执行" : "执行失败";
                 box.Add(Wrap(L((i + 1) + ". " + StepLabel(step) + "　[" + status + "]", 16, result?.Status == "void" ? Muted : Paper, next)));
                 if (!string.IsNullOrEmpty(step.Why)) box.Add(Wrap(L(step.Why, 13, Muted)));
+                if (step.Verb == "give" && step.Item == "pact_page" && step.Target == "maren")
+                    box.Add(Wrap(L("交付后原件由梅伦保管，你不能再向总管出示它；同行仍需下一步托付确认。", 13, Gold)));
                 if (result != null)
                 {
                     if (result.Failure != DsPlanFailure.None) box.Add(Wrap(L(DsPlanRun.Label(result.Failure) + "：" + result.Reason, 14, Gold)));
@@ -234,7 +236,7 @@ namespace Town.Unity.Dragonsleep
             foreach (var option in _planOptions) option.SetEnabled(alive && status == "awaiting_confirmation");
             _planBranch.text = status == "awaiting_confirmation" ? constraintIssue ?? (branch == null ? "没有对应的可执行分支，请重新提出目标。"
                 : !branch.Feasible || (run.RequireHomecoming && !branch.ReachesGoal) ? "此取舍无法完成归巢：" + branch.Reason + "。请换选，或重新提出目标。"
-                : "此取舍通过静态试运行，但不保证实际掷骰成功。确认不会消耗时间，执行仍逐步进行。") : "";
+                : "此取舍通过条件性试运行，不保证掷骰成功或居民愿意合作。确认不耗时，执行仍逐步进行。") : "";
             _planStatus.text = StateLabel(status) + (string.IsNullOrEmpty(Game.PlanNotice) ? "" : "\n" + Game.PlanNotice);
         }
 
@@ -270,6 +272,7 @@ namespace Town.Unity.Dragonsleep
                 case "lead": return "用" + item + "带上" + target;
                 case "confide": return "向" + target + "倾诉";
                 case "show": return "向" + target + "出示" + item;
+                case "give": return "把" + item + "交付给" + target;
                 case "rescue": return "从城堡救回小烬";
                 case "release": return "放飞小烬";
                 default: return step.Why.Length > 0 ? step.Why : "在" + place + "尝试行动";

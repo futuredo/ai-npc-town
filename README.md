@@ -13,7 +13,9 @@
 - [本机 macOS 试玩构建、启动冒烟与无人值守完整短局](docs/本机试玩与验证.md)
 - [历史资料索引](docs/history/README.md)
 
-六机制已有真实模型研究入口，不等于全部目标已验收。M3 完整护送为 33/40，同版离线基线 34/40；低信任求助和自然语言否定约束仍未通过。现已补显式托付允许名单，确认、执行和重规划都会复核，不把“只向某人”伪装成必须求助或全局保密。离线 .NET 211 项、PlayMode 32 项通过，见 [047 日志](docs/开发日志/2026-11-10_047_M3明确托付条件与执行复核.md)。实际 macOS 包已有两分辨率按钮完整短局、真实失败补救、结局与重开证据；灰盒美术和真人理解仍待验，见 [046 日志](docs/开发日志/2026-11-10_046_Player完整短局与重开隔离.md)。
+六机制已有真实模型研究入口，不等于全部目标已验收。历史 M3 完整护送为 33/40，同版离线基线 34/40；低信任模型求助和通用自然语言否定约束仍未验收。047 补显式托付允许名单，确认、执行和重规划都会复核，不把“只向某人”伪装成必须求助或全局保密；当时 .NET 211 项、PlayMode 32 项通过，见 [047 日志](docs/开发日志/2026-11-10_047_M3明确托付条件与执行复核.md)。实际 macOS 包已有按钮完整短局、真实失败补救、结局与重开证据；灰盒美术和真人理解仍待验。
+
+当前已升级 `dragonsleep-rules-7`：低信任梅伦可通过交出契约原件核验后再次托付，重复出示不再刷收益。离线低信任组实际补救归巢 9/10、3/3，235 项 .NET、36 项主线 PlayMode 与实际 Player 社会补救前缀两分辨率通过；旧 rules-6 黄金原件保留、当前拒绝跨版回放，详见 [048 日志](docs/开发日志/2026-11-10_048_规则七原件保管与低信任补救.md)。这不是新版真实模型成绩，也不等于 M3 整体验收通过。
 
 ## 打开与运行
 
@@ -47,7 +49,7 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开为 `DragonsleepJourneyProbeTests`（2 项），托付条件为 `DragonsleepConstraintPresentationTests`（4 项）；filter 改为 `Dragonsleep` 可连同既有 4 项一起执行，共 32/32。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会前缀为 `DragonsleepJourneyProbeTests`（3 项），托付条件为 `DragonsleepConstraintPresentationTests`（4 项），原件补救为 `DragonsleepSocialRecoveryPresentationTests`（3 项）；filter 改为 `Dragonsleep` 可连同既有 4 项一起执行，共 36/36。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
 

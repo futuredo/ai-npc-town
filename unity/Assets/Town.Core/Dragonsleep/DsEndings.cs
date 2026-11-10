@@ -27,6 +27,7 @@ namespace Town.Core.Dragonsleep
             // 归巢必须是“雏龙真的回到了母亲身边”这一事实；信物与契约只决定母龙的态度。
             if (wh.WithMother)
             {
+                pactKnown |= w.Flags.ContainsKey("pact_custody:maren") && page?.Holder == "maren";
                 if (pactKnown && w.Actors["maren"].Trust >= 0.6f)
                     return new Ending { Id = "new_pact", Title = "新约", Text = "梅伦修女当众念出被撕下的契约。母龙低下头，让小烬钻进她的翼下。三百年的谎言，在龙骨岗上结束了。" };
                 if (pactKnown || ember)

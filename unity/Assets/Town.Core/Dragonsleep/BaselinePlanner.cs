@@ -105,7 +105,8 @@ namespace Town.Core.Dragonsleep
             }
 
             // 关键取舍：找谁帮忙。梅伦需要契约页作凭据；皮普好说话但口风不紧；谁都不说最稳但没人帮。
-            bool pactHeld = inventory.Contains("pact_page"), pactKnown = items.Contains("pact_page");
+            bool custody = per.Str("pact_custody") == "maren";
+            bool pactHeld = inventory.Contains("pact_page"), pactKnown = items.Contains("pact_page") || custody;
             var options = new List<(string id, string label)>();
             if (input.Contains("皮普")) options.Add(("pip", "托付皮普望风"));
             if (input.Contains("梅伦") && (pactHeld || pactKnown)) options.Add(("maren", "带契约页请梅伦同行"));
@@ -116,6 +117,8 @@ namespace Town.Core.Dragonsleep
             var replan = per.TryGetValue("replan", out var rc) ? rc as Dictionary<string, object> : null;
             var conditions = replan != null && replan.TryGetValue("player_constraints", out var pc) ? pc as Dictionary<string, object> : null;
             var allowed = conditions != null && conditions.TryGetValue("allowed_confidants", out var ac) ? ac as List<object> : null;
+            bool custodyRequested = (per.TryGetValue("public_cooperation_requests", out var requests) &&
+                (requests as IEnumerable<object>)?.Any() == true) || reason.Is("confide_custody_required", "maren");
             if (allowed != null) options.RemoveAll(o => o.id != "none" && !allowed.Contains(o.id));
             if (status != "caged_castle" && status != "with_mother")
             {
@@ -123,9 +126,13 @@ namespace Town.Core.Dragonsleep
                     Add("act", "confide", "pip", place: pipAt, cites: new[] { "obs_whelp" }, when: "helper=pip", why: "请皮普望风");
                 if (options.Any(o => o.id == "maren"))
                 {
-                    if (!pactHeld) Add("act", "search", place: "catacombs", cites: new[] { "b_maren_page" }, when: "helper=maren", why: "找回契约页");
-                    Add("act", "show", "maren", "pact_page", place: marenAt,
-                        cites: new[] { "b_maren_pact", "b_maren_page" }, when: "helper=maren", why: "给梅伦看凭据");
+                    if (!custody)
+                    {
+                        if (!pactHeld) Add("act", "search", place: "catacombs", cites: new[] { "b_maren_page" }, when: "helper=maren", why: "找回契约页");
+                        Add("act", custodyRequested ? "give" : "show", "maren", "pact_page", place: marenAt,
+                            cites: new[] { "b_maren_pact", "b_maren_page" }, when: "helper=maren",
+                            why: custodyRequested ? "交付原件核验" : "给梅伦看凭据");
+                    }
                     Add("act", "confide", "maren", place: marenAt, cites: new[] { "b_maren_pact" }, when: "helper=maren", why: "请梅伦同行");
                 }
             }

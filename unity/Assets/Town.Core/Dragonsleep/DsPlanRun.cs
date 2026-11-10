@@ -322,7 +322,9 @@ namespace Town.Core.Dragonsleep
                 ["request_id"] = t.RequestId, ["scope"] = step == null ? "proposal_shape_or_references" : "predicted_after_prefix",
                 ["prefix_steps"] = step == null ? new List<object>() : t.PlanReport.Plan.ActiveSteps(t.PlanReport.Plan.DefaultSelection())
                     .TakeWhile(s => s.Id != step.Id).Select(s => (object)s.Brief()).ToList(),
-                ["step"] = step?.Brief(), ["code"] = t.FailureCode ?? "precondition", ["reason"] = reason,
+                ["step"] = step?.Brief(), ["code"] = t.FailureCode ??
+                    (b?.ReasonCode.Code == "confide_custody_required" || b?.ReasonCode.Code == "confide_evidence_required"
+                        ? b.ReasonCode.Code : "precondition"), ["reason"] = reason,
                 ["state_warning"] = "这是上版草稿在前序步骤后的试运行判断，不是当前世界事实；这些草稿步骤均未执行。保留可行前序步骤，仅修正矛盾处。",
             };
         }

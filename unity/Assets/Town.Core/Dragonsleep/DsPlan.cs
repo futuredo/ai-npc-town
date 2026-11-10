@@ -210,9 +210,10 @@ namespace Town.Core.Dragonsleep
             var result = new Dictionary<string, string>();
             foreach (var i in w.Items.Values.OrderBy(x => x.Id, StringComparer.Ordinal))
             {
-                if (i.Holder == "consumed") continue;
+                if (i.Holder == "consumed" && !(i.Id == "pact_page" && w.Flags.ContainsKey("pact_custody:maren"))) continue;
                 string where = null;
                 if (i.Holder == "player") where = "随身";
+                else if (i.Id == "pact_page" && w.Flags.ContainsKey("pact_custody:maren")) where = "你已交由梅伦保管核验";
                 else if (i.Holder == "place:" + w.PlayerPlace) where = "就在眼前";
                 else if (w.Actors.TryGetValue(i.Holder, out var seller) && i.Tags.Any(t => t.StartsWith("price:")))
                     where = seller.Name + "出售，" + i.Tags.First(t => t.StartsWith("price:")).Substring(6) + " 银币";

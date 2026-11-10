@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 namespace Town.Unity.Dragonsleep
 {
     /// <summary>显式离线验证入口；通过实际 UI 按钮行走短局，不代表真人操作、性能或视觉验收。</summary>
-    public sealed class DragonsleepJourneyProbe : MonoBehaviour
+    public sealed partial class DragonsleepJourneyProbe : MonoBehaviour
     {
         [Serializable]
         public sealed class Report
@@ -26,6 +26,8 @@ namespace Town.Unity.Dragonsleep
             public int choiceButtons;
             public bool privatePlan;
             public int confideCalls;
+            public string rulesVersion = DsExecutor.RulesVersion;
+            public bool socialFixture, custodyDelivered, allyMaren, actualCooperationRejection, deliveryCostVisible;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
         }
@@ -61,7 +63,9 @@ namespace Town.Unity.Dragonsleep
                 string output = ValidateOutput(args[index + 1]);
                 var probe = new GameObject("__DragonsleepJourneyProbe").AddComponent<DragonsleepJourneyProbe>();
                 DontDestroyOnLoad(probe.gameObject);
-                probe.Begin(7932, output, true, args.Contains("--dragonsleep-journey-private"));
+                bool social = args.Contains("--dragonsleep-journey-social");
+                Require(!social || !args.Contains("--dragonsleep-journey-private"), "社会夹具与独行验证不可混用。");
+                probe.Begin(social ? 109 : 7932, output, true, args.Contains("--dragonsleep-journey-private"), social);
                 Application.runInBackground = true;
             }
             catch (Exception e)
@@ -72,13 +76,15 @@ namespace Town.Unity.Dragonsleep
 #endif
 
         /// <summary>测试可显式创建同一验证器；不替换提供方、不调用 Game 的行动方法，不绕过确认按钮。</summary>
-        public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false)
+        public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false,
+            bool socialFixture = false)
         {
             if (Result != null) throw new InvalidOperationException("验证器不能重复启动。");
             if (output != null) output = ValidateOutput(output);
             _output = output; _exit = exitWhenFinished;
             _started = _lastFrame = Time.realtimeSinceStartupAsDouble;
-            Result = new Report { seed = seed, unityVersion = Application.unityVersion, privatePlan = privatePlan };
+            Result = new Report { seed = seed, unityVersion = Application.unityVersion, privatePlan = privatePlan, socialFixture = socialFixture };
+            if (socialFixture) Result.scope = "显式低信任夹具、默认离线提供方、实际按钮补救前缀；不是从新局获取原件或完整归巢验收。";
             Application.logMessageReceived += OnLog;
         }
 
@@ -144,6 +150,7 @@ namespace Town.Unity.Dragonsleep
             Require(_game.Player.InputBlocked && _game.Hud.ModalOpen, "启程前应阻断移动。");
             // 唯一的初态参数：固定随机种子。不补物品、信任、时间、知识或雏龙状态。
             _game.Session.World.Seed = Result.seed;
+            if (Result.socialFixture) SetupSocialFixture();
             Click("beginJourney"); Checkpoint("默认离线新局启程"); _phase = 1;
         }
 
@@ -156,6 +163,11 @@ namespace Town.Unity.Dragonsleep
                 var disclosure = _root.Q<DropdownField>("planDisclosure");
                 Require(disclosure != null && disclosure.enabledInHierarchy, "托付条件控件不可用。");
                 disclosure.index = 1; // 通过真实控件变更事件，不调用 Game/Core 的条件设置捷径。
+            }
+            if (Result.socialFixture)
+            {
+                _root.Q<TextField>("planGoal").value = "请梅伦修女同行护送小烬";
+                _root.Q<DropdownField>("planDisclosure").index = 2;
             }
             _before = State(); _previousResults = 0; Click("proposePlan"); _pending = "proposal";
         }
@@ -176,6 +188,7 @@ namespace Town.Unity.Dragonsleep
                     Require(!_root.Q<Button>("executePlanStep").enabledInHierarchy, "新提案未经确认即可执行。");
                 }
                 Checkpoint(kind == "replan" ? "失败后的新草稿未自动确认或执行" : "提出目标未改变世界");
+                if (Result.socialFixture) CheckSocialDraft(kind);
             }
             if (kind == "confirm")
             {
@@ -189,6 +202,7 @@ namespace Town.Unity.Dragonsleep
             if (kind == "step")
             {
                 var run = _game.ActivePlan;
+                if (Result.socialFixture) CheckSocialStep();
                 int executed = run.Results.Skip(_stepResults).Count(r => r.Status != "void");
                 Require(executed <= 1, "一次按钮执行了多个实际步骤。");
                 if (run.Results.Count(r => r.Status == "success") > _stepSuccesses)
@@ -204,6 +218,7 @@ namespace Town.Unity.Dragonsleep
         void DrivePlan()
         {
             Require(++_operations <= 120, "计划按钮操作超过有界上限。");
+            if (Result.socialFixture && FinishSocialFixture()) return;
             if (_game.Ending != null)
             {
                 var w = _game.Session.World; var run = _game.ActivePlan;
@@ -230,8 +245,9 @@ namespace Town.Unity.Dragonsleep
                         foreach (var choice in _game.ActivePlan.Plan.Choices)
                         {
                             // 显式触发非默认按钮再选择独行分支，验证控件输入，而不是假定默认 Selection 已生效。
-                            var desired = choice.Options.FirstOrDefault(o => o.Id == "none") ?? choice.Options[0];
-                            var other = choice.Options.FirstOrDefault(o => o.Id != desired.Id);
+                            string helper = Result.socialFixture ? "maren" : "none";
+                            var desired = choice.Options.FirstOrDefault(o => o.Id == helper) ?? choice.Options[0];
+                            var other = Result.socialFixture ? null : choice.Options.FirstOrDefault(o => o.Id != desired.Id);
                             if (other != null) _choiceClicks.Enqueue("planChoice_" + choice.Id + "_" + other.Id);
                             _choiceClicks.Enqueue("planChoice_" + choice.Id + "_" + desired.Id);
                             _selection.Add(choice.Id, desired.Id);

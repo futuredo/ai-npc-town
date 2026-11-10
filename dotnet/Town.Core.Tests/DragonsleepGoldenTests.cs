@@ -9,7 +9,7 @@ using Town.Core.Dragonsleep;
 namespace Town.Core.Tests
 {
     /// <summary>
-    /// rules-6 重构基线。只屏蔽轨迹的 total_ms 和阶段 ms，保留提示字节、键序、回执和全部世界后果。
+    /// 当前 rules-7 黄金与原样保留的 rules-6 历史证据。新版本不冒充与旧行为相同。
     /// 不提供自动更新快照开关；预期值的修改必须经过人工审查。
     /// </summary>
     public class DragonsleepGoldenTests
@@ -18,7 +18,10 @@ namespace Town.Core.Tests
         static string Fixture(string name) => Path.Combine(TestContext.CurrentContext.TestDirectory, "Golden", name);
 
         [Test]
-        public async Task 冻结起点的计划与全部居民感知_提示与提案字节不变()
+        public async Task rules7冻结起点的计划与全部居民感知_提示与提案字节固定()
+            => Check("rules-7/perceptions.json", await CapturePerceptionsAsync());
+
+        public static async Task<Dictionary<string, object>> CapturePerceptionsAsync()
         {
             var cases = PlanCases.Frozen();
             Assert.AreEqual(Fingerprint, PlanCases.Fingerprint(cases), "冻结测试集不得修改");
@@ -42,11 +45,14 @@ namespace Town.Core.Tests
                 hashes["plan_record"] = Hash(MiniJson.Write(t.PlanReport.Plan.ToRecord()));
                 actual[c.Id] = hashes;
             }
-            Check("perceptions.json", actual);
+            return actual;
         }
 
         [Test]
-        public async Task 固定种子完整离线局_全部轨迹回执与终局哈希不变()
+        public async Task rules7固定种子完整离线局_全部轨迹回执与终局哈希固定()
+            => Check("rules-7/episode.json", await CaptureEpisodeAsync());
+
+        public static async Task<Dictionary<string, object>> CaptureEpisodeAsync()
         {
             var s = new DragonsleepSession(new RuleProvider(), 7932);
             var run = new DsPlanRun(s, "把小烬安全送回母亲身边，避开卫兵。", requireHomecoming: true);
@@ -87,11 +93,11 @@ namespace Town.Core.Tests
                 ["traces"] = s.Traces.Count,
                 ["rule_events"] = s.RuleEvents.Count,
             };
-            Check("episode.json", actual);
+            return actual;
         }
 
         [Test]
-        public async Task 重构前已落盘的rules6录制_全部严格回放()
+        public async Task 重构前已落盘的rules6录制_当前版本严格拒绝_历史原件保持不变()
         {
             Assert.AreEqual("815b8abd9dba89492876ebca98b7090ff1ba3055720acbe89f0951c8425f922e",
                 Hash(File.ReadAllText(Fixture("recorded-plan-calls.jsonl"))), "既有录制不可重生成");
@@ -123,10 +129,48 @@ namespace Town.Core.Tests
                     Response = new ProviderResult { RawText = t.Str("raw"), Simulated = true },
                 };
                 Assert.AreEqual(before.Hash, t.Obj("receipt").Str("after_hash"), "规划不能改变录制世界");
-                Assert.IsTrue(await frame.VerifyAsync(), d.Str("scope"));
+                Assert.AreEqual("dragonsleep-rules-6", frame.RulesVersion);
+                Assert.AreEqual("dragonsleep-rules-7", DsExecutor.RulesVersion);
+                Assert.IsFalse(await frame.VerifyAsync(), "不能跨规则版本冒充严格回放成功：" + d.Str("scope"));
+                Assert.IsFalse(await frame.VerifyExecutionAsync(), "执行回放也不能跳过版本核对");
                 frame.PromptHash = new string('0', 64);
                 Assert.IsFalse(await frame.VerifyAsync(), "严格回放必须拒绝提示漂移");
             }
+        }
+
+        [Test]
+        public void rules6黄金原件保留_版本升级不覆盖历史预期()
+        {
+            Assert.AreEqual("94cd06ee5f02d19aa5fee1e1604323d84a199173addb4cffe767880300cd06f6", Hash(File.ReadAllText(Fixture("perceptions.json"))));
+            Assert.AreEqual("2b9ed4ddd12f3654dd2e7b2baeb36993c394f0ee25b7c2e63882c32ba31a38b8", Hash(File.ReadAllText(Fixture("episode.json"))));
+        }
+
+        [Test]
+        public async Task rules7冻结起点的新录制严格回放_提示漂移被拒绝()
+        {
+            string file = Fixture("rules-7/plans.replay.jsonl");
+            Assert.AreEqual("dc9ac1565653da3f6ef3f3b41c08bf4f65cce1a8d47e5c2589c56908aa735958", Hash(File.ReadAllText(file)));
+            var lines = File.ReadAllLines(file); Assert.AreEqual(14, lines.Length);
+            foreach (var line in lines)
+            {
+                var frame = DsReplayFrame.Parse(line);
+                Assert.IsTrue(await frame.VerifyAsync(), frame.Input);
+                frame.PromptHash = new string('0', 64);
+                Assert.IsFalse(await frame.VerifyAsync(), "必须拒绝错误提示指纹");
+            }
+        }
+
+        [Test]
+        public void 规则升级差分_冻结集仅计划感知提示与整局轨迹变更_其余预期不漂移()
+        {
+            var old = (Dictionary<string, object>)MiniJson.Parse(File.ReadAllText(Fixture("perceptions.json")));
+            var current = (Dictionary<string, object>)MiniJson.Parse(File.ReadAllText(Fixture("rules-7/perceptions.json")));
+            foreach (string id in old.Keys)
+                foreach (var pair in old.Obj(id).Where(x => x.Key != "plan_perception" && x.Key != "prompt"))
+                    Assert.AreEqual(pair.Value, current.Obj(id)[pair.Key], id + ":" + pair.Key);
+            var before = (Dictionary<string, object>)MiniJson.Parse(File.ReadAllText(Fixture("episode.json")));
+            var after = (Dictionary<string, object>)MiniJson.Parse(File.ReadAllText(Fixture("rules-7/episode.json")));
+            foreach (var pair in before.Where(x => x.Key != "timeline")) Assert.AreEqual(pair.Value, after[pair.Key], pair.Key);
         }
 
         static string Hash(string json) => DsWorldSnapshot.Digest(json);

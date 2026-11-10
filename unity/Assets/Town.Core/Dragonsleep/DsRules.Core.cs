@@ -145,7 +145,7 @@ namespace Town.Core.Dragonsleep
             t.Verdict.ReasonCode = new DsReason(success ? "roll_succeeded" : "roll_failed");
             t.Verdict.Reason = success ? $"成功（掷骰 {roll:0.00} ≥ 难度 {final:0.00}）" : $"失败（掷骰 {roll:0.00} < 难度 {final:0.00}）";
 
-            string outcome = Effects(w, verb, item, targetWhelp, targetActor, success, t);
+            string outcome = Effects(w, verb, item, targetWhelp, targetActor, success, t, mode);
             t.Presented = (narration.Length > 0 ? narration + " " : "") + outcome;
         }
 
