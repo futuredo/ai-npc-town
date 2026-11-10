@@ -66,6 +66,8 @@ unity/Assets/
   Town.Editor/               场景构建、授权注入与素材/截图工具
   Town.Tests.PlayMode/       现行 Unity 集成测试
   PieGame.AI.Kernel/          独立可复用内核验证，尚未接入龙眠镇
+  PieGame.AI.Unity/           主线程与生命周期桥，显式准备 / 提交，尚未接入游戏
+  PieGame.AI.Unity.Tests.PlayMode/ 独立桥契约测试，不引用 Town
   Town.Content/              预留内容目录，尚非已实现的数据驱动内容库
   LocalThirdParty/           本机商业素材及派生场景，不随 Git 分发
 dotnet/                      共享源码编译工程、离线测试、Town.Research CLI
@@ -76,7 +78,7 @@ tools/                       素材索引/审计脚本及其测试
 
 `dotnet/Town.Core`、`Town.OpenAI`、`PieGame.AI.Kernel` 直接编译 Unity 目录下的同一份源码，**不是三份重复实现**。六个 .NET 工程分别承担共享库、测试和研究宿主；两个旧 CLI 已删除。
 
-AI 只提出方案：角色感知先冻结，结果经结构/引用/规则校验，候选世界裁决后才提交。对话仍为 `action=none`；造物必须确认图样，多步计划确认后逐步执行。PieGame 目前仅有独立维修调度 ToyHost 验证，不能称为已发布 SDK 或已接管游戏。
+AI 只提出方案：角色感知先冻结，结果经结构/引用/规则校验，候选世界裁决后才提交。对话仍为 `action=none`；造物必须确认图样，多步计划确认后逐步执行。PieGame 已有独立维修调度 ToyHost 和 Unity 主线程 / 生命周期桥；桥 11 项与游戏 36 项共 47 项 PlayMode 通过，.NET 235 项通过。接口见[桥契约](docs/PieGameUnity桥契约.md)，证据见 [049 日志](docs/开发日志/2026-11-10_049_PieGame主线程桥与销毁隔离.md)。尚未接入龙眠镇，也未提供 Unity 严格回放，不能称为已发布 SDK 或已接管游戏。
 
 ## 素材与协作边界
 

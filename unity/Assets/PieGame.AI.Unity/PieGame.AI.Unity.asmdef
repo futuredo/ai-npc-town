@@ -1,0 +1,16 @@
+{
+    "name": "PieGame.AI.Unity",
+    "rootNamespace": "PieGame.AI.Unity",
+    "references": [
+        "PieGame.AI.Kernel"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
