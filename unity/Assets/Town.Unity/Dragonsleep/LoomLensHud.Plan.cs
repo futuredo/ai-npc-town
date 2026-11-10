@@ -71,12 +71,14 @@ namespace Town.Unity.Dragonsleep
             _planGoal.style.minHeight = 58; _planGoal.style.marginTop = 14;
             _planGoal.RegisterValueChangedCallback(e => { _planDraft = e.newValue; RefreshPlanControls(); });
             card.Add(_planGoal);
-            _planDisclosure = new DropdownField("托付对象", new List<string> { "未限定", "不向居民托付", "只向梅伦托付", "只向皮普托付" },
+            _planDisclosure = new DropdownField("合作条件", new List<string> { "未限定", "不向居民托付（仅限制托付）", "只向梅伦托付（非必须同行）",
+                "只向皮普托付（非必须帮忙）", "独行，不托付也不交原件", "必须请梅伦同行", "必须请皮普帮忙" },
                 _planDisclosureIndex) { name = "planDisclosure" };
             _planDisclosure.style.marginTop = 10;
             _planDisclosure.RegisterValueChangedCallback(_ => _planDisclosureIndex = _planDisclosure.index);
             card.Add(_planDisclosure);
-            card.Add(Wrap(L("明确条件只约束本次计划与重规划的托付动作，不阻止另行对话或居民流言；改条件需重新提出目标。", 12, Muted)));
+            card.Add(Wrap(L("条件随本次目标冻结；必须求助以实际答应为准，独行也禁止交出原件。" +
+                "不阻止另行对话或居民流言，也不限制其他输入；改条件需重新提出目标。", 12, Muted)));
             var row = Row(); row.style.flexWrap = UnityEngine.UIElements.Wrap.Wrap;
             _planPropose = PlanButton("提出归巢目标", "proposePlan", () => { _ = Game.ProposePlanAsync(_planDraft, DraftConstraints()); }, true);
             _planCancel = PlanButton("取消规划请求", "cancelPlanRequest", Game.CancelPlanRequest);
@@ -107,6 +109,8 @@ namespace Town.Unity.Dragonsleep
 
         DsPlanConstraints DraftConstraints() => _planDisclosureIndex == 1 ? DsPlanConstraints.KeepPrivate :
             _planDisclosureIndex == 2 ? DsPlanConstraints.Only("maren") : _planDisclosureIndex == 3 ? DsPlanConstraints.Only("pip") :
+            _planDisclosureIndex == 4 ? DsPlanConstraints.Solo : _planDisclosureIndex == 5 ? DsPlanConstraints.WithHelper("maren") :
+            _planDisclosureIndex == 6 ? DsPlanConstraints.WithHelper("pip") :
             DsPlanConstraints.Unrestricted;
 
         void RenderPlanContents(VisualElement contents)
@@ -131,6 +135,9 @@ namespace Town.Unity.Dragonsleep
             {
                 var allowed = (List<object>)run.Constraints.ToRecord()["allowed_confidants"];
                 string label = allowed.Count == 0 ? "不向居民托付" : "只向" + string.Join("、", allowed.Select(id => Game.ActorName((string)id))) + "托付";
+                if (run.Constraints.HasCooperationIntent)
+                    label = run.Constraints.RequiredHelper == null ? "独行：不托付，也不交出原件"
+                        : "必须求得" + Game.ActorName(run.Constraints.RequiredHelper) + "实际帮助；不托付或交原件给其他人";
                 contents.Add(Wrap(L("本次已冻结的条件：" + label + "；草稿里的条件不会改写此选择。", 13, Gold)));
             }
             foreach (var choice in plan.Choices)
@@ -223,7 +230,8 @@ namespace Town.Unity.Dragonsleep
             }
             var run = Game.ActivePlan; string status = run?.Status;
             var branch = SelectedBranch();
-            string constraintIssue = run?.Constraints.Check(run.LatestPlanTrace?.PlanReport?.Plan, _planSelection);
+            string constraintIssue = run?.Constraints.Check(run.LatestPlanTrace?.PlanReport?.Plan, _planSelection,
+                run.Constraints.CooperationAchieved(Game.Session.World));
             bool confirm = status == "awaiting_confirmation" && constraintIssue == null && branch?.Feasible == true &&
                 (!run.RequireHomecoming || branch.ReachesGoal);
             _planConfirm.style.display = status == "awaiting_confirmation" ? DisplayStyle.Flex : DisplayStyle.None;
@@ -247,7 +255,7 @@ namespace Town.Unity.Dragonsleep
                 case "awaiting_confirmation": return "草稿已到，等待你确认取舍。";
                 case "running": return "计划已确认，等待执行下一步。";
                 case "needs_replan": return "情况有变：剩余步骤已停止，必须重新规划并确认。";
-                case "completed": return "归巢目标已达成。可以收起计划，继续推进到黎明查看结局。";
+                case "completed": return "本次归巢与合作目标已达成。可以收起计划查看结局。";
                 case "failed": return "期限已过，计划结束。";
                 case "abandoned": return "计划已放弃。";
                 case "planning": return "提案未通过校验；不会自动重试或执行。";

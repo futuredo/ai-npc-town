@@ -215,7 +215,8 @@ namespace Town.Tests.PlayMode
         public IEnumerator 默认离线规划器遵守不托付_确认不写世界且收起后条件仍在()
         {
             yield return Open();
-            CollectionAssert.AreEqual(new[] { "未限定", "不向居民托付", "只向梅伦托付", "只向皮普托付" },
+            CollectionAssert.AreEqual(new[] { "未限定", "不向居民托付（仅限制托付）", "只向梅伦托付（非必须同行）",
+                "只向皮普托付（非必须帮忙）", "独行，不托付也不交原件", "必须请梅伦同行", "必须请皮普帮忙" },
                 _root.Q<DropdownField>("planDisclosure").choices);
             Assert.AreEqual(0, _root.Q<DropdownField>("planDisclosure").index);
             _root.Q<TextField>("planGoal").value = "请皮普帮忙把小烬安全送回母亲身边";

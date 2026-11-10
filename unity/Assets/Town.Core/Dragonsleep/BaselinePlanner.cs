@@ -129,15 +129,19 @@ namespace Town.Core.Dragonsleep
             var replan = per.TryGetValue("replan", out var rc) ? rc as Dictionary<string, object> : null;
             var conditions = replan != null && replan.TryGetValue("player_constraints", out var pc) ? pc as Dictionary<string, object> : null;
             var allowed = conditions != null && conditions.TryGetValue("allowed_confidants", out var ac) ? ac as List<object> : null;
+            string requiredHelper = conditions?.Str("version") == DsPlanConstraints.CooperationVersion ? conditions.Str("required_helper") : null;
+            var companions = Ids(per, "companions");
             bool custodyRequested = (per.TryGetValue("public_cooperation_requests", out var requests) &&
                 (requests as IEnumerable<object>)?.Any() == true) || reason.Is("confide_custody_required", "maren");
             if (allowed != null) options.RemoveAll(o => o.id != "none" && !allowed.Contains(o.id));
-            if (status != "caged_castle" && status != "with_mother")
+            if (requiredHelper != null) options.RemoveAll(o => o.id != requiredHelper);
+            if ((status != "caged_castle" || requiredHelper != null) && status != "with_mother")
             {
-                if (allowed == null || options.Any(o => o.id == "pip"))
+                if ((allowed == null || options.Any(o => o.id == "pip")) &&
+                    (requiredHelper == null || !companions.Contains("pip")))
                     Add("act", "confide", "pip", place: pipAt, cites: new[] { "obs_whelp" }, when: "helper=pip",
                         why: HelperWhy(seekPip, "请皮普望风"));
-                if (options.Any(o => o.id == "maren"))
+                if (options.Any(o => o.id == "maren") && (requiredHelper == null || !companions.Contains("maren")))
                 {
                     if (!custody)
                     {
@@ -157,7 +161,7 @@ namespace Town.Core.Dragonsleep
                 Add("wait", place: "workshop", until: DuskD3.ToString(), cites: new[] { "obs_deadline", "law_guards_dusk" }, why: "在工坊躲到最后的黄昏");
             Add("wait", place: "skull_hill", until: FinalDawn.ToString(), cites: new[] { "obs_deadline" }, why: "在龙骨岗等母亲降临");
 
-            var choice = status == "caged_castle" || status == "with_mother" ? null : new DsPlanChoice
+            var choice = (status == "caged_castle" && requiredHelper == null) || status == "with_mother" ? null : new DsPlanChoice
             {
                 Id = "helper", Question = "要把计划托付给谁？",
             };
@@ -165,7 +169,12 @@ namespace Town.Core.Dragonsleep
                 choice.Options.AddRange(options.Take(3).Select(o => new DsPlanOption { Id = o.id, Label = o.label }));
             // 没选到的选项对应步骤保留；取舍只有 1 个有效选项时去掉。
             if (choice != null && choice.Options.Count < 2) choice = null;
-            if (choice == null) steps.RemoveAll(x => x.When != "");
+            if (choice == null && requiredHelper != null)
+            {
+                steps.RemoveAll(x => x.When != "" && x.When != "helper=" + requiredHelper);
+                foreach (var step in steps) step.When = "";
+            }
+            else if (choice == null) steps.RemoveAll(x => x.When != "");
             string summary = (status == "caged_castle" ? "趁黄昏换岗撬开铁笼救出小烬，" : bond < 0.4 && !status.StartsWith("following") ? "先用熏鱼取得小烬信任，" : "") +
                 "用斗篷遮好带在身边，躲在工坊，最后的黄昏上龙骨岗等母亲。";
             // 取舍里非首选项对应的步骤，在 when 中已标注；基线最多 14 步。

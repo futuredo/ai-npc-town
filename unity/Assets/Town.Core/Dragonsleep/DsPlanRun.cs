@@ -83,7 +83,7 @@ namespace Town.Core.Dragonsleep
         public int NextIndex => _next;
         public bool MeetsObjective(AiTrace t) => t?.FailureCode == null && t?.PlanReport?.Executable == true &&
             (!RequireHomecoming || t.PlanReport.Default.ReachesGoal) &&
-            Constraints.Check(t.PlanReport.Plan, t.PlanReport.Plan.DefaultSelection()) == null;
+            Constraints.Check(t.PlanReport.Plan, t.PlanReport.Plan.DefaultSelection(), Constraints.CooperationAchieved(Session.World)) == null;
 
         List<DsPlanStep> _active = new List<DsPlanStep>();
         int _next;
@@ -144,19 +144,39 @@ namespace Town.Core.Dragonsleep
             // 玩家改选的备选在整体校验里不可行时拒绝确认，保持待确认，由玩家换选或重规划。
             var branch = LatestPlanTrace?.PlanReport?.Branches.FirstOrDefault(b => b.Selection.Count == chosen.Count
                 && b.Selection.All(x => chosen.TryGetValue(x.Key, out var v) && v == x.Value));
-            if (branch != null && !branch.Feasible) throw new InvalidOperationException("该选项不可行：" + branch.FailedStep + " " + branch.Reason);
-            if (RequireHomecoming && branch != null && !branch.ReachesGoal) throw new InvalidOperationException("该选项没有覆盖归巢目标");
-            string constraintIssue = Constraints.Check(Plan, chosen);
+            if (!Constraints.HasCooperationIntent)
+            {
+                if (branch != null && !branch.Feasible) throw new InvalidOperationException("该选项不可行：" + branch.FailedStep + " " + branch.Reason);
+                if (RequireHomecoming && branch != null && !branch.ReachesGoal) throw new InvalidOperationException("该选项没有覆盖归巢目标");
+            }
+            string constraintIssue = Constraints.Check(Plan, chosen, Constraints.CooperationAchieved(Session.World));
             if (constraintIssue != null) throw new InvalidOperationException(constraintIssue);
+            var current = Session.CaptureState();
+            List<DsPlanStep> frozenSteps = null;
+            if (Constraints.HasCooperationIntent)
+            {
+                // v2 确认实际选择的组合，不能借用仅覆盖部分分支的旧报告或可变草稿。
+                var raw = (Dictionary<string, object>)MiniJson.Parse(MiniJson.Write(Plan.ToRecord()));
+                string shape = DsPlan.TryParse(raw, out var frozen);
+                if (shape != null) throw new InvalidOperationException(shape);
+                var report = DsPlanValidator.Validate(current, frozen);
+                if (report.Code != null) throw new InvalidOperationException("当前草稿结构或引用无效：" + report.Code);
+                string issue = Constraints.Check(frozen, chosen, Constraints.CooperationAchieved(Session.World));
+                if (issue != null) throw new InvalidOperationException(issue);
+                frozenSteps = frozen.ActiveSteps(chosen);
+                var actualBranch = DsPlanValidator.Simulate(current, frozenSteps, chosen);
+                if (!actualBranch.Feasible || (RequireHomecoming && !actualBranch.ReachesGoal))
+                    throw new InvalidOperationException("当前选择未通过重新校验：" + actualBranch.Reason);
+            }
             Selection = chosen;
             AcceptedRequestIds.Add(LatestPlanTrace?.RequestId);
-            _active = Plan.ActiveSteps(Selection);
+            _active = frozenSteps ?? Plan.ActiveSteps(Selection);
             _next = 0;
-            _expected = Session.CaptureState();
+            _expected = current;
             var pending = Replans.LastOrDefault(r => r.Decision == "pending");
             if (pending != null) pending.Decision = modified ? "modified" : "accepted";
             Status = "running";
-            if (LatestPlanTrace?.Receipt != null && LatestPlanTrace.Receipt.BeforeHash != _expected.Hash)
+            if (!Constraints.HasCooperationIntent && LatestPlanTrace?.Receipt != null && LatestPlanTrace.Receipt.BeforeHash != _expected.Hash)
             {
                 var check = DsPlanValidator.Simulate(_expected, _active, Selection);
                 if (!check.Feasible || (RequireHomecoming && !check.ReachesGoal))
@@ -182,7 +202,8 @@ namespace Town.Core.Dragonsleep
             var r = new DsPlanStepResult { StepId = step.Id, Op = step.Op, Brief = step.Brief(), Clock = w.ClockText };
             // 再核对实际下一步，不能依赖曾经检查过的可变提案；必须早于跨夜、移动、掷骰和耗时。
             if (!Constraints.Allows(step))
-                return Fail(r, step, DsPlanFailure.Precondition, "托付对象违反玩家明确选择，步骤未执行", executed: false,
+                return Fail(r, step, DsPlanFailure.Precondition, Constraints.HasCooperationIntent
+                    ? "托付或原件交付违反玩家明确选择，步骤未执行" : "托付对象违反玩家明确选择，步骤未执行", executed: false,
                     reasonCode: new DsReason("player_constraint"));
 
             // 时间已到深夜：居民照常行动，之后再判断世界是否变了。
@@ -275,6 +296,15 @@ namespace Town.Core.Dragonsleep
 
         void FinishOrContinue()
         {
+            if (!Constraints.CooperationAchieved(Session.World))
+            {
+                LastFailure = DsPlanFailure.None;
+                LastReason = "指定居民尚未实际答应帮助；归巢或草稿结束不代表合作目标已完成";
+                LastReasonCode = new DsReason("cooperation_not_achieved");
+                _failedStep = null;
+                Status = Session.World.FinalDawn || Session.World.Whelp.WithMother ? "failed" : "needs_replan";
+                return;
+            }
             if (!RequireHomecoming || Session.World.Whelp.WithMother) { Status = "completed"; return; }
             if (Session.World.FinalDawn)
             { Status = "failed"; LastReason = "归巢期限已过，未能团聚"; LastReasonCode = new DsReason("deadline_passed"); return; }
@@ -301,7 +331,8 @@ namespace Town.Core.Dragonsleep
         {
             var t = LatestPlanTrace;
             if (t == null || MeetsObjective(t)) return null;
-            string constraintIssue = Constraints.Check(t.PlanReport?.Plan, t.PlanReport?.Plan?.DefaultSelection());
+            string constraintIssue = Constraints.Check(t.PlanReport?.Plan, t.PlanReport?.Plan?.DefaultSelection(),
+                Constraints.CooperationAchieved(Session.World));
             if (constraintIssue != null)
                 return new Dictionary<string, object> { ["request_id"] = t.RequestId, ["scope"] = "player_constraint",
                     ["code"] = "player_constraint", ["reason"] = constraintIssue };
@@ -451,6 +482,12 @@ namespace Town.Core.Dragonsleep
                 ["plan_requests"] = PlanTraces.Select(x => (object)x.RequestId).ToList(),
             };
             if (Constraints.HasRestrictions) record["player_constraints"] = Constraints.ToRecord();
+            if (Constraints.HasCooperationIntent)
+            {
+                record["cooperation_achieved"] = Constraints.CooperationAchieved(Session.World);
+                record["objective_achieved"] = Constraints.CooperationAchieved(Session.World) &&
+                    (!RequireHomecoming || Session.World.Whelp.WithMother) && Status == "completed";
+            }
             return record;
         }
     }

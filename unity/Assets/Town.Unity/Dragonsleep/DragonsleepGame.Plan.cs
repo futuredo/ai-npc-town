@@ -103,7 +103,8 @@ namespace Town.Unity.Dragonsleep
                 {
                     Hud?.PresentPlanTrace(run.LatestPlanTrace);
                     var plan = run.LatestPlanTrace.PlanReport?.Plan;
-                    PlanNotice = run.Constraints.Check(plan, plan?.DefaultSelection()) ?? run.LatestPlanTrace.Presented;
+                    PlanNotice = run.Constraints.Check(plan, plan?.DefaultSelection(), run.Constraints.CooperationAchieved(Session.World))
+                        ?? run.LatestPlanTrace.Presented;
                 }
             }
             catch (OperationCanceledException)

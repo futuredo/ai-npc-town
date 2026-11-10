@@ -15,6 +15,14 @@ internal static class Program
         string root = Directory.GetCurrentDirectory();
         if (!File.Exists(Path.Combine(root,"dotnet","Town.sln"))) { Console.Error.WriteLine("请在仓库根目录运行。"); return 2; }
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
+        if (args.Contains("--plan-intent"))
+        {
+            var count = args.FirstOrDefault(x => x.StartsWith("--seeds="));
+            int seeds = 1;
+            if ((count != null && !int.TryParse(count.Substring(8), out seeds)) || seeds < 1 || seeds > 3 ||
+                args.Any(x => x != "--plan-intent" && x != "--live" && !x.StartsWith("--seeds="))) return 2;
+            return await PlanIntentResearch.Run(root, args.Contains("--live"), seeds);
+        }
         int seed = 7;
         var seedArg=args.FirstOrDefault(x=>x.StartsWith("--seed="));
         if(seedArg!=null&&!int.TryParse(seedArg.Substring(7),out seed)) return 2;
