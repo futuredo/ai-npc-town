@@ -23,7 +23,8 @@ namespace Town.Core.Dragonsleep
             IDsRoll rolls = null, DsExecutionMode mode = DsExecutionMode.Live)
         {
             string verb = p.Str("verb"), target = p.Str("target") ?? "", itemId = p.Str("item") ?? "", place = p.Str("place") ?? "";
-            var laws = p.StrList("laws");
+            // 先独立去重再校验，避免剔除未知规律时残留重复 ID 并绕过客观阻碍。
+            var laws = p.StrList("laws")?.Distinct(StringComparer.Ordinal).ToList();
             double modelDifficulty = p.Num("difficulty") ?? 0.5;
             string narration = p.Str("narration") ?? "";
             if (verb == null || laws == null) { Fail(t, "schema_invalid", "缺少 verb 或 laws"); return; }
@@ -112,6 +113,7 @@ namespace Town.Core.Dragonsleep
             double engine = BaseDifficulty[verb];
             if (verb == "sneak" && w.Flags.ContainsKey("quiet:" + w.PlayerPlace)) { engine -= 0.15; t.Verdict.Notes.Add("织物吸收声响，潜行难度 −0.15"); }
             if (verb == "search" && w.Flags.ContainsKey("lit:" + w.PlayerPlace)) { engine -= 0.2; t.Verdict.Notes.Add("织光照亮细节，搜索难度 −0.20"); }
+            // 同一规律在一次行动中最多计一次；模型重复引用不能叠加收益或阻碍。
             foreach (var lawId in laws.ToList())
             {
                 if (!w.Laws.TryGetValue(lawId, out var law)) { t.ValidationIssues.Add("不存在的规律：" + lawId); laws.Remove(lawId); continue; }

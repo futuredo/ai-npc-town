@@ -343,6 +343,19 @@ namespace Town.Core.Dragonsleep
                     ["reason"] = "这些步骤没有覆盖归巢目标：必须先让小烬跟随（lead或rescue），再在期限前抵达龙骨岗并等到第4天清晨。仅玩家到达或只在summary写送回不算团聚。" };
             var b = t.PlanReport?.Default;
             var step = t.PlanReport?.Plan?.Steps.FirstOrDefault(s => s.Id == b?.FailedStep);
+            if (b == null && t.FailureCode == "schema_invalid")
+            {
+                // 仅转发已有结构诊断；不回显原始输出，不采纳试运行的异地状态或 NPC 私有信息。
+                var issues = (t.PlanReport?.Issues ?? t.ValidationIssues).Where(x => !string.IsNullOrEmpty(x))
+                    .Take(3).Select(x => x.Length <= 140 ? x : x.Substring(0, 140)).Cast<object>().ToList();
+                return new Dictionary<string, object>
+                {
+                    ["request_id"] = t.RequestId, ["scope"] = "proposal_shape_or_references", ["code"] = "schema_invalid",
+                    ["reason"] = issues.Count > 0 ? (string)issues[0] : "结构未通过校验",
+                    ["issues"] = issues,
+                    ["state_warning"] = "这些是未执行草稿的结构问题，不是世界变化；只修正列出的问题，仍须重新校验与玩家确认。",
+                };
+            }
             string reason = b?.Reason ?? t.FailureCode ?? "结构未通过校验";
             if (step != null && step.Target != "" && step.Place != "" && step.Place != Session.World.PlayerPlace &&
                 (Session.World.Actors.ContainsKey(step.Target) || step.Target == "whelp") &&

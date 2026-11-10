@@ -151,7 +151,9 @@ namespace Town.Core.Dragonsleep
             {
                 result.Add("当前在笼中：必须重新解除关押。历史上成功rescue/lead/hide已经失效；现在不可feed/lure/hide/lead。救出后自动跟随，不再lead。");
                 if ((view["guards_here"] as string) != "此刻看不到卫兵")
-                    result.Add("眼前有卫兵：不能立即rescue。改变时段/条件后才能尝试，不要把同一条件下重试当补救。");
+                    result.Add(view.Str("where").StartsWith("castle（", System.StringComparison.Ordinal)
+                        ? "当前王城眼前有卫兵：此地不能立即rescue。条件改变后才能尝试，不要把同一条件下重试当补救。"
+                        : "当前地点眼前有卫兵，不代表王城的岗位情况；不能据此认定异地王城禁止rescue。可移动到王城后以到场观察和实际规则回执判断，仍有巡逻与救援风险。");
             }
             else if (state.StartsWith("following", System.StringComparison.Ordinal))
                 result.Add(state == "following_cloaked" ? "当前已跟随且遮盖：不需要再lead、lure或hide。" : "当前已跟随：不可重复lead，需要遮盖以减少暴露。");

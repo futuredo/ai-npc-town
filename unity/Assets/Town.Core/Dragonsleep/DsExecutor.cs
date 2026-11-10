@@ -7,7 +7,7 @@ namespace Town.Core.Dragonsleep
     /// <summary>规则只能修改私有候选世界；本类是 Session 内唯一的提案提交入口。</summary>
     public sealed class DsExecutor
     {
-        public const string RulesVersion = "dragonsleep-rules-7";
+        public const string RulesVersion = "dragonsleep-rules-8";
         readonly Dictionary<string, DsExecutionReceipt> _committed = new Dictionary<string, DsExecutionReceipt>();
         public IDsRoll RollSource { get; }
         public DsExecutionMode Mode { get; }
