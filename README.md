@@ -10,10 +10,10 @@
 - [项目进度与未通过项](docs/项目进度.md) · [工程骨架与源码阅读顺序](docs/工程骨架说明.md)
 - [雏龙归巢切片计划](docs/雏龙归巢切片计划.md) · [M3 闭环复验](docs/归巢规划闭环复验_2026-11-09.md)
 - [运行与费用授权](docs/OpenAI接入与成本规范.md) · [开发日志](docs/开发日志/README.md)
-- [本机 macOS 试玩构建与显式启动冒烟](docs/本机试玩与验证.md)
+- [本机 macOS 试玩构建、启动冒烟与无人值守完整短局](docs/本机试玩与验证.md)
 - [历史资料索引](docs/history/README.md)
 
-六机制已有真实模型研究入口，不等于全部目标已验收。M3 完整护送为 33/40，同版离线基线 34/40；低信任求助和否定约束仍未通过。M4 计划交互及实体状态映射已接入主场景，26 项 PlayMode 通过；卫兵 / 铁笼 / 包裹仍是灰盒，动作观感与真人小测待验，见 [045 日志](docs/开发日志/2026-11-09_045_M4实体投影与本机试玩构建.md)。
+六机制已有真实模型研究入口，不等于全部目标已验收。M3 完整护送为 33/40，同版离线基线 34/40；低信任求助和否定约束仍未通过。M4 交互与实体映射共 28 项 PlayMode 通过，实际 macOS 包已在两种分辨率下走通按钮完整短局、真实失败补救、结局与重开；灰盒美术和真人理解仍待验，见 [046 日志](docs/开发日志/2026-11-10_046_Player完整短局与重开隔离.md)。
 
 ## 打开与运行
 
@@ -47,7 +47,7 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 专项为 `DragonsleepPlanPresentationTests`（13 项），实体专项为 `DragonsleepStagePresentationTests`（9 项），将上方 filter 改为 `Dragonsleep` 可连同既有 4 项一起执行。本轮共 26/26；编译与自动回归不能代替真人手感、美术、设备性能或完整玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开为 `DragonsleepJourneyProbeTests`（2 项）；filter 改为 `Dragonsleep` 可连同既有 4 项一起执行，共 28/28。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
 

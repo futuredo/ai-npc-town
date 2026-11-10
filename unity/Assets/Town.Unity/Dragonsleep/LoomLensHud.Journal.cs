@@ -58,7 +58,8 @@ namespace Town.Unity.Dragonsleep
             }
             card.Add(grid);
             var row = Row();
-            var end = CardButton("结束这一时段", () => { CloseModal(); Game.EndPhase(); }); end.style.marginRight = 12;
+            var end = CardButton("结束这一时段", () => { CloseModal(); Game.EndPhase(); });
+            end.name = "endPhase"; end.style.marginRight = 12;
             row.Add(end);
             row.Add(CardButton("关闭", CloseModal));
             card.Add(row);

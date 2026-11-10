@@ -95,7 +95,9 @@ namespace Town.Unity.Dragonsleep
             _shortcuts.style.position = Position.Absolute; _shortcuts.style.bottom = 16; _shortcuts.style.left = 32; _shortcuts.style.right = 32;
             _shortcuts.style.justifyContent = Justify.SpaceBetween;
             var links = Row();
-            links.Add(SmallLink("J  手记", ShowJournal)); links.Add(SmallLink("M  地图", ShowMap)); links.Add(SmallLink("Tab  织言镜", ToggleLens));
+            links.Add(SmallLink("J  手记", ShowJournal));
+            var map = SmallLink("M  地图", ShowMap); map.name = "openMap"; links.Add(map);
+            links.Add(SmallLink("Tab  织言镜", ToggleLens));
             var ending = SmallLink("结局", () => { if (Game.Ending != null) ShowEnding(Game.Ending); }); ending.name = "reopenEnding";
             links.Add(ending);
             _shortcuts.Add(links);

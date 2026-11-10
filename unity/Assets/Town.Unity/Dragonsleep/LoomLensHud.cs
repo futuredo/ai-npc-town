@@ -227,9 +227,10 @@ namespace Town.Unity.Dragonsleep
             _lens.Add(_metrics);
             _timeline = new ScrollView { style = { height = 150, marginTop = 8, marginBottom = 8, backgroundColor = new Color(0, 0, 0, 0.25f) } };
             _lens.Add(_timeline);
-            _stageRow = Row(); _stageRow.style.flexWrap = UnityEngine.UIElements.Wrap.Wrap; _stageRow.style.marginBottom = 6;
+            _stageRow = Row(); _stageRow.name = "lensStages";
+            _stageRow.style.flexWrap = UnityEngine.UIElements.Wrap.Wrap; _stageRow.style.marginBottom = 6;
             _lens.Add(_stageRow);
-            _detail = new ScrollView { style = { flexGrow = 1 } };
+            _detail = new ScrollView { name = "lensDetail", style = { flexGrow = 1 } };
             _lens.Add(_detail);
             _root.Add(_lens);
 
@@ -488,13 +489,18 @@ namespace Town.Unity.Dragonsleep
             var t = Wrap(L(e.Text, 18, Ink)); t.style.unityTextAlign = TextAnchor.MiddleCenter; t.style.marginTop = 16;
             card.Add(t);
             var view = CardButton("查看现场", CloseModal); view.name = "viewEndingScene"; card.Add(view);
-            card.Add(CardButton("再来一局", () => { CloseModal(); Game.Restart(); ClearLens(); }));
+            var restart = CardButton("再来一局", () => { CloseModal(); Game.Restart(); ClearLens(); });
+            restart.name = "restartJourney"; card.Add(restart);
         }
 
         void ClearLens()
         {
+            // 最终夜晚的揭示可能仍在 yield；新局不能被旧协程重新填回阶段和详情。
+            if (_reveal != null) { StopCoroutine(_reveal); _reveal = null; }
+            _revealed = 7;
             _timeline.Clear(); _rows.Clear(); _detail.Clear(); _stageRow.Clear(); _selected = null;
             FinishLine(); SetSpeaker(null, ""); _line.text = "新的一局。";
+            _wasBusy = false; _stripLine.text = "新的一局，尚无调用。";
             RenderGems(null);
         }
 

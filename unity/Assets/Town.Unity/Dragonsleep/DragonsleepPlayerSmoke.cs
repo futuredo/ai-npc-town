@@ -118,6 +118,8 @@ namespace Town.Unity.Dragonsleep
                 throw new InvalidOperationException("默认提供方不是离线 RuleProvider 模拟。");
             if (game.Busy || game.Session.Busy || game.Session.Traces.Count != 0)
                 throw new InvalidOperationException("启动时出现非预期自动调用或玩法操作。");
+            if (FindObjectsByType<DragonsleepJourneyProbe>(FindObjectsSortMode.None).Length != 0)
+                throw new InvalidOperationException("未传短局参数时不应创建自动玩法验证器。");
             if (game.Player == null || !game.Player.isActiveAndEnabled || game.PlacesRoot == null || game.Whelp == null)
                 return "主场景缺少玩家、地点或雏龙引用。";
             var stage = game.Stage;
