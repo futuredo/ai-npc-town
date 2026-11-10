@@ -75,22 +75,23 @@ namespace Town.Core.Dragonsleep
         /// 玩家走进某个地点（Unity 按实际位置调用）。规则事务：跟随的雏龙同行、巡逻检查。
         /// 会话忙于等待模型时返回 null，调用方下一帧再试，不绕过事务直接改世界。
         /// </summary>
-        public DsRuleEvent EnterPlace(string place)
+        public DsRuleEvent EnterPlace(string place, IDsSceneRuleTransaction sceneTransaction = null)
         {
             if (World.PlayerPlace == place || !_gate.Wait(0)) return null;
-            try { return RunRuleLocked("enter:" + place, (w, t) => _executor.EnterPlace(w, place, t)); }
+            try { return RunRuleLocked("enter:" + place, (w, t) => _executor.EnterPlace(w, place, t), sceneTransaction); }
             finally { _gate.Release(); }
         }
 
-        DsRuleEvent RunRuleLocked(string label, Action<DsWorld, AiTrace> rule)
+        DsRuleEvent RunRuleLocked(string label, Action<DsWorld, AiTrace> rule, IDsSceneRuleTransaction sceneTransaction = null)
         {
             var w = World;
             string id = $"S{w.SessionGen}-R{++_ruleSequence}";
             var plan = _executor.PrepareRule(w, _spent, PhaseBudget, id, label, rule);
             var ev = new DsRuleEvent { RequestId = id, Label = label, Clock = w.ClockText };
-            ev.Receipt = _executor.Commit(plan, w, ref _spent, PhaseBudget);
+            ev.Receipt = _executor.Commit(plan, w, ref _spent, PhaseBudget, sceneTransaction);
             ev.Verdict = plan.Evaluation.Verdict;
-            ev.FailureCode = plan.FailureCode ?? (ev.Receipt.Status == "stale_state" ? ev.Receipt.Status : null);
+            ev.FailureCode = plan.FailureCode ?? (ev.Receipt.Status == "stale_state" || ev.Receipt.Status == "request_conflict"
+                ? ev.Receipt.Status : null);
             ev.Presented = plan.Evaluation.Presented;
             if (ev.Receipt.Applied) ev.Changes.AddRange(plan.Evaluation.Changes);
             if (ev.Receipt.Applied || !string.IsNullOrEmpty(ev.Presented))

@@ -37,6 +37,7 @@ namespace Town.Unity.Dragonsleep
         Animator _whelpAnimator;
         Coroutine _whelpReaction;
         public DragonsleepStageView Stage { get; private set; }
+        public DsSceneRuleTransaction SceneTransaction { get; private set; }
         readonly System.Threading.CancellationTokenSource _lifetime = new System.Threading.CancellationTokenSource();
 
         public IReadOnlyDictionary<string, Transform> ActorTransforms => _actors;
@@ -44,6 +45,8 @@ namespace Town.Unity.Dragonsleep
         void Awake()
         {
             Session = new DragonsleepSession(ProviderFactory());
+            var transactions = new GameObject("Scene Transactions"); transactions.transform.SetParent(transform, false);
+            SceneTransaction = new DsSceneRuleTransaction(Session, transactions.AddComponent<PieGame.AI.Unity.UnityKernelBridge>());
             if (PlacesRoot != null)
                 foreach (Transform t in PlacesRoot) _places[t.name.Replace("Place_", "")] = t;
             foreach (var tag in FindObjectsByType<DragonsleepActorTag>(FindObjectsSortMode.None)) _actors[tag.ActorId] = tag.transform;
@@ -89,7 +92,8 @@ namespace Town.Unity.Dragonsleep
             if (best == "castle_gate") best = "castle";
             if (best == "dragon_skull") best = "skull_hill";
             // 移动也是规则事务：跟随的雏龙同行、卫兵巡逻。会话忙时返回 null，下一帧再试。
-            if (best != null && best != Session.World.PlayerPlace && Session.World.Places.ContainsKey(best)) Session.EnterPlace(best);
+            if (best != null && best != Session.World.PlayerPlace && Session.World.Places.ContainsKey(best))
+                Session.EnterPlace(best, SceneTransaction);
         }
 
         /// <summary>只在主线程、会话空闲时读取新的世界规则事件（夜间换岗由后台线程产生）。</summary>
@@ -128,7 +132,7 @@ namespace Town.Unity.Dragonsleep
 
         public void TravelTo(string place)
         {
-            if (Busy || Ending != null || Session.World.FinalDawn) return;
+            if (Busy || Session.Busy || Ending != null || Session.World.FinalDawn) return;
             SyncPlayerPlace(place);
         }
 
@@ -216,10 +220,11 @@ namespace Town.Unity.Dragonsleep
 
         public void Restart()
         {
-            if (Busy) { Hud?.Toast("请先等待当前操作结束；规划请求可以取消。"); return; }
+            if (Busy || Session.Busy) { Hud?.Toast("请先等待当前操作结束；规划请求可以取消。"); return; }
             ActivePlan?.Abandon(); ActivePlan = null;
             PlanNotice = ""; PlanResultOffset = 0;
             Session.Restart();
+            SceneTransaction.ResetSession();
             Ending = null;
             _dayStartTrace = 0;
             _ruleEventsSeen = 0;

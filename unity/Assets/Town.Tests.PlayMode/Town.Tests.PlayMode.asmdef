@@ -4,6 +4,8 @@
     "references": [
         "Town.Core",
         "Town.Unity",
+        "PieGame.AI.Kernel",
+        "PieGame.AI.Unity",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

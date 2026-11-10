@@ -89,7 +89,8 @@ namespace Town.Core.Dragonsleep
             { Fail(trial, "execution_error", "世界规则执行失败，未提交任何变化（" + e.GetType().Name + "）"); }
             if (trial.FailureCode != null) { candidate = before.Restore(); trial.Changes.Clear(); }
             var after = DsWorldSnapshot.Capture(candidate, spent, phaseBudget);
-            return new DsExecutionPlan(before, after, trial, DsWorldSnapshot.Digest("rule|" + label + "|" + before.Hash), 0);
+            return new DsExecutionPlan(before, after, trial, DsWorldSnapshot.Digest("rule|" + label + "|" + before.Hash), 0,
+                sceneRule: label.StartsWith("enter:", StringComparison.Ordinal));
         }
 
         /// <summary>行动的时间花费：对话 1、行动/造物 2、求助 1；深夜或未掷骰的拒绝不耗时。计划试运行共用。</summary>
@@ -145,7 +146,8 @@ namespace Town.Core.Dragonsleep
             if (!string.IsNullOrEmpty(patrol.Presented)) trial.Verdict.Notes.Add("换岗：" + patrol.Presented);
         }
 
-        public DsExecutionReceipt Commit(DsExecutionPlan plan, DsWorld world, ref int spent, int phaseBudget)
+        public DsExecutionReceipt Commit(DsExecutionPlan plan, DsWorld world, ref int spent, int phaseBudget,
+            IDsSceneRuleTransaction sceneTransaction = null)
         {
             string key = world.SessionGen + ":" + plan.RequestId;
             if (_committed.TryGetValue(key, out var prior))
@@ -158,7 +160,20 @@ namespace Town.Core.Dragonsleep
                 return new DsExecutionReceipt(plan, plan.FailureCode, false, current);
             var next = plan.After.Restore();
             bool changed = plan.Before.Hash != plan.After.Hash;
-            if (changed) { DsWorldSnapshot.CopyInto(next, world); spent = plan.After.Spent; }
+            if (changed && sceneTransaction != null)
+            {
+                // 首条 SDK 接入只允许零耗时的同步移动。spent 仍归会话所有，不在回调中捕获 ref 参数。
+                if (!plan.SceneRule || plan.Before.Spent != plan.After.Spent || plan.Before.PhaseBudget != plan.After.PhaseBudget || plan.TimeCost != 0)
+                    throw new InvalidOperationException("场景事务不能改变时间预算");
+                var write = new DsSceneRuleWrite(next, world);
+                string status;
+                try { status = sceneTransaction.Commit(plan.RequestId, plan.Before, plan.After, write); }
+                finally { write.Close(); }
+                if ((status == "committed") != write.Applied) throw new InvalidOperationException("scene_transaction_write_contract");
+                if (status != "committed")
+                    return new DsExecutionReceipt(plan, status, false, DsWorldSnapshot.Capture(world, spent, phaseBudget));
+            }
+            else if (changed) { DsWorldSnapshot.CopyInto(next, world); spent = plan.After.Spent; }
             var receipt = new DsExecutionReceipt(plan, changed ? "committed" : "no_change", changed, plan.After);
             _committed.Add(key, receipt);
             return receipt;
@@ -178,13 +193,14 @@ namespace Town.Core.Dragonsleep
         internal DsWorldSnapshot After { get; }
         internal AiTrace Evaluation { get; }
         internal string Identity { get; }
+        internal bool SceneRule { get; }
         public string RequestId => Evaluation.RequestId;
         public string FailureCode => Evaluation.FailureCode;
         public string BeforeHash => Before.Hash;
         public string AfterHash => After.Hash;
         public int TimeCost { get; }
-        internal DsExecutionPlan(DsWorldSnapshot before, DsWorldSnapshot after, AiTrace evaluation, string identity, int timeCost)
-        { Before = before; After = after; Evaluation = evaluation; Identity = identity; TimeCost = timeCost; }
+        internal DsExecutionPlan(DsWorldSnapshot before, DsWorldSnapshot after, AiTrace evaluation, string identity, int timeCost, bool sceneRule = false)
+        { Before = before; After = after; Evaluation = evaluation; Identity = identity; TimeCost = timeCost; SceneRule = sceneRule; }
     }
 
     public sealed class DsExecutionReceipt

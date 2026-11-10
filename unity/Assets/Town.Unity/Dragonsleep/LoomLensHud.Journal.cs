@@ -53,6 +53,7 @@ namespace Town.Unity.Dragonsleep
                 string id = p == "castle_gate" ? "castle" : p == "dragon_skull" ? "skull_hill" : p;
                 string name = Game.Session.World.Places.TryGetValue(id, out var n) ? n : p;
                 var b = SkinButton(name, () => { Game.TravelTo(place); CloseModal(); }, Skin != null ? Skin.ButtonDark : null, 200, 52);
+                b.name = "travel_" + place;
                 b.style.marginLeft = 6; b.style.marginRight = 6; b.style.marginTop = 6; b.style.marginBottom = 6;
                 grid.Add(b);
             }

@@ -80,6 +80,34 @@ namespace Town.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator 实际地图按钮的移动由SDK提交_零耗时且不调用模型()
+        {
+            var factory = DragonsleepGame.ProviderFactory; DragonsleepJourneyProbe probe = null;
+            try
+            {
+                DragonsleepGame.ProviderFactory = () => new RuleProvider();
+#if UNITY_EDITOR
+                yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/LocalThirdParty/Dragonsleep/Dragonsleep_Town.unity",
+                    new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                yield return SceneManager.LoadSceneAsync("Dragonsleep_Town");
+#endif
+                probe = new GameObject("SceneProbeTest").AddComponent<DragonsleepJourneyProbe>();
+                probe.Begin(sceneOnly: true);
+                float deadline = Time.realtimeSinceStartup + 15;
+                while (!probe.Finished && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.IsTrue(probe.Finished); Assert.IsTrue(probe.Result.passed, probe.Result.failure);
+                Assert.AreEqual(2, probe.Result.sceneCommits); Assert.AreEqual(0, probe.Result.runtimeErrors);
+                Assert.IsFalse(probe.Result.finalDawn, "只验证地图入口，不冒充完整计划迁移。");
+            }
+            finally
+            {
+                if (probe != null) Object.Destroy(probe.gameObject);
+                DragonsleepGame.ProviderFactory = factory;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator 普通最终跨夜后立即重开_旧揭示协程不能填回新局详情()
         {
             var factory = DragonsleepGame.ProviderFactory; bool reduced = DsUiMotion.Reduced;

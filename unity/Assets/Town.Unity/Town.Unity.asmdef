@@ -3,6 +3,8 @@
     "rootNamespace": "Town.Unity",
     "references": [
         "Town.Core",
+        "PieGame.AI.Kernel",
+        "PieGame.AI.Unity",
         "Unity.AI.Navigation"
     ],
     "includePlatforms": [],

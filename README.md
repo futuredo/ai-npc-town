@@ -51,7 +51,7 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会前缀为 `DragonsleepJourneyProbeTests`（3 项），托付条件为 `DragonsleepConstraintPresentationTests`（4 项），原件补救为 `DragonsleepSocialRecoveryPresentationTests`（3 项）；filter 改为 `Dragonsleep` 可连同既有 4 项一起执行，共 36/36。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 地图前缀为 `DragonsleepJourneyProbeTests`（4 项），托付条件为 `DragonsleepConstraintPresentationTests`（4 项），原件补救为 `DragonsleepSocialRecoveryPresentationTests`（3 项），SDK 接缝为 `DragonsleepKernelSceneTests`（7 项）；连同既有 4 项共 44 项。另加独立桥 11 项，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 55 项。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
 
@@ -67,8 +67,8 @@ unity/Assets/
   Town.Unity/Shared/          跨场景共享资源（保留原 GUID 的 UI 主题）
   Town.Editor/               场景构建、授权注入与素材/截图工具
   Town.Tests.PlayMode/       现行 Unity 集成测试
-  PieGame.AI.Kernel/          独立可复用内核验证，尚未接入龙眠镇
-  PieGame.AI.Unity/           主线程与生命周期桥，显式准备 / 提交，尚未接入游戏
+  PieGame.AI.Kernel/          可复用内核，场景移动经显式宿主接缝复用
+  PieGame.AI.Unity/           主线程与生命周期桥，显式准备 / 提交，非全游戏迁移
   PieGame.AI.Unity.Tests.PlayMode/ 独立桥契约测试，不引用 Town
   Town.Content/              预留内容目录，尚非已实现的数据驱动内容库
   LocalThirdParty/           本机商业素材及派生场景，不随 Git 分发
@@ -80,7 +80,7 @@ tools/                       素材索引/审计脚本及其测试
 
 `dotnet/Town.Core`、`Town.OpenAI`、`PieGame.AI.Kernel` 直接编译 Unity 目录下的同一份源码，**不是三份重复实现**。六个 .NET 工程分别承担共享库、测试和研究宿主；两个旧 CLI 已删除。
 
-AI 只提出方案：角色感知先冻结，结果经结构/引用/规则校验，候选世界裁决后才提交。对话仍为 `action=none`；造物必须确认图样，多步计划确认后逐步执行。PieGame 已有独立维修调度 ToyHost 和 Unity 主线程 / 生命周期桥；桥 11 项与游戏 36 项共 47 项 PlayMode 通过，.NET 235 项通过。接口见[桥契约](docs/PieGameUnity桥契约.md)，证据见 [049 日志](docs/开发日志/2026-11-10_049_PieGame主线程桥与销毁隔离.md)。尚未接入龙眠镇，也未提供 Unity 严格回放，不能称为已发布 SDK 或已接管游戏。
+AI 只提出方案：角色感知先冻结，结果经结构/引用/规则校验，候选世界裁决后才提交。对话仍为 `action=none`；造物必须确认图样，多步计划确认后逐步执行。PieGame 已有 ToyHost、Unity 主线程 / 生命周期桥，**首次接入龙眠镇玩家场景移动**；248 项 .NET、55 项联合 PlayMode 通过，实际 Player 地图按钮核单次写入与零耗时。模型、计划、夜间与造物仍走原管线，不代表全游戏迁移或成熟发布 SDK；见[首入口契约](docs/PieGame首条场景事务接入.md)、[桥契约](docs/PieGameUnity桥契约.md)与[051 日志](docs/开发日志/2026-11-10_051_PieGame首条真实场景事务接入.md)。
 
 ## 素材与协作边界
 

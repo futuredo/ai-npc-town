@@ -28,6 +28,8 @@ namespace Town.Unity.Dragonsleep
             public int confideCalls;
             public string rulesVersion = DsExecutor.RulesVersion;
             public bool socialFixture, custodyDelivered, allyMaren, actualCooperationRejection, deliveryCostVisible;
+            public bool sceneOnly;
+            public int sceneCommits;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
         }
@@ -64,8 +66,10 @@ namespace Town.Unity.Dragonsleep
                 var probe = new GameObject("__DragonsleepJourneyProbe").AddComponent<DragonsleepJourneyProbe>();
                 DontDestroyOnLoad(probe.gameObject);
                 bool social = args.Contains("--dragonsleep-journey-social");
-                Require(!social || !args.Contains("--dragonsleep-journey-private"), "社会夹具与独行验证不可混用。");
-                probe.Begin(social ? 109 : 7932, output, true, args.Contains("--dragonsleep-journey-private"), social);
+                bool scene = args.Contains("--dragonsleep-journey-scene");
+                bool privatePlan = args.Contains("--dragonsleep-journey-private");
+                Require((social ? 1 : 0) + (scene ? 1 : 0) + (privatePlan ? 1 : 0) <= 1, "验证模式不可混用。");
+                probe.Begin(social ? 109 : 7932, output, true, privatePlan, social, scene);
                 Application.runInBackground = true;
             }
             catch (Exception e)
@@ -77,7 +81,7 @@ namespace Town.Unity.Dragonsleep
 
         /// <summary>测试可显式创建同一验证器；不替换提供方、不调用 Game 的行动方法，不绕过确认按钮。</summary>
         public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false,
-            bool socialFixture = false)
+            bool socialFixture = false, bool sceneOnly = false)
         {
             if (Result != null) throw new InvalidOperationException("验证器不能重复启动。");
             if (output != null) output = ValidateOutput(output);
@@ -85,6 +89,8 @@ namespace Town.Unity.Dragonsleep
             _started = _lastFrame = Time.realtimeSinceStartupAsDouble;
             Result = new Report { seed = seed, unityVersion = Application.unityVersion, privatePlan = privatePlan, socialFixture = socialFixture };
             if (socialFixture) Result.scope = "显式低信任夹具、默认离线提供方、实际按钮补救前缀；不是从新局获取原件或完整归巢验收。";
+            Result.sceneOnly = sceneOnly;
+            if (sceneOnly) Result.scope = "默认离线新局地图按钮的两次 SDK 场景移动；不是计划、夜间或模型提交迁移验收。";
             Application.logMessageReceived += OnLog;
         }
 
@@ -102,6 +108,7 @@ namespace Town.Unity.Dragonsleep
                 if (_phase == 0) { Startup(); return; }
                 Require(_game != null, "实际游戏对象丢失。");
                 if (_game.Busy || _game.Session.Busy) return; // 空闲前不枚举世界、计划或回执。
+                if (Result.sceneOnly) { DriveScene(); return; }
                 if (Result.privatePlan)
                 {
                     Result.confideCalls = _game.Session.Traces.Count(t => t.Kind == AiTaskKind.Adjudicate && t.Proposal?.Str("verb") == "confide");
