@@ -54,6 +54,13 @@ namespace Town.Tests.PlayMode
 
         void Begin() => Activate(_root.Q<Button>("beginJourney"));
 
+        IEnumerator Until(Func<bool> condition)
+        {
+            float deadline = Time.realtimeSinceStartup + 8;
+            while (!condition() && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsTrue(condition(), "等待实际离线操作收尾，不能以固定帧数代替完成条件");
+        }
+
         [UnityTest]
         public IEnumerator 开场与手记按钮实际可用_阅读时阻断3C_减少动效可切换()
         {
@@ -84,7 +91,7 @@ namespace Town.Tests.PlayMode
             Assert.AreEqual("marta", _game.NearestActorId);
             _root.Q<TextField>().value = "最近有没有见到冒烟的东西？";
             Activate(_root.Q<Button>("sendButton"));
-            yield return null; yield return null;
+            yield return Until(() => !_game.Busy && !_game.Session.Busy);
             Assert.IsTrue(_game.Session.World.PlayerKnows.Contains("b_marta_saw_pip"));
             Assert.AreEqual(1, _game.Session.Traces.Count);
             Assert.IsTrue(_root.Q("questCard").Query<Label>().ToList().Any(l => l.text.Contains("准备雏龙爱吃的东西")));
@@ -114,7 +121,7 @@ namespace Town.Tests.PlayMode
             Activate(_root.Query<Button>().ToList().First(b=>b.text=="造"));
             _root.Q<TextField>().value="用蓝晶石织一盏灯";
             Activate(_root.Q<Button>("sendButton"));
-            yield return null; yield return null;
+            yield return Until(() => !_game.Busy && !_game.Session.Busy && _root.Q("craftProposal") != null);
             Assert.IsTrue(_game.Session.HasPendingCraft);
             Assert.IsNotNull(_root.Q("craftProposal"));
             Assert.AreNotEqual("consumed",_game.Session.World.Items["crystal_blue"].Holder);
@@ -125,7 +132,7 @@ namespace Town.Tests.PlayMode
             Assert.AreEqual(4,_game.Session.TimeLeftInPhase);
             _root.Q<TextField>().value="用蓝晶石织一盏灯";
             Activate(_root.Q<Button>("sendButton"));
-            yield return null; yield return null;
+            yield return Until(() => !_game.Busy && !_game.Session.Busy && _root.Q<Button>("confirmCraft") != null);
             Activate(_root.Q<Button>("confirmCraft"));
             yield return null; yield return null;
             Assert.IsFalse(_game.Session.HasPendingCraft);

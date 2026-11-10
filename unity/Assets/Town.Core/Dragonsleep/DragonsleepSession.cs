@@ -48,11 +48,13 @@ namespace Town.Core.Dragonsleep
         }
         private readonly Dictionary<string, string> _latestByActor = new Dictionary<string, string>();
         private readonly SemaphoreSlim _gate = new SemaphoreSlim(1, 1);
+        private readonly IDsOwnerThreadDispatcher _ownerDispatcher;
 
         public DragonsleepSession(IAiProvider provider, int seed = 20261108,
-            IDsRoll rolls = null, DsExecutionMode executionMode = DsExecutionMode.Live)
+            IDsRoll rolls = null, DsExecutionMode executionMode = DsExecutionMode.Live, IDsOwnerThreadDispatcher ownerDispatcher = null)
         {
             Provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            _ownerDispatcher = ownerDispatcher;
             _executor = new DsExecutor(rolls, executionMode);
             World = DsContent.NewWorld(seed);
         }
@@ -214,23 +216,32 @@ namespace Town.Core.Dragonsleep
             try
             {
                 var result = new List<AiTrace>();
-                var w = World;
-                bool night = w.Phase == DayPhase.Night;
-                bool advanced = false;
-                if (!night) { night = w.Advance(); advanced = true; }
-                _spent = 0;
-                if (advanced) RunRuleLocked("phase_start", _executor.PhaseStart);
-                if (!night) return result;
-                foreach (var id in w.Actors.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList())
+                DsWorld w = null;
+                var actors = await Owner(() =>
+                {
+                    w = World;
+                    bool night = w.Phase == DayPhase.Night;
+                    bool advanced = false;
+                    if (!night) { night = w.Advance(); advanced = true; }
+                    _spent = 0;
+                    if (advanced) RunRuleLocked("phase_start", _executor.PhaseStart);
+                    return night ? w.Actors.Keys.OrderBy(x => x, StringComparer.Ordinal).ToList() : null;
+                }).ConfigureAwait(false);
+                if (actors == null) return result;
+                foreach (var id in actors)
                 {
                     result.Add(await RunLockedAsync(AiTaskKind.AgentPlan, id, null, ct).ConfigureAwait(false));
-                    if (World != w || ct.IsCancellationRequested) return result;
+                    if (await Owner(() => World != w || ct.IsCancellationRequested).ConfigureAwait(false)) return result;
                 }
                 result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
-                if (World != w || ct.IsCancellationRequested) return result;
-                w.Advance();
-                RunRuleLocked("phase_start", _executor.PhaseStart);
-                if (w.FinalDawn) result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
+                bool finalDawn = await Owner(() =>
+                {
+                    if (World != w || ct.IsCancellationRequested) return false;
+                    w.Advance();
+                    RunRuleLocked("phase_start", _executor.PhaseStart);
+                    return w.FinalDawn;
+                }).ConfigureAwait(false);
+                if (finalDawn) result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
                 return result;
             }
             finally { _gate.Release(); }
@@ -282,12 +293,66 @@ namespace Town.Core.Dragonsleep
                 Task.FromResult(new ProviderResult { ProviderName = Name, RawText = _raw, Simulated = true, EstimatedUsd = 0m });
         }
 
+        Task<T> Owner<T>(Func<T> synchronousBlock) => _ownerDispatcher == null
+            ? Task.FromResult(synchronousBlock()) : _ownerDispatcher.InvokeAsync(synchronousBlock);
+
+        sealed class CallState
+        {
+            internal readonly Stopwatch Total = Stopwatch.StartNew();
+            internal Stopwatch StageTime;
+            internal DsWorld World;
+            internal string RequestHash;
+            internal int Gen;
+            internal AiTrace Trace;
+            internal IAiProvider Provider;
+            internal PromptPacket Packet;
+            internal bool Completed;
+        }
+
         async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
             IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null)
         {
-            var total = Stopwatch.StartNew();
-            var w = World;
-            string requestHash = CaptureState().Hash;
+            var call = new CallState();
+            bool providerFailed = false;
+            try
+            {
+                if (!await Owner(() => BeginCall(call, kind, actorId, playerText, providerOverride, planContext, localPlanContext)).ConfigureAwait(false))
+                    return call.Trace;
+                ProviderResult r = null;
+                bool cancelled = false;
+                try { r = await call.Provider.CompleteAsync(call.Packet, ct).ConfigureAwait(false); }
+                catch (OperationCanceledException) { cancelled = true; }
+                catch { providerFailed = true; throw; }
+                return await Owner(() => FinishCall(call, kind, actorId, r, cancelled, ct)).ConfigureAwait(false);
+            }
+            finally
+            {
+                try
+                {
+                    if (call.Trace != null && !call.Completed) await Owner(() =>
+                    {
+                        CompleteCall(call);
+                        return true;
+                    }).ConfigureAwait(false);
+                }
+                // 保留提供方原异常；关闭或取消调度时绝不在 worker 补写或补发通知。
+                catch when (providerFailed) { }
+            }
+        }
+
+        void CompleteCall(CallState call)
+        {
+            call.Completed = true;
+            call.Trace.WorldVersionAfter = call.World.Version;
+            call.Trace.TotalMillis = call.Total.Elapsed.TotalMilliseconds;
+            TraceCompleted?.Invoke(call.Trace);
+        }
+
+        bool BeginCall(CallState call, AiTaskKind kind, string actorId, string playerText,
+            IAiProvider providerOverride, string planContext, DsPlanLocalContext localPlanContext)
+        {
+            var w = call.World = World;
+            call.RequestHash = CaptureState().Hash;
             var t = new AiTrace
             {
                 Sequence = ++_sequence, Kind = kind, ActorId = actorId, PlayerInput = playerText,
@@ -297,10 +362,12 @@ namespace Town.Core.Dragonsleep
             };
             foreach (AiStage s in Enum.GetValues(typeof(AiStage))) t.Stage(s);
             Traces.Add(t);
+            call.Trace = t;
+            bool ready = false;
             try
             {
                 // ① 感知分区
-                var sw = Stopwatch.StartNew();
+                var sw = call.StageTime = Stopwatch.StartNew();
                 Begin(t, AiStage.Context);
                 string precondition = Precondition(kind, actorId);
                 if (precondition != null)
@@ -310,7 +377,7 @@ namespace Town.Core.Dragonsleep
                     t.Verdict.Reason = precondition;
                     t.Presented = precondition;
                     SkipRest(t, AiStage.Prompt);
-                    return t;
+                    return false;
                 }
                 t.Perception = kind == AiTaskKind.Plan ? ContextBuilder.PlanPerception(World, TimeLeftInPhase, planContext) : Perceive(kind, actorId);
                 End(t, AiStage.Context, StageStatus.Ok, $"{t.Perception.Count} 个字段；仅含{(kind == AiTaskKind.Direct ? "汇总状态" : "该视角可见信息")}", sw);
@@ -328,11 +395,20 @@ namespace Town.Core.Dragonsleep
                 // ③ 模型调用
                 sw.Restart(); Begin(t, AiStage.Provider);
                 _latestByActor[actorId ?? ""] = t.RequestId;
-                int gen = w.SessionGen;
-                ProviderResult r;
-                var provider = providerOverride ?? Provider;
-                try { r = await provider.CompleteAsync(t.Prompt, ct).ConfigureAwait(false); }
-                catch (OperationCanceledException) { r = new ProviderResult { ProviderName = provider.Name, Error = "cancelled" }; }
+                call.Gen = w.SessionGen;
+                call.Provider = providerOverride ?? Provider;
+                call.Packet = t.Prompt;
+                return ready = true;
+            }
+            finally { if (!ready) CompleteCall(call); }
+        }
+
+        AiTrace FinishCall(CallState call, AiTaskKind kind, string actorId, ProviderResult r, bool cancelled, CancellationToken ct)
+        {
+            try
+            {
+                var t = call.Trace; var w = call.World; var sw = call.StageTime;
+                if (cancelled) r = new ProviderResult { ProviderName = call.Provider.Name, Error = "cancelled" };
                 t.Provider = r;
                 if (r.Error != null || string.IsNullOrEmpty(r.RawText))
                 {
@@ -348,8 +424,8 @@ namespace Town.Core.Dragonsleep
 
                 if (ct.IsCancellationRequested) { Stale(t, "cancelled", "请求已取消，提案未提交"); return t; }
                 // 过期保护：新局或任意权威状态变动 → 丢弃。
-                if (World != w || w.SessionGen != gen) { Stale(t, "stale_session", "新局已开始，旧回复丢弃"); return t; }
-                if (CaptureState().Hash != requestHash) { Stale(t, "stale_context", "等待回复时世界或玩家地点已改变，旧提案丢弃"); return t; }
+                if (World != w || w.SessionGen != call.Gen) { Stale(t, "stale_session", "新局已开始，旧回复丢弃"); return t; }
+                if (CaptureState().Hash != call.RequestHash) { Stale(t, "stale_context", "等待回复时世界或玩家地点已改变，旧提案丢弃"); return t; }
                 if (_latestByActor.TryGetValue(actorId ?? "", out var latest) && latest != t.RequestId) { Stale(t, "superseded", "已有更新的请求"); return t; }
 
                 // ④ 解析
@@ -413,12 +489,7 @@ namespace Town.Core.Dragonsleep
                     $"版本 {t.Receipt.VersionBefore}→{t.Receipt.VersionAfter}", sw);
                 return t;
             }
-            finally
-            {
-                t.WorldVersionAfter = w.Version;
-                t.TotalMillis = total.Elapsed.TotalMilliseconds;
-                TraceCompleted?.Invoke(t);
-            }
+            finally { CompleteCall(call); }
         }
 
         string Precondition(AiTaskKind kind, string actorId)

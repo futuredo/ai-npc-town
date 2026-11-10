@@ -44,7 +44,8 @@ namespace Town.Unity.Dragonsleep
 
         void Awake()
         {
-            Session = new DragonsleepSession(ProviderFactory());
+            var owner = gameObject.AddComponent<PieGame.AI.Unity.UnityOwnerThreadDispatcher>();
+            Session = new DragonsleepSession(ProviderFactory(), ownerDispatcher: new DsOwnerThreadDispatcher(owner.Dispatcher));
             var transactions = new GameObject("Scene Transactions"); transactions.transform.SetParent(transform, false);
             SceneTransaction = new DsSceneRuleTransaction(Session, transactions.AddComponent<PieGame.AI.Unity.UnityKernelBridge>());
             if (PlacesRoot != null)

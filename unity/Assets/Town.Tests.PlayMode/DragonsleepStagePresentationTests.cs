@@ -33,9 +33,14 @@ namespace Town.Tests.PlayMode
         {
             public string Name => "offline-stage-gate";
             public bool IsSimulated => true;
+            public volatile bool Entered;
             readonly TaskCompletionSource<ProviderResult> _pending = new TaskCompletionSource<ProviderResult>();
 
-            public Task<ProviderResult> CompleteAsync(PromptPacket packet, CancellationToken ct) => _pending.Task;
+            public Task<ProviderResult> CompleteAsync(PromptPacket packet, CancellationToken ct)
+            {
+                Entered = true;
+                return _pending.Task;
+            }
 
             public void Release() => _pending.TrySetResult(new ProviderResult
             {
@@ -436,6 +441,9 @@ namespace Town.Tests.PlayMode
             Assert.IsTrue(S.Busy);
             try
             {
+                float enteredDeadline = Time.realtimeSinceStartup + 5;
+                while (!_gate.Entered && Time.realtimeSinceStartup < enteredDeadline) yield return null;
+                Assert.IsTrue(_gate.Entered, "冻结已完成且真实提供方挂起后，才能毒化表现读取哨兵");
                 // 毒化只读哨兵：任何忙时 Capture 都会报错，释放提供方前恢复夹具。
                 W.Whelp = null;
                 for (int i = 0; i < 4; i++) yield return null;

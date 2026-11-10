@@ -40,6 +40,8 @@ namespace Town.Tests.PlayMode
                 Assert.Greater(probe.Result.replans, 0, "固定种子应覆盖真实失败补救");
                 Assert.IsTrue(probe.Result.realExecutionFailure); Assert.Greater(probe.Result.choiceButtons, 0);
                 Assert.Greater(probe.Result.voidSteps, 0); Assert.AreEqual(0, probe.Result.runtimeErrors);
+                Assert.Greater(probe.Result.sessionOwnerCallbacks, 0);
+                Assert.AreEqual(0, probe.Result.sessionWrongThreadCallbacks);
             }
             finally
             {

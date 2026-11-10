@@ -294,6 +294,7 @@ namespace Town.Tests.PlayMode
             s.Provider = _gate;
             _pending = s.PlanAsync("归巢");
             Assert.IsTrue(s.Busy);
+            yield return Until(() => _gate.Calls == 1);
             Assert.IsFalse(_game.Busy, "必须覆盖仅 Session 持锁、Game 未忙的窗口");
             var before = s.CaptureState();
             yield return EndFromMap();
@@ -356,6 +357,7 @@ namespace Town.Tests.PlayMode
             yield return EndFromMap();
             Assert.IsTrue(_game.Busy, "真实按钮必须等待旧 RunNight 路径");
             Assert.IsTrue(s.Busy, "居民模型等待期间会话锁必须保持");
+            yield return Until(() => _gate.Calls == 1 && s.Traces.Count == 1);
             Assert.AreEqual(DayPhase.Night, world.Phase);
             Assert.AreEqual(1, _gate.Calls);
             Assert.AreEqual(AiTaskKind.AgentPlan, s.Traces.Single().Kind, "必须实际进入首名居民的夜间调用");

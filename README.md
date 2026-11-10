@@ -60,7 +60,7 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 合作 / SDK / 末段前缀为 `DragonsleepJourneyProbeTests`（7 项），托付条件 4 项、合作意图 3 项、原件补救 3 项、SDK 场景 7 项、SDK 日间 4 项；连同既有表现 4 项共 **54 项游戏回归**。独立桥 11 项、独立调度器 8 项另计，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 **73 项**。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 合作 / SDK / 末段前缀为 `DragonsleepJourneyProbeTests`（7 项），托付条件 4 项、合作意图 3 项、原件补救 3 项、SDK 场景 7 项、SDK 日间 4 项、生产 owner 异步边界 3 项；连同既有表现 4 项共 **57 项游戏回归**。独立桥 11 项、独立调度器 8 项另计，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 **76 项**。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
 
@@ -91,7 +91,7 @@ tools/                       素材索引/审计脚本及其测试
 
 AI 只提出方案：角色感知先冻结，结果经结构/引用/规则校验，候选世界裁决后才提交。对话仍为 `action=none`；造物必须确认图样，多步计划确认后逐步执行。PieGame 已有 ToyHost、Unity 主线程 / 生命周期桥，实际接入**玩家场景移动、清晨→正午 / 正午→黄昏**；日间将世界与 spent 一起 compare/write，不先推进时钟再补交。**291 项 .NET、64 项联合 PlayMode**通过，同一实际 macOS 包 12 次分模式运行通过。模型、计划、黄昏 / 夜间与造物仍走原管线，不代表全游戏迁移或成熟发布 SDK；见[首入口](docs/PieGame首条场景事务接入.md)、[日间契约](docs/PieGame日间原子事务接入.md)、[桥契约](docs/PieGameUnity桥契约.md)与[053 日志](docs/开发日志/2026-11-10_053_PieGame日间世界与时间原子提交.md)。
 
-055 另增可复用的 `IOwnerThreadDispatcher`：worker 显式排入同步块，Unity 所有者线程限量执行；销毁取消尚未执行的工作，不覆盖已提交事实。最新联合候选 **302 项 .NET、73 项 PlayMode**通过，实际包 14 次分模式运行通过。**生产异步 Session 尚未接入调度器，仍只有两条真实 SDK 入口**，见[调度契约](docs/PieGame所有者线程调度契约.md)与[055 日志](docs/开发日志/2026-11-10_055_PieGame所有者线程调度与异步边界刻画.md)。
+055 另增可复用的 `IOwnerThreadDispatcher`：worker 显式排入同步块，Unity 所有者线程限量执行；销毁取消尚未执行的工作，不覆盖已提交事实。057 已真实注入主场景 Session：请求冻结、回包终结、图样待槽及夜间同步推进壳在 owner；保留 gate、原执行器与回执。最新 **319 项 .NET、76 项 PlayMode**通过，实际包 14 次运行的 Session 阶段 / 完成通知错误线程计数均为 0。**Plan 上层续体仍未全迁，Kernel 权威事务仍只有场景 / 日间两条**，见[生产调度契约](docs/PieGame生产Session所有者调度.md)与[057 日志](docs/开发日志/2026-11-10_057_PieGame生产Session所有者调度.md)。
 
 ## 素材与协作边界
 

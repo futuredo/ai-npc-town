@@ -2,7 +2,7 @@
 
 ## 范围
 
-`PieGame.AI.Unity` 新增 `OwnerThreadDispatchQueue` 和 `UnityOwnerThreadDispatcher`。这是独立、显式的调度基础件，不自动安装到龙眠镇，不新增第三条玩法 SDK 接入，也不改变既有 `UnityKernelBridge`、Kernel、场景移动或日间事务。
+`PieGame.AI.Unity` 提供 `OwnerThreadDispatchQueue` 和 `UnityOwnerThreadDispatcher`。这是独立、显式的调度基础件，不自动发现或安装到宿主。055 交付时未接生产；057 由龙眠镇 Game 显式安装并注入 Session，见[生产接线契约](PieGame生产Session所有者调度.md)。这不新增第三条 Kernel 权威提交入口，也不改变既有 `UnityKernelBridge`、Kernel、场景移动或日间事务。
 
 ```csharp
 // 在 Unity 主线程取得纯托管接口，worker 只保留此接口。
@@ -24,16 +24,16 @@ Receipt receipt = await dispatcher.InvokeAsync(() => bridge.Commit(preparation, 
 - Unity 宿主在 Awake 创建队列，Update 调 `Drain(16)`，OnDestroy 调 `Close`。禁用只暂停派发，销毁才取消排队工作；后台不持有 MonoBehaviour。
 - 不接管用户取消语义。调用方仍在同步块中将原 token 交给桥 Commit / Confirm / Transact；已提交再取消仍是 committed，不回滚。销毁取消派发 Task 不制造内核回执。
 
-## 当前生产缺口仍在
+## 生产接线及尚未迁移的边界
 
-`DragonsleepSession` 仍持 Semaphore gate 跨提供方 await，完成后可能在 worker 读取 / 写入世界、追加 trace 和设置待确认图样；`DsPlanRun` 也有异步续体。仅把 Commit 放入调度器不能修复其余 live 访问。
+`DragonsleepSession` 保留 Semaphore gate 跨提供方 await；057 对注入 dispatcher 的 Unity 宿主，将请求冻结、回复处理、世界提交、trace、待确认图样及完成事件放进 owner 同步块，夜间原同步推进块也同样派发。提供方等待在块外，不能只把最后的 Commit 放入调度器。默认 null dispatcher 的 .NET / CLI 路径仍保留原线程行为。
 
-新增的真实 Session 离线线程刻画测试明确锁定：等待 provider 时 EnterPlace 被 gate 拒绝；异步完成事件不自动回到专用发起线程。它是缺口证据，不是 Unity 主线程修复证明。Game / HUD 的 Busy 防读不能因此撤销。
+055 的真实 Session 线程刻画测试仍锁定默认 null 路径：等待 provider 时 EnterPlace 被 gate 拒绝；异步完成事件不自动回到专用发起线程。057 另以 8 项 .NET 手动泵送和 3 项真实场景 TCS 测试验证注入路径，不把默认路径测试改写为已修复。Game / HUD 的 Busy 防读不能因此撤销。
 
-后续接线须整体设计“主线程冻结请求 → 异步等待 → 主线程同步终结”，保留现有串行语义，避免重新申请同一 gate。造物还需候选身份、代际、原 token 和待槽所有权，不允许为凑入口数量只搬最后一行写入。
+`DsPlanRun` 自己的异步续体尚未整体迁移；同步 ConfirmCraft 仍要求 Game 在主线程调用。造物的候选身份、原始取消令牌与待槽覆盖策略仍待单独治理，不能因图样准备已在 owner 就宣称确认授权完善。调度关闭不得回退 worker 写入；关闭后最终通知可能无法派发，但原 gate 必须释放。
 
 ## 验证范围
 
 独立 8 项 PlayMode 使用真实 UnityKernelBridge、字符串端口和 TCS / PendingCount 屏障，检查 worker 入队、同步 / 异步 provider、端口与 Completed 线程、显式唯一写、stale / duplicate、提交前后取消、销毁、错误线程、重入、异常隔离及限额。另有 2 项 .NET Session 特征测试。
 
-这些测试不加载完整游戏提交链，不证明生产已接入、不提供自动提交、Unity 严格回放、线上 provider、网络重试或无限常驻队列。宿主仍应控制工作量，快速返回同步块，并处理关闭和单项错误。
+上述独立基础件测试不加载完整游戏提交链；生产接线由 057 的独立 Session / 场景测试及 Player 回调审计承担。不提供自动提交、Unity 严格回放、线上 provider、网络重试或无限常驻队列。宿主仍应控制工作量，快速返回同步块，并处理关闭和单项错误。

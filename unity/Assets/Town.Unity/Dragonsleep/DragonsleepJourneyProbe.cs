@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Town.Core.Dragonsleep;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -34,6 +35,7 @@ namespace Town.Unity.Dragonsleep
             public int dayCommits, pactGiveCalls;
             public string cooperationMode;
             public bool lateRescue;
+            public int sessionOwnerCallbacks, sessionWrongThreadCallbacks;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
         }
@@ -53,6 +55,24 @@ namespace Town.Unity.Dragonsleep
         int _stepIndex, _stepResults, _stepSuccesses;
         string _settledHash;
         int _settledResults;
+        DragonsleepSession _observedSession;
+        CallbackThreads _callbackThreads;
+
+        sealed class CallbackThreads
+        {
+            readonly int _owner;
+            int _callbacks, _wrongThread;
+            internal CallbackThreads(int owner) { _owner = owner; }
+            internal int Callbacks => Volatile.Read(ref _callbacks);
+            internal int WrongThread => Volatile.Read(ref _wrongThread);
+            void Record()
+            {
+                Interlocked.Increment(ref _callbacks);
+                if (Thread.CurrentThread.ManagedThreadId != _owner) Interlocked.Increment(ref _wrongThread);
+            }
+            internal void Stage(AiTrace trace, AiStage stage) => Record();
+            internal void Completed(AiTrace trace) => Record();
+        }
 
 #if UNITY_STANDALONE_OSX && !UNITY_EDITOR
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
@@ -174,6 +194,10 @@ namespace Town.Unity.Dragonsleep
             _root = _game.GetComponent<UIDocument>().rootVisualElement;
             if (_root.panel == null || _root.worldBound.width <= 0 || _root.Q<Button>("beginJourney") == null) return;
             Require(_game.Player.InputBlocked && _game.Hud.ModalOpen, "启程前应阻断移动。");
+            _observedSession = _game.Session;
+            _callbackThreads = new CallbackThreads(Thread.CurrentThread.ManagedThreadId);
+            _observedSession.StageChanged += _callbackThreads.Stage;
+            _observedSession.TraceCompleted += _callbackThreads.Completed;
             // 唯一的初态参数：固定随机种子。不补物品、信任、时间、知识或雏龙状态。
             _game.Session.World.Seed = Result.seed;
             if (Result.socialFixture) SetupSocialFixture();
@@ -353,6 +377,11 @@ namespace Town.Unity.Dragonsleep
         {
             if (Finished) return;
             Finished = true; Application.logMessageReceived -= OnLog;
+            StopObserving();
+            Result.sessionOwnerCallbacks = _callbackThreads?.Callbacks ?? 0;
+            Result.sessionWrongThreadCallbacks = _callbackThreads?.WrongThread ?? 0;
+            if (failure == null && Result.sessionWrongThreadCallbacks != 0)
+                failure = "Session 阶段或完成回调不在 Unity 所有者线程。";
             Result.failure = failure; Result.passed = failure == null;
             Result.finishedUtc = DateTime.UtcNow.ToString("O"); Result.checkpoints = _checkpoints.ToArray();
             int exitCode = Result.passed ? 0 : 1;
@@ -382,6 +411,18 @@ namespace Town.Unity.Dragonsleep
             return path;
         }
 
-        void OnDestroy() => Application.logMessageReceived -= OnLog;
+        void StopObserving()
+        {
+            if (_observedSession == null) return;
+            _observedSession.StageChanged -= _callbackThreads.Stage;
+            _observedSession.TraceCompleted -= _callbackThreads.Completed;
+            _observedSession = null;
+        }
+
+        void OnDestroy()
+        {
+            Application.logMessageReceived -= OnLog;
+            StopObserving();
+        }
     }
 }
