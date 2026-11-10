@@ -46,7 +46,7 @@ Game 同时要求 `!Busy && !Session.Busy`，先重建 Session，再调用 adapt
 
 本条写入依赖 Session gate、SDK 同一短锁和受控无业务回调的 CopyInto；不是两个提交器先后写世界。预校验后复制内置数据不包含可恢复业务异常，但不声称操作系统故障或内存耗尽下的强异常安全。
 
-`DsWorld` 仍公开可变，EndPhase、AI、Craft 和计划内部移动仍由旧会话执行。绕过会话直接改字段、恶意宿主回调、多个 kernel 争写同一端口不在保证内。不能据此声称所有 live write 已统一、全游戏提交都在主线程，或 Unity 严格回放已经完成。
+`DsWorld` 仍公开可变。051 当时除本入口外均由旧会话执行；053 另接入[日间世界＋spent 原子推进](PieGame日间原子事务接入.md)，不是放开任意 PhaseStart。AI、Craft、计划内部移动 / 耗时及黄昏 / 夜间仍未迁移。绕过会话直接改字段、恶意宿主回调、多个 kernel 争写同一端口不在保证内；不声称所有 live write 已统一、全游戏提交都在主线程，或 Unity 严格回放已完成。
 
 桥 Completed 在内核锁外发布，但本次 adapter scope 和 Session gate 尚未退出。观察者不得重入会话、桥或直接写世界；实际 Game 不安装这种监听器。
 

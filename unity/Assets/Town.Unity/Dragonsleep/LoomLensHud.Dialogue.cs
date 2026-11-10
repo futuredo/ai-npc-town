@@ -10,6 +10,7 @@ namespace Town.Unity.Dragonsleep
         Button ModeButton(string text, LoomMode mode)
         {
             var b = SkinButton(text, () => SetMode(mode), Skin != null ? Skin.ButtonRound : null, 46, 46);
+            b.name = "mode_" + mode;
             b.style.fontSize = 19; b.style.marginRight = 4;
             b.tooltip = mode == LoomMode.Speak ? "言：对身边的人说话" : mode == LoomMode.Act ? "行：描述一个行动" : "造：在附魔工坊织造物件";
             return b;

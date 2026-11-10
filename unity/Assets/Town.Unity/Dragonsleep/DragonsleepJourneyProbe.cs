@@ -30,6 +30,9 @@ namespace Town.Unity.Dragonsleep
             public bool socialFixture, custodyDelivered, allyMaren, actualCooperationRejection, deliveryCostVisible;
             public bool sceneOnly;
             public int sceneCommits;
+            public bool dayOnly, objectiveAchieved;
+            public int dayCommits, pactGiveCalls;
+            public string cooperationMode;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
         }
@@ -68,8 +71,12 @@ namespace Town.Unity.Dragonsleep
                 bool social = args.Contains("--dragonsleep-journey-social");
                 bool scene = args.Contains("--dragonsleep-journey-scene");
                 bool privatePlan = args.Contains("--dragonsleep-journey-private");
-                Require((social ? 1 : 0) + (scene ? 1 : 0) + (privatePlan ? 1 : 0) <= 1, "验证模式不可混用。");
-                probe.Begin(social ? 109 : 7932, output, true, privatePlan, social, scene);
+                bool day = args.Contains("--dragonsleep-journey-day");
+                string cooperation = args.FirstOrDefault(a => a.StartsWith("--dragonsleep-journey-cooperation=", StringComparison.Ordinal));
+                cooperation = cooperation?.Substring("--dragonsleep-journey-cooperation=".Length);
+                Require((social ? 1 : 0) + (scene ? 1 : 0) + (privatePlan ? 1 : 0) + (day ? 1 : 0) +
+                    (cooperation != null ? 1 : 0) <= 1, "验证模式不可混用。");
+                probe.Begin(social ? 109 : cooperation != null ? 253421 : 7932, output, true, privatePlan, social, scene, cooperation, day);
                 Application.runInBackground = true;
             }
             catch (Exception e)
@@ -81,9 +88,12 @@ namespace Town.Unity.Dragonsleep
 
         /// <summary>测试可显式创建同一验证器；不替换提供方、不调用 Game 的行动方法，不绕过确认按钮。</summary>
         public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false,
-            bool socialFixture = false, bool sceneOnly = false)
+            bool socialFixture = false, bool sceneOnly = false, string cooperationMode = null, bool dayOnly = false)
         {
             if (Result != null) throw new InvalidOperationException("验证器不能重复启动。");
+            Require(cooperationMode == null || new[] { "solo", "maren", "pip" }.Contains(cooperationMode), "合作验证模式无效。");
+            Require((privatePlan ? 1 : 0) + (socialFixture ? 1 : 0) + (sceneOnly ? 1 : 0) + (dayOnly ? 1 : 0) +
+                (cooperationMode != null ? 1 : 0) <= 1, "验证模式不可混用。");
             if (output != null) output = ValidateOutput(output);
             _output = output; _exit = exitWhenFinished;
             _started = _lastFrame = Time.realtimeSinceStartupAsDouble;
@@ -91,6 +101,9 @@ namespace Town.Unity.Dragonsleep
             if (socialFixture) Result.scope = "显式低信任夹具、默认离线提供方、实际按钮补救前缀；不是从新局获取原件或完整归巢验收。";
             Result.sceneOnly = sceneOnly;
             if (sceneOnly) Result.scope = "默认离线新局地图按钮的两次 SDK 场景移动；不是计划、夜间或模型提交迁移验收。";
+            Result.cooperationMode = cooperationMode; Result.dayOnly = dayOnly;
+            if (cooperationMode != null) Result.scope = "显式 pact_escort 等价夹具与 v2 合作条件的按钮完整局；非全新局或真实模型验收。";
+            if (dayOnly) Result.scope = "真实观察耗时后，地图按钮日间 SDK 两次提交；非夜间或模型提交迁移验收。";
             Application.logMessageReceived += OnLog;
         }
 
@@ -109,6 +122,8 @@ namespace Town.Unity.Dragonsleep
                 Require(_game != null, "实际游戏对象丢失。");
                 if (_game.Busy || _game.Session.Busy) return; // 空闲前不枚举世界、计划或回执。
                 if (Result.sceneOnly) { DriveScene(); return; }
+                if (Result.dayOnly) { DriveDay(); return; }
+                if (Result.cooperationMode != null) CheckCooperationActions();
                 if (Result.privatePlan)
                 {
                     Result.confideCalls = _game.Session.Traces.Count(t => t.Kind == AiTaskKind.Adjudicate && t.Proposal?.Str("verb") == "confide");
@@ -158,6 +173,7 @@ namespace Town.Unity.Dragonsleep
             // 唯一的初态参数：固定随机种子。不补物品、信任、时间、知识或雏龙状态。
             _game.Session.World.Seed = Result.seed;
             if (Result.socialFixture) SetupSocialFixture();
+            if (Result.cooperationMode != null) SetupCooperationFixture();
             Click("beginJourney"); Checkpoint("默认离线新局启程"); _phase = 1;
         }
 
@@ -175,6 +191,13 @@ namespace Town.Unity.Dragonsleep
             {
                 _root.Q<TextField>("planGoal").value = "请梅伦修女同行护送小烬";
                 _root.Q<DropdownField>("planDisclosure").index = 2;
+            }
+            if (Result.cooperationMode != null)
+            {
+                string mode = Result.cooperationMode;
+                _root.Q<TextField>("planGoal").value = mode == "solo" ? "独行送小烬归巢" : "必须请" +
+                    (mode == "maren" ? "梅伦" : "皮普") + "帮助小烬归巢";
+                _root.Q<DropdownField>("planDisclosure").index = mode == "solo" ? 4 : mode == "maren" ? 5 : 6;
             }
             _before = State(); _previousResults = 0; Click("proposePlan"); _pending = "proposal";
         }
@@ -238,9 +261,16 @@ namespace Town.Unity.Dragonsleep
                 Result.failedSteps = run.Results.Count(r => r.Status == "failed");
                 Result.voidSteps = run.Results.Count(r => r.Status == "void");
                 Result.realExecutionFailure = run.Results.Any(r => r.Failure != DsPlanFailure.None && r.Status != "void");
-                Require(Result.realExecutionFailure && Result.replans > 0 && Result.voidSteps > 0, "本局没有覆盖真实执行失败与作废补救。");
+                if (Result.cooperationMode == null)
+                    Require(Result.realExecutionFailure && Result.replans > 0 && Result.voidSteps > 0, "本局没有覆盖真实执行失败与作废补救。");
                 Result.appliedReceipts = _game.Session.Traces.Count(t => t.Receipt?.Applied == true) +
                     _game.Session.RuleEvents.Count(t => t.Receipt?.Applied == true);
+                if (Result.cooperationMode != null)
+                {
+                    Result.objectiveAchieved = run.Constraints.CooperationAchieved(w);
+                    Require(Result.objectiveAchieved, "团聚不能替代指定居民的真实合作。");
+                    Checkpoint("实际归巢与指定合作均已达成；不是只靠草稿或预测结盟"); Finish(null); return;
+                }
                 Checkpoint("实际规则团聚与结局"); _phase = 4; return;
             }
             switch (_game.ActivePlan.Status)

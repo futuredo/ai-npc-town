@@ -176,7 +176,7 @@ namespace Town.Unity.Dragonsleep
             field.name = "inputFrame";
             field.style.flexGrow = 1; field.style.height = 46; field.style.marginLeft = 8;
             field.style.justifyContent = Justify.Center; field.style.paddingLeft = 10; field.style.paddingRight = 10;
-            _input = new TextField { maxLength = 300 };
+            _input = new TextField { name = "playerInput", maxLength = 300 };
             StyleInput(_input);
             _input.RegisterCallback<KeyDownEvent>(e =>
             {

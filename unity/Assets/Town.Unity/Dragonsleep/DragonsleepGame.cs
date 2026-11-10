@@ -190,9 +190,23 @@ namespace Town.Unity.Dragonsleep
 
         public async void EndPhase()
         {
-            if (Busy || Ending != null || (Hud != null && Hud.ModalOpen)) return;
+            if (Busy || Session.Busy || Ending != null || (Hud != null && Hud.ModalOpen)) return;
             Busy = true;
-            try { await RunNight(); }
+            try
+            {
+                if (Session.World.FinalDawn)
+                {
+                    ReflectWorld(); Ending = DsEndings.Evaluate(Session.World); Hud?.ShowEnding(Ending);
+                }
+                else if (Session.World.Phase == DayPhase.Dawn || Session.World.Phase == DayPhase.Noon)
+                {
+                    var ev = Session.EndDayPhase(SceneTransaction);
+                    if (ev == null) { Hud?.Toast("当前不能推进日间时段。"); return; }
+                    ReflectWorld(); DrainRuleEvents();
+                    Hud?.Toast(ev.Receipt.Applied ? "时间来到 " + Session.World.ClockText : ev.Presented);
+                }
+                else await RunNight();
+            }
             catch (OperationCanceledException) { }
             finally { Busy = false; }
         }

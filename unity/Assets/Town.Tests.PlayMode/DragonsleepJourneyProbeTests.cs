@@ -108,6 +108,67 @@ namespace Town.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator 三种显式合作目标_真实按钮完整局仅按实际盟友和团聚完成()
+        {
+            var factory = DragonsleepGame.ProviderFactory;
+            try
+            {
+                DragonsleepGame.ProviderFactory = () => new RuleProvider();
+                foreach (string mode in new[] { "solo", "maren", "pip" })
+                {
+#if UNITY_EDITOR
+                    yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/LocalThirdParty/Dragonsleep/Dragonsleep_Town.unity",
+                        new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                    yield return SceneManager.LoadSceneAsync("Dragonsleep_Town");
+#endif
+                    var probe = new GameObject("CooperationProbeTest").AddComponent<DragonsleepJourneyProbe>();
+                    try
+                    {
+                        probe.Begin(seed: 253421, cooperationMode: mode);
+                        float deadline = Time.realtimeSinceStartup + 185;
+                        while (!probe.Finished && Time.realtimeSinceStartup < deadline) yield return null;
+                        Assert.IsTrue(probe.Finished); Assert.IsTrue(probe.Result.passed, mode + ": " + probe.Result.failure);
+                        Assert.IsTrue(probe.Result.objectiveAchieved && probe.Result.withMother && probe.Result.finalDawn);
+                        Assert.AreEqual(0, probe.Result.runtimeErrors);
+                        if (mode == "solo") Assert.AreEqual(0, probe.Result.confideCalls);
+                        else Assert.Greater(probe.Result.confideCalls, 0);
+                        if (mode != "maren") Assert.AreEqual(0, probe.Result.pactGiveCalls);
+                    }
+                    finally { if (probe != null) Object.Destroy(probe.gameObject); }
+                }
+            }
+            finally { DragonsleepGame.ProviderFactory = factory; }
+        }
+
+        [UnityTest]
+        public IEnumerator 实际观察与地图日间SDK推进_耗时和世界一并提交()
+        {
+            var factory = DragonsleepGame.ProviderFactory; DragonsleepJourneyProbe probe = null;
+            try
+            {
+                DragonsleepGame.ProviderFactory = () => new RuleProvider();
+#if UNITY_EDITOR
+                yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/LocalThirdParty/Dragonsleep/Dragonsleep_Town.unity",
+                    new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                yield return SceneManager.LoadSceneAsync("Dragonsleep_Town");
+#endif
+                probe = new GameObject("DayProbeTest").AddComponent<DragonsleepJourneyProbe>(); probe.Begin(dayOnly: true);
+                float deadline = Time.realtimeSinceStartup + 20;
+                while (!probe.Finished && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.IsTrue(probe.Finished); Assert.IsTrue(probe.Result.passed, probe.Result.failure);
+                Assert.AreEqual(2, probe.Result.dayCommits); Assert.AreEqual(2, probe.Result.sceneCommits);
+                Assert.AreEqual(0, probe.Result.runtimeErrors);
+            }
+            finally
+            {
+                if (probe != null) Object.Destroy(probe.gameObject);
+                DragonsleepGame.ProviderFactory = factory;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator 普通最终跨夜后立即重开_旧揭示协程不能填回新局详情()
         {
             var factory = DragonsleepGame.ProviderFactory; bool reduced = DsUiMotion.Reduced;

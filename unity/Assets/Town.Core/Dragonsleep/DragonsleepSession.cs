@@ -82,6 +82,56 @@ namespace Town.Core.Dragonsleep
             finally { _gate.Release(); }
         }
 
+        /// <summary>
+        /// 显式日间 SDK 入口。拒绝发生在任何时钟/时间预算修改前；不承载黄昏、深夜、模型或造物。
+        /// 后端必须同步且运行在其所有者线程。正常跨夜仍使用 EndPhaseAsync。
+        /// </summary>
+        public DsRuleEvent EndDayPhase(IDsDayPhaseTransaction transaction)
+        {
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            if (!_gate.Wait(0)) return null;
+            try
+            {
+                if (World.FinalDawn || (World.Phase != DayPhase.Dawn && World.Phase != DayPhase.Noon) || HasPendingCraft)
+                    return null;
+                var before = CaptureState();
+                var candidate = before.Restore();
+                candidate.Advance();
+                var advanced = DsWorldSnapshot.Capture(candidate, 0, PhaseBudget);
+                string id = $"S{World.SessionGen}-R{++_ruleSequence}";
+                var trial = new AiTrace { Kind = AiTaskKind.Adjudicate, ActorId = "world", RequestId = id };
+                _executor.PhaseStart(candidate, trial);
+                // 保持旧 Advance + PhaseStart 的版本号和随机序列，不多执行一次巡逻。
+                candidate.Version = advanced.Restore().Version;
+                if (DsWorldSnapshot.Capture(candidate, 0, PhaseBudget).Hash != advanced.Hash) candidate.Version++;
+                var after = DsWorldSnapshot.Capture(candidate, 0, PhaseBudget);
+                var plan = new DsExecutionPlan(before, after, trial, DsWorldSnapshot.Digest("day_phase|" + before.Hash), 0);
+                var write = new DsDayPhaseWrite(this, candidate, 0);
+                string status;
+                try { status = transaction.Commit(id, before, after, write); }
+                finally { write.Close(); }
+                if ((status == "committed") != write.Applied) throw new InvalidOperationException("day_phase_write_contract");
+                var receipt = new DsExecutionReceipt(plan, status, write.Applied, write.Applied ? after : CaptureState());
+                var ev = new DsRuleEvent { RequestId = id, Label = "phase_start", Clock = candidate.ClockText,
+                    Receipt = receipt, Verdict = trial.Verdict, Presented = write.Applied ? trial.Presented : "日间推进未提交，时间与世界保持不变。",
+                    FailureCode = write.Applied ? trial.FailureCode : status };
+                if (write.Applied)
+                {
+                    ev.Changes.AddRange(trial.Changes);
+                    RuleEvents.Add(ev);
+                    RuleEventCompleted?.Invoke(ev);
+                }
+                return ev;
+            }
+            finally { _gate.Release(); }
+        }
+
+        internal void ApplyDayPhaseCandidate(DsWorld prepared, int spent)
+        {
+            DsWorldSnapshot.CopyInto(prepared, World);
+            _spent = spent;
+        }
+
         DsRuleEvent RunRuleLocked(string label, Action<DsWorld, AiTrace> rule, IDsSceneRuleTransaction sceneTransaction = null)
         {
             var w = World;
