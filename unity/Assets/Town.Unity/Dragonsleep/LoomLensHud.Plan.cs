@@ -10,6 +10,8 @@ namespace Town.Unity.Dragonsleep
     public sealed partial class LoomLensHud
     {
         TextField _planGoal;
+        DropdownField _planDisclosure;
+        int _planDisclosureIndex;
         Label _planStatus, _planBranch;
         Button _planPropose, _planConfirm, _planStep, _planReplan, _planCancel, _planAbandon;
         readonly Dictionary<string, string> _planSelection = new Dictionary<string, string>();
@@ -69,13 +71,19 @@ namespace Town.Unity.Dragonsleep
             _planGoal.style.minHeight = 58; _planGoal.style.marginTop = 14;
             _planGoal.RegisterValueChangedCallback(e => { _planDraft = e.newValue; RefreshPlanControls(); });
             card.Add(_planGoal);
+            _planDisclosure = new DropdownField("托付对象", new List<string> { "未限定", "不向居民托付", "只向梅伦托付", "只向皮普托付" },
+                _planDisclosureIndex) { name = "planDisclosure" };
+            _planDisclosure.style.marginTop = 10;
+            _planDisclosure.RegisterValueChangedCallback(_ => _planDisclosureIndex = _planDisclosure.index);
+            card.Add(_planDisclosure);
+            card.Add(Wrap(L("明确条件只约束本次计划与重规划的托付动作，不阻止另行对话或居民流言；改条件需重新提出目标。", 12, Muted)));
             var row = Row(); row.style.flexWrap = UnityEngine.UIElements.Wrap.Wrap;
-            _planPropose = PlanButton("提出归巢目标", "proposePlan", () => { _ = Game.ProposePlanAsync(_planDraft); }, true);
+            _planPropose = PlanButton("提出归巢目标", "proposePlan", () => { _ = Game.ProposePlanAsync(_planDraft, DraftConstraints()); }, true);
             _planCancel = PlanButton("取消规划请求", "cancelPlanRequest", Game.CancelPlanRequest);
             row.Add(_planPropose); row.Add(_planCancel); card.Add(row);
             _planStatus = Wrap(L("", 15, Gold)); _planStatus.name = "planStatus";
             _planStatus.style.marginTop = 12; card.Add(_planStatus);
-            var list = new ScrollView { name = "planContents", style = { flexGrow = 1, minHeight = 120, maxHeight = 370, marginTop = 10 } };
+            var list = new ScrollView { name = "planContents", style = { flexGrow = 1, minHeight = 100, maxHeight = 300, marginTop = 10 } };
             card.Add(list);
             _planOptions.Clear();
             // 忙时仅展示冻结在控件中的内容，不读取后台正在修改的计划集合。
@@ -97,6 +105,10 @@ namespace Town.Unity.Dragonsleep
             return button;
         }
 
+        DsPlanConstraints DraftConstraints() => _planDisclosureIndex == 1 ? DsPlanConstraints.KeepPrivate :
+            _planDisclosureIndex == 2 ? DsPlanConstraints.Only("maren") : _planDisclosureIndex == 3 ? DsPlanConstraints.Only("pip") :
+            DsPlanConstraints.Unrestricted;
+
         void RenderPlanContents(VisualElement contents)
         {
             var run = Game.ActivePlan;
@@ -115,6 +127,12 @@ namespace Town.Unity.Dragonsleep
                 return;
             }
             contents.Add(Wrap(L(plan.Summary, 17, Paper)));
+            if (run.Constraints.HasRestrictions)
+            {
+                var allowed = (List<object>)run.Constraints.ToRecord()["allowed_confidants"];
+                string label = allowed.Count == 0 ? "不向居民托付" : "只向" + string.Join("、", allowed.Select(id => Game.ActorName((string)id))) + "托付";
+                contents.Add(Wrap(L("本次已冻结的条件：" + label + "；草稿里的条件不会改写此选择。", 13, Gold)));
+            }
             foreach (var choice in plan.Choices)
             {
                 var question = Wrap(L(choice.Question, 16, Gold, true)); question.style.marginTop = 14; contents.Add(question);
@@ -189,6 +207,7 @@ namespace Town.Unity.Dragonsleep
             bool busy = Game.Busy, alive = Game.Ending == null;
             _planPropose.SetEnabled(!busy && alive && !string.IsNullOrWhiteSpace(_planDraft));
             _planGoal.SetEnabled(!busy && alive);
+            _planDisclosure.SetEnabled(!busy && alive);
             _planCancel.style.display = Game.CanCancelPlan ? DisplayStyle.Flex : DisplayStyle.None;
             _planCancel.SetEnabled(Game.CanCancelPlan && !Game.PlanCancellationRequested);
             if (busy)
@@ -202,7 +221,9 @@ namespace Town.Unity.Dragonsleep
             }
             var run = Game.ActivePlan; string status = run?.Status;
             var branch = SelectedBranch();
-            bool confirm = status == "awaiting_confirmation" && branch?.Feasible == true && (!run.RequireHomecoming || branch.ReachesGoal);
+            string constraintIssue = run?.Constraints.Check(run.LatestPlanTrace?.PlanReport?.Plan, _planSelection);
+            bool confirm = status == "awaiting_confirmation" && constraintIssue == null && branch?.Feasible == true &&
+                (!run.RequireHomecoming || branch.ReachesGoal);
             _planConfirm.style.display = status == "awaiting_confirmation" ? DisplayStyle.Flex : DisplayStyle.None;
             _planConfirm.SetEnabled(alive && confirm);
             _planStep.style.display = status == "running" ? DisplayStyle.Flex : DisplayStyle.None;
@@ -211,9 +232,9 @@ namespace Town.Unity.Dragonsleep
                 (status == "needs_replan" || (status == "planning" && run.LatestPlanTrace != null)));
             _planAbandon.SetEnabled(alive && run != null && status != "abandoned" && status != "completed" && status != "failed");
             foreach (var option in _planOptions) option.SetEnabled(alive && status == "awaiting_confirmation");
-            _planBranch.text = status == "awaiting_confirmation" ? branch == null ? "没有对应的可执行分支，请重新提出目标。"
+            _planBranch.text = status == "awaiting_confirmation" ? constraintIssue ?? (branch == null ? "没有对应的可执行分支，请重新提出目标。"
                 : !branch.Feasible || (run.RequireHomecoming && !branch.ReachesGoal) ? "此取舍无法完成归巢：" + branch.Reason + "。请换选，或重新提出目标。"
-                : "此取舍通过静态试运行，但不保证实际掷骰成功。确认不会消耗时间，执行仍逐步进行。" : "";
+                : "此取舍通过静态试运行，但不保证实际掷骰成功。确认不会消耗时间，执行仍逐步进行。") : "";
             _planStatus.text = StateLabel(status) + (string.IsNullOrEmpty(Game.PlanNotice) ? "" : "\n" + Game.PlanNotice);
         }
 

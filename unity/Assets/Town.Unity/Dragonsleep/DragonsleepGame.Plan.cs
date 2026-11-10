@@ -20,11 +20,11 @@ namespace Town.Unity.Dragonsleep
         CancellationTokenSource _planCancellation;
         int _planOperationId;
 
-        public Task ProposePlanAsync(string goal)
+        public Task ProposePlanAsync(string goal, DsPlanConstraints constraints = null)
         {
             if (Busy || Ending != null || Session.HasPendingCraft || string.IsNullOrWhiteSpace(goal)) return Task.CompletedTask;
             ActivePlan?.Abandon();
-            ActivePlan = new DsPlanRun(Session, goal, requireHomecoming: true);
+            ActivePlan = new DsPlanRun(Session, goal, requireHomecoming: true, constraints: constraints);
             PlanResultOffset = 0;
             return RunPlanOperationAsync("propose", async ct => { await ActivePlan.ProposeAsync(ct); });
         }
@@ -102,7 +102,8 @@ namespace Town.Unity.Dragonsleep
                 else if (operation != "step" && run.LatestPlanTrace != null)
                 {
                     Hud?.PresentPlanTrace(run.LatestPlanTrace);
-                    PlanNotice = run.LatestPlanTrace.Presented;
+                    var plan = run.LatestPlanTrace.PlanReport?.Plan;
+                    PlanNotice = run.Constraints.Check(plan, plan?.DefaultSelection()) ?? run.LatestPlanTrace.Presented;
                 }
             }
             catch (OperationCanceledException)

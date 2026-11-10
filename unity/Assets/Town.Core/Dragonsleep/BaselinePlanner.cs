@@ -112,9 +112,15 @@ namespace Town.Core.Dragonsleep
             if (input.Contains("谁也别") || input.Contains("不告诉") || input.Contains("别告诉") || input.Contains("谁都不")) options.Add(("none", "谁也不告诉"));
             foreach (var o in new[] { ("none", "谁也不告诉"), ("maren", "带契约页请梅伦同行"), ("pip", "托付皮普望风") })
                 if (options.All(x => x.id != o.Item1) && (o.Item1 != "maren" || pactHeld || pactKnown)) options.Add(o);
+            // 新显式条件只来自玩家自己提交的上下文；无此字段时保留原基线提案字节。
+            var replan = per.TryGetValue("replan", out var rc) ? rc as Dictionary<string, object> : null;
+            var conditions = replan != null && replan.TryGetValue("player_constraints", out var pc) ? pc as Dictionary<string, object> : null;
+            var allowed = conditions != null && conditions.TryGetValue("allowed_confidants", out var ac) ? ac as List<object> : null;
+            if (allowed != null) options.RemoveAll(o => o.id != "none" && !allowed.Contains(o.id));
             if (status != "caged_castle" && status != "with_mother")
             {
-                Add("act", "confide", "pip", place: pipAt, cites: new[] { "obs_whelp" }, when: "helper=pip", why: "请皮普望风");
+                if (allowed == null || options.Any(o => o.id == "pip"))
+                    Add("act", "confide", "pip", place: pipAt, cites: new[] { "obs_whelp" }, when: "helper=pip", why: "请皮普望风");
                 if (options.Any(o => o.id == "maren"))
                 {
                     if (!pactHeld) Add("act", "search", place: "catacombs", cites: new[] { "b_maren_page" }, when: "helper=maren", why: "找回契约页");

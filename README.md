@@ -13,7 +13,7 @@
 - [本机 macOS 试玩构建、启动冒烟与无人值守完整短局](docs/本机试玩与验证.md)
 - [历史资料索引](docs/history/README.md)
 
-六机制已有真实模型研究入口，不等于全部目标已验收。M3 完整护送为 33/40，同版离线基线 34/40；低信任求助和否定约束仍未通过。M4 交互与实体映射共 28 项 PlayMode 通过，实际 macOS 包已在两种分辨率下走通按钮完整短局、真实失败补救、结局与重开；灰盒美术和真人理解仍待验，见 [046 日志](docs/开发日志/2026-11-10_046_Player完整短局与重开隔离.md)。
+六机制已有真实模型研究入口，不等于全部目标已验收。M3 完整护送为 33/40，同版离线基线 34/40；低信任求助和自然语言否定约束仍未通过。现已补显式托付允许名单，确认、执行和重规划都会复核，不把“只向某人”伪装成必须求助或全局保密。离线 .NET 211 项、PlayMode 32 项通过，见 [047 日志](docs/开发日志/2026-11-10_047_M3明确托付条件与执行复核.md)。实际 macOS 包已有两分辨率按钮完整短局、真实失败补救、结局与重开证据；灰盒美术和真人理解仍待验，见 [046 日志](docs/开发日志/2026-11-10_046_Player完整短局与重开隔离.md)。
 
 ## 打开与运行
 
@@ -47,9 +47,11 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开为 `DragonsleepJourneyProbeTests`（2 项）；filter 改为 `Dragonsleep` 可连同既有 4 项一起执行，共 28/28。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开为 `DragonsleepJourneyProbeTests`（2 项），托付条件为 `DragonsleepConstraintPresentationTests`（4 项）；filter 改为 `Dragonsleep` 可连同既有 4 项一起执行，共 32/32。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
+
+“托付对象”默认未限定；明确选择“不向居民托付 / 只向梅伦 / 只向皮普”后，随提出的任务冻结。改下拉草稿须重新提出才生效；它只限制计划中的 `confide`，不拦截另行对话、出示或居民流言，详见 [M3 条件与社会补救边界](docs/M3托付条件与社会补救边界.md)。
 
 ## 目录与职责
 

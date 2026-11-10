@@ -24,6 +24,8 @@ namespace Town.Unity.Dragonsleep
             public int observedFrames, runtimeErrors;
             public bool withMother, finalDawn, restarted, secondProposal, stageReunited, realExecutionFailure;
             public int choiceButtons;
+            public bool privatePlan;
+            public int confideCalls;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
         }
@@ -59,7 +61,7 @@ namespace Town.Unity.Dragonsleep
                 string output = ValidateOutput(args[index + 1]);
                 var probe = new GameObject("__DragonsleepJourneyProbe").AddComponent<DragonsleepJourneyProbe>();
                 DontDestroyOnLoad(probe.gameObject);
-                probe.Begin(7932, output, true);
+                probe.Begin(7932, output, true, args.Contains("--dragonsleep-journey-private"));
                 Application.runInBackground = true;
             }
             catch (Exception e)
@@ -70,13 +72,13 @@ namespace Town.Unity.Dragonsleep
 #endif
 
         /// <summary>测试可显式创建同一验证器；不替换提供方、不调用 Game 的行动方法，不绕过确认按钮。</summary>
-        public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false)
+        public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false)
         {
             if (Result != null) throw new InvalidOperationException("验证器不能重复启动。");
             if (output != null) output = ValidateOutput(output);
             _output = output; _exit = exitWhenFinished;
             _started = _lastFrame = Time.realtimeSinceStartupAsDouble;
-            Result = new Report { seed = seed, unityVersion = Application.unityVersion };
+            Result = new Report { seed = seed, unityVersion = Application.unityVersion, privatePlan = privatePlan };
             Application.logMessageReceived += OnLog;
         }
 
@@ -94,6 +96,12 @@ namespace Town.Unity.Dragonsleep
                 if (_phase == 0) { Startup(); return; }
                 Require(_game != null, "实际游戏对象丢失。");
                 if (_game.Busy || _game.Session.Busy) return; // 空闲前不枚举世界、计划或回执。
+                if (Result.privatePlan)
+                {
+                    Result.confideCalls = _game.Session.Traces.Count(t => t.Kind == AiTaskKind.Adjudicate && t.Proposal?.Str("verb") == "confide");
+                    Require(Result.confideCalls == 0, "明确不托付条件下执行了 confide。");
+                    Require(_game.ActivePlan == null || _game.ActivePlan.Constraints.HasRestrictions, "重规划丢失明确条件。");
+                }
                 if (_pending != null) { CheckPending(); return; }
                 switch (_phase)
                 {
@@ -143,6 +151,12 @@ namespace Town.Unity.Dragonsleep
 
         void Propose()
         {
+            if (Result.privatePlan)
+            {
+                var disclosure = _root.Q<DropdownField>("planDisclosure");
+                Require(disclosure != null && disclosure.enabledInHierarchy, "托付条件控件不可用。");
+                disclosure.index = 1; // 通过真实控件变更事件，不调用 Game/Core 的条件设置捷径。
+            }
             _before = State(); _previousResults = 0; Click("proposePlan"); _pending = "proposal";
         }
 

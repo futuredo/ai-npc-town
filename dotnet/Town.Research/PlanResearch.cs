@@ -84,6 +84,7 @@ internal static class PlanResearch
             "dotnet/Town.Research/PlanCases.cs", "dotnet/Town.Research/PlanTransferCases.cs", "dotnet/Town.Research/PlanResearch.cs",
             "unity/Assets/Town.Core/Dragonsleep/ContextBuilder.cs", "unity/Assets/Town.Core/Dragonsleep/DsPlan.cs",
             "unity/Assets/Town.Core/Dragonsleep/DsPlanRun.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.cs",
+            "unity/Assets/Town.Core/Dragonsleep/DsPlanConstraints.cs",
             "unity/Assets/Town.Core/Dragonsleep/DsRules.Core.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Dialogue.cs",
             "unity/Assets/Town.Core/Dragonsleep/DsRules.Effects.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Social.cs",
             "unity/Assets/Town.Core/Dragonsleep/DsRules.Director.cs", "unity/Assets/Town.Core/Dragonsleep/DsRules.Craft.cs",

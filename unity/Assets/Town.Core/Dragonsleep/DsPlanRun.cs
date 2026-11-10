@@ -65,6 +65,7 @@ namespace Town.Core.Dragonsleep
         public string Goal { get; }
         /// <summary>由调用方明确指定，不能根据模型自己写的 goal 判断任务是否完成。</summary>
         public bool RequireHomecoming { get; }
+        public DsPlanConstraints Constraints { get; }
         public DsPlan Plan { get; private set; }
         public AiTrace LatestPlanTrace { get; private set; }
         public Dictionary<string, string> Selection { get; private set; } = new Dictionary<string, string>();
@@ -81,24 +82,32 @@ namespace Town.Core.Dragonsleep
         public IReadOnlyList<DsPlanStep> ActiveSteps => _active;
         public int NextIndex => _next;
         public bool MeetsObjective(AiTrace t) => t?.FailureCode == null && t?.PlanReport?.Executable == true &&
-            (!RequireHomecoming || t.PlanReport.Default.ReachesGoal);
+            (!RequireHomecoming || t.PlanReport.Default.ReachesGoal) &&
+            Constraints.Check(t.PlanReport.Plan, t.PlanReport.Plan.DefaultSelection()) == null;
 
         List<DsPlanStep> _active = new List<DsPlanStep>();
         int _next;
         DsWorldSnapshot _expected;
         DsPlanStep _failedStep;
 
-        public DsPlanRun(DragonsleepSession session, string goal, bool requireHomecoming = false)
+        public DsPlanRun(DragonsleepSession session, string goal, bool requireHomecoming = false, DsPlanConstraints constraints = null)
         {
             Session = session ?? throw new ArgumentNullException(nameof(session));
             Goal = ContextBuilder.Clip(goal);
             RequireHomecoming = requireHomecoming;
+            Constraints = constraints ?? DsPlanConstraints.Unrestricted;
         }
 
         public async Task<AiTrace> ProposeAsync(CancellationToken ct = default)
         {
-            var t = await Session.PlanAsync(Goal, RequireHomecoming ? MiniJson.Write(new Dictionary<string, object>
-            { ["objective"] = "homecoming", ["completion"] = "小烬与母亲团聚；局部步骤结束仍需继续规划" }) : null, ct).ConfigureAwait(false);
+            var context = RequireHomecoming ? new Dictionary<string, object>
+            { ["objective"] = "homecoming", ["completion"] = "小烬与母亲团聚；局部步骤结束仍需继续规划" } : null;
+            if (Constraints.HasRestrictions)
+            {
+                context = context ?? new Dictionary<string, object>();
+                context["player_constraints"] = Constraints.ToRecord();
+            }
+            var t = await Session.PlanAsync(Goal, context == null ? null : MiniJson.Write(context), ct).ConfigureAwait(false);
             Adopt(t);
             return t;
         }
@@ -137,6 +146,8 @@ namespace Town.Core.Dragonsleep
                 && b.Selection.All(x => chosen.TryGetValue(x.Key, out var v) && v == x.Value));
             if (branch != null && !branch.Feasible) throw new InvalidOperationException("该选项不可行：" + branch.FailedStep + " " + branch.Reason);
             if (RequireHomecoming && branch != null && !branch.ReachesGoal) throw new InvalidOperationException("该选项没有覆盖归巢目标");
+            string constraintIssue = Constraints.Check(Plan, chosen);
+            if (constraintIssue != null) throw new InvalidOperationException(constraintIssue);
             Selection = chosen;
             AcceptedRequestIds.Add(LatestPlanTrace?.RequestId);
             _active = Plan.ActiveSteps(Selection);
@@ -166,8 +177,13 @@ namespace Town.Core.Dragonsleep
             if (Status != "running") throw new InvalidOperationException("计划不在执行中：" + Status);
             var w = Session.World;
             if (w.FinalDawn || w.Whelp.WithMother || _next >= _active.Count) { FinishOrContinue(); return null; }
-            var step = _active[_next];
+            // 移动事件/居民异步回调可以触达公开草稿。检查与实际执行必须消费同一份独立步骤，含集合。
+            var step = FreezeStep(_active[_next]);
             var r = new DsPlanStepResult { StepId = step.Id, Op = step.Op, Brief = step.Brief(), Clock = w.ClockText };
+            // 再核对实际下一步，不能依赖曾经检查过的可变提案；必须早于跨夜、移动、掷骰和耗时。
+            if (!Constraints.Allows(step))
+                return Fail(r, step, DsPlanFailure.Precondition, "托付对象违反玩家明确选择，步骤未执行", executed: false,
+                    reasonCode: new DsReason("player_constraint"));
 
             // 时间已到深夜：居民照常行动，之后再判断世界是否变了。
             if (Session.NightPending)
@@ -184,7 +200,9 @@ namespace Town.Core.Dragonsleep
             if (now.Hash != _expected.Hash)
             {
                 var changes = RelevantChanges(_expected, now);
-                var check = DsPlanValidator.Simulate(now, _active.Skip(_next).ToList(), Selection);
+                var remaining = _active.Skip(_next + 1).Select(FreezeStep).ToList();
+                remaining.Insert(0, step);
+                var check = DsPlanValidator.Simulate(now, remaining, Selection);
                 if (changes.Count > 0 || !check.Feasible)
                     return Fail(r, step, DsPlanFailure.Stale, changes.Count > 0 ? string.Join("；", changes) :
                         "剩余步骤在 " + check.FailedStep + " 无法保证前置条件，请根据当前可见状态重新规划", executed: false);
@@ -283,6 +301,10 @@ namespace Town.Core.Dragonsleep
         {
             var t = LatestPlanTrace;
             if (t == null || MeetsObjective(t)) return null;
+            string constraintIssue = Constraints.Check(t.PlanReport?.Plan, t.PlanReport?.Plan?.DefaultSelection());
+            if (constraintIssue != null)
+                return new Dictionary<string, object> { ["request_id"] = t.RequestId, ["scope"] = "player_constraint",
+                    ["code"] = "player_constraint", ["reason"] = constraintIssue };
             if (t.FailureCode == null && t.PlanReport?.Executable == true)
                 return new Dictionary<string, object> { ["request_id"] = t.RequestId, ["scope"] = "predicted_plan_outcome", ["code"] = "goal_not_reached",
                     ["proposed_steps"] = t.PlanReport.Plan.ActiveSteps(t.PlanReport.Plan.DefaultSelection()).Select(s => (object)s.Brief()).ToList(),
@@ -309,14 +331,16 @@ namespace Town.Core.Dragonsleep
         public async Task<AiTrace> ReplanAsync(CancellationToken ct = default)
         {
             if (Status != "needs_replan") throw new InvalidOperationException("当前不需要重规划：" + Status);
-            string context = MiniJson.Write(new Dictionary<string, object>
+            var context = new Dictionary<string, object>
             {
                 ["failure"] = Label(LastFailure), ["reason"] = LastReason,
                 ["failed_step"] = _failedStep?.Brief(),
                 ["objective"] = RequireHomecoming ? "homecoming" : "player_goal",
                 ["rejected_proposal"] = RejectedFeedback(),
-            });
-            var t = await Session.PlanWithLocalContextAsync(Goal, context, new DsPlanLocalContext(LastReasonCode), ct).ConfigureAwait(false);
+            };
+            if (Constraints.HasRestrictions) context["player_constraints"] = Constraints.ToRecord();
+            var t = await Session.PlanWithLocalContextAsync(Goal, MiniJson.Write(context), new DsPlanLocalContext(LastReasonCode), ct)
+                .ConfigureAwait(false);
             var record = new DsReplanRecord
             {
                 Failure = LastFailure, Reason = LastReason, ReasonCode = LastReasonCode, FailedStep = _failedStep?.Id, OldPlan = Plan?.Brief(),
@@ -384,6 +408,14 @@ namespace Town.Core.Dragonsleep
             r.Presented = r.Presented.Length == 0 ? text : r.Presented + " " + text;
         }
 
+        static DsPlanStep FreezeStep(DsPlanStep source)
+        {
+            var step = new DsPlanStep { Id = source.Id, Op = source.Op, Verb = source.Verb, Target = source.Target,
+                Item = source.Item, Place = source.Place, Until = source.Until, When = source.When, Why = source.Why };
+            step.Laws.AddRange(source.Laws); step.Cites.AddRange(source.Cites);
+            return step;
+        }
+
         /// <summary>
         /// 两个状态之间、玩家能察觉且影响计划的变化：雏龙的可见状况、随身物件、与搜城相关的公开消息。
         /// 只用玩家可见的信息描述原因，原因会进入重规划上下文。
@@ -406,13 +438,18 @@ namespace Town.Core.Dragonsleep
             return reasons;
         }
 
-        public Dictionary<string, object> ToRecord() => new Dictionary<string, object>
+        public Dictionary<string, object> ToRecord()
         {
-            ["goal"] = Goal, ["status"] = Status, ["selection"] = Selection.ToDictionary(x => x.Key, x => (object)x.Value),
-            ["require_homecoming"] = RequireHomecoming, ["homecoming_achieved"] = Session.World.Whelp.WithMother,
-            ["plan"] = Plan?.ToRecord(), ["results"] = Results.Select(x => (object)x.ToRecord()).ToList(),
-            ["replans"] = Replans.Select(x => (object)x.ToRecord()).ToList(),
-            ["plan_requests"] = PlanTraces.Select(x => (object)x.RequestId).ToList(),
-        };
+            var record = new Dictionary<string, object>
+            {
+                ["goal"] = Goal, ["status"] = Status, ["selection"] = Selection.ToDictionary(x => x.Key, x => (object)x.Value),
+                ["require_homecoming"] = RequireHomecoming, ["homecoming_achieved"] = Session.World.Whelp.WithMother,
+                ["plan"] = Plan?.ToRecord(), ["results"] = Results.Select(x => (object)x.ToRecord()).ToList(),
+                ["replans"] = Replans.Select(x => (object)x.ToRecord()).ToList(),
+                ["plan_requests"] = PlanTraces.Select(x => (object)x.RequestId).ToList(),
+            };
+            if (Constraints.HasRestrictions) record["player_constraints"] = Constraints.ToRecord();
+            return record;
+        }
     }
 }
