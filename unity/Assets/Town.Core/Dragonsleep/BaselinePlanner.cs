@@ -66,6 +66,7 @@ namespace Town.Core.Dragonsleep
             string food = inventoryText.FirstOrDefault(x => x.Contains("food") && !x.Contains("iron"))?.Split('：')[0];
             bool cloak = inventory.Contains("travel_cloak");
             bool exposedAfter = false;
+            bool lastDuskRescue = status == "caged_castle" && day == 3 && phase == DayPhase.Dusk;
 
             switch (status)
             {
@@ -112,7 +113,8 @@ namespace Town.Core.Dragonsleep
             }
             if (exposedAfter && cloak)
             {
-                Add("act", "hide", "whelp", "travel_cloak", place: "workshop", cites: new[] { "obs_whelp" }, why: "在工坊用斗篷盖好");
+                Add("act", "hide", "whelp", "travel_cloak", place: lastDuskRescue ? "skull_hill" : "workshop",
+                    cites: new[] { "obs_whelp" }, why: lastDuskRescue ? "先到龙骨岗再遮盖；途中仍有巡逻风险" : "在工坊用斗篷盖好");
                 exposedAfter = false;
             }
 
@@ -176,7 +178,8 @@ namespace Town.Core.Dragonsleep
             }
             else if (choice == null) steps.RemoveAll(x => x.When != "");
             string summary = (status == "caged_castle" ? "趁黄昏换岗撬开铁笼救出小烬，" : bond < 0.4 && !status.StartsWith("following") ? "先用熏鱼取得小烬信任，" : "") +
-                "用斗篷遮好带在身边，躲在工坊，最后的黄昏上龙骨岗等母亲。";
+                (lastDuskRescue ? "救出后先到龙骨岗再遮盖，直接等母亲；途中仍有巡逻风险。" :
+                    "用斗篷遮好带在身边，躲在工坊，最后的黄昏上龙骨岗等母亲。");
             // 取舍里非首选项对应的步骤，在 when 中已标注；基线最多 14 步。
             if (steps.Count > DsPlan.MaxSteps) steps = steps.Take(DsPlan.MaxSteps).ToList();
             for (int i = 0; i < steps.Count; i++) steps[i].Id = "s" + (i + 1);

@@ -33,6 +33,7 @@ namespace Town.Unity.Dragonsleep
             public bool dayOnly, objectiveAchieved;
             public int dayCommits, pactGiveCalls;
             public string cooperationMode;
+            public bool lateRescue;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
         }
@@ -72,11 +73,13 @@ namespace Town.Unity.Dragonsleep
                 bool scene = args.Contains("--dragonsleep-journey-scene");
                 bool privatePlan = args.Contains("--dragonsleep-journey-private");
                 bool day = args.Contains("--dragonsleep-journey-day");
+                bool late = args.Contains("--dragonsleep-journey-late-rescue");
                 string cooperation = args.FirstOrDefault(a => a.StartsWith("--dragonsleep-journey-cooperation=", StringComparison.Ordinal));
                 cooperation = cooperation?.Substring("--dragonsleep-journey-cooperation=".Length);
                 Require((social ? 1 : 0) + (scene ? 1 : 0) + (privatePlan ? 1 : 0) + (day ? 1 : 0) +
-                    (cooperation != null ? 1 : 0) <= 1, "验证模式不可混用。");
-                probe.Begin(social ? 109 : cooperation != null ? 253421 : 7932, output, true, privatePlan, social, scene, cooperation, day);
+                    (cooperation != null ? 1 : 0) + (late ? 1 : 0) <= 1, "验证模式不可混用。");
+                probe.Begin(social || late ? 109 : cooperation != null ? 253421 : 7932,
+                    output, true, privatePlan, social, scene, cooperation, day, late);
                 Application.runInBackground = true;
             }
             catch (Exception e)
@@ -88,12 +91,12 @@ namespace Town.Unity.Dragonsleep
 
         /// <summary>测试可显式创建同一验证器；不替换提供方、不调用 Game 的行动方法，不绕过确认按钮。</summary>
         public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false,
-            bool socialFixture = false, bool sceneOnly = false, string cooperationMode = null, bool dayOnly = false)
+            bool socialFixture = false, bool sceneOnly = false, string cooperationMode = null, bool dayOnly = false, bool lateRescue = false)
         {
             if (Result != null) throw new InvalidOperationException("验证器不能重复启动。");
             Require(cooperationMode == null || new[] { "solo", "maren", "pip" }.Contains(cooperationMode), "合作验证模式无效。");
             Require((privatePlan ? 1 : 0) + (socialFixture ? 1 : 0) + (sceneOnly ? 1 : 0) + (dayOnly ? 1 : 0) +
-                (cooperationMode != null ? 1 : 0) <= 1, "验证模式不可混用。");
+                (cooperationMode != null ? 1 : 0) + (lateRescue ? 1 : 0) <= 1, "验证模式不可混用。");
             if (output != null) output = ValidateOutput(output);
             _output = output; _exit = exitWhenFinished;
             _started = _lastFrame = Time.realtimeSinceStartupAsDouble;
@@ -101,9 +104,10 @@ namespace Town.Unity.Dragonsleep
             if (socialFixture) Result.scope = "显式低信任夹具、默认离线提供方、实际按钮补救前缀；不是从新局获取原件或完整归巢验收。";
             Result.sceneOnly = sceneOnly;
             if (sceneOnly) Result.scope = "默认离线新局地图按钮的两次 SDK 场景移动；不是计划、夜间或模型提交迁移验收。";
-            Result.cooperationMode = cooperationMode; Result.dayOnly = dayOnly;
+            Result.cooperationMode = lateRescue ? "pip" : cooperationMode; Result.dayOnly = dayOnly; Result.lateRescue = lateRescue;
             if (cooperationMode != null) Result.scope = "显式 pact_escort 等价夹具与 v2 合作条件的按钮完整局；非全新局或真实模型验收。";
             if (dayOnly) Result.scope = "真实观察耗时后，地图按钮日间 SDK 两次提交；非夜间或模型提交迁移验收。";
+            if (lateRescue) Result.scope = "显式第三天黄昏被捕夹具、默认离线提供方与实际按钮救援归巢；不是自然走出的新局或必胜证明。";
             Application.logMessageReceived += OnLog;
         }
 
@@ -173,7 +177,8 @@ namespace Town.Unity.Dragonsleep
             // 唯一的初态参数：固定随机种子。不补物品、信任、时间、知识或雏龙状态。
             _game.Session.World.Seed = Result.seed;
             if (Result.socialFixture) SetupSocialFixture();
-            if (Result.cooperationMode != null) SetupCooperationFixture();
+            if (Result.lateRescue) SetupLateRescueFixture();
+            else if (Result.cooperationMode != null) SetupCooperationFixture();
             Click("beginJourney"); Checkpoint("默认离线新局启程"); _phase = 1;
         }
 

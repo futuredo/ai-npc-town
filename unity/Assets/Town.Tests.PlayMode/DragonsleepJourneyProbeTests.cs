@@ -169,6 +169,35 @@ namespace Town.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator 最后黄昏被捕夹具_真实按钮立即救援并在期限前归巢()
+        {
+            var factory = DragonsleepGame.ProviderFactory; DragonsleepJourneyProbe probe = null;
+            try
+            {
+                DragonsleepGame.ProviderFactory = () => new RuleProvider();
+#if UNITY_EDITOR
+                yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/LocalThirdParty/Dragonsleep/Dragonsleep_Town.unity",
+                    new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                yield return SceneManager.LoadSceneAsync("Dragonsleep_Town");
+#endif
+                probe = new GameObject("LateRescueProbeTest").AddComponent<DragonsleepJourneyProbe>();
+                probe.Begin(seed: 109, lateRescue: true);
+                float deadline = Time.realtimeSinceStartup + 30;
+                while (!probe.Finished && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.IsTrue(probe.Finished); Assert.IsTrue(probe.Result.passed, probe.Result.failure);
+                Assert.IsTrue(probe.Result.lateRescue && probe.Result.objectiveAchieved && probe.Result.withMother && probe.Result.finalDawn);
+                Assert.AreEqual(0, probe.Result.confideCalls, "既有盟友无需临近期限再托付");
+                Assert.AreEqual(0, probe.Result.pactGiveCalls); Assert.AreEqual(0, probe.Result.runtimeErrors);
+            }
+            finally
+            {
+                if (probe != null) Object.Destroy(probe.gameObject);
+                DragonsleepGame.ProviderFactory = factory;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator 普通最终跨夜后立即重开_旧揭示协程不能填回新局详情()
         {
             var factory = DragonsleepGame.ProviderFactory; bool reduced = DsUiMotion.Reduced;

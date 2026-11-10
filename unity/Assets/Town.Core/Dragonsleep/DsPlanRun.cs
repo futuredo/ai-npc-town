@@ -107,6 +107,7 @@ namespace Town.Core.Dragonsleep
                 context = context ?? new Dictionary<string, object>();
                 context["player_constraints"] = Constraints.ToRecord();
             }
+            AddDeadlineRecovery(context);
             var t = await Session.PlanAsync(Goal, context == null ? null : MiniJson.Write(context), ct).ConfigureAwait(false);
             Adopt(t);
             return t;
@@ -372,6 +373,7 @@ namespace Town.Core.Dragonsleep
                 ["rejected_proposal"] = RejectedFeedback(),
             };
             if (Constraints.HasRestrictions) context["player_constraints"] = Constraints.ToRecord();
+            AddDeadlineRecovery(context);
             var t = await Session.PlanWithLocalContextAsync(Goal, MiniJson.Write(context), new DsPlanLocalContext(LastReasonCode), ct)
                 .ConfigureAwait(false);
             var record = new DsReplanRecord
@@ -384,6 +386,25 @@ namespace Town.Core.Dragonsleep
             Replans.Add(record);
             Adopt(t);
             return t;
+        }
+
+        // 只对显式 v2 目标补充眼前已知的末段约束；不读取远处岗哨、居民认知或预测位置。
+        void AddDeadlineRecovery(Dictionary<string, object> context)
+        {
+            if (context == null || !Constraints.HasCooperationIntent || Session.World.Day != 3 ||
+                Session.World.Phase != DayPhase.Dusk) return;
+            DsPlayerKnowledge.WhelpStatus(Session.World, out string status);
+            if (status != "caged_castle") return;
+            context["deadline_recovery"] = new Dictionary<string, object>
+            {
+                ["scope"] = "current_player_observation",
+                ["time_left_in_phase"] = Session.TimeLeftInPhase,
+                ["action_cost"] = 2,
+                ["movement_cost"] = 0,
+                ["warning"] = "现在已是最后的黄昏，不能再等到明早救援；深夜不是合法等待终点。救援成功自动跟随。" +
+                    "若救援后仍要遮盖，应先抵达龙骨岗再做最后行动，避免耗尽时段后还留在中转地点。" +
+                    "已实际结盟不必重复托付；巡逻、救援与遮盖仍可能失败。时间不足时不能宣称可完成。",
+            };
         }
 
         public static string Label(DsPlanFailure f)
