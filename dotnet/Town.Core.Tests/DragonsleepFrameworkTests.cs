@@ -59,11 +59,12 @@ namespace Town.Core.Tests
 
         [TestCase("maren", "catacombs", "cathedral")]
         [TestCase("pip", "market", "docks")]
-        public void 离线重规划只按原因码换常去处_不读取中文显示(string actor, string alternate, string normal)
+        public void 缺少当前观察时离线重规划按原因码换常去处_不读取中文显示(string actor, string alternate, string normal)
         {
             var s = new DragonsleepSession(new RuleProvider());
             s.World.Items["pact_page"].Holder = "player";
             var per = ContextBuilder.PlanPerception(s.World, 4, null);
+            per.Remove("people_here"); // 本测试隔离旧失败码回退；当前观察优先由独立观察测试覆盖。
             var local = new DsPlanLocalContext(new DsReason("actor_absent", actor));
             var plan = BaselinePlanner.Plan(per, "请梅伦帮忙", local);
             Assert.IsTrue(plan.Steps.Where(x => x.Target == actor).All(x => x.Place == alternate));

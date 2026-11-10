@@ -32,8 +32,20 @@ namespace Town.Core.Dragonsleep
             int coins = (int)(per.Num("coins") ?? 0);
             // 只读实际呈现给玩家的失败码，不读中文文案，也不读取静态试运行的异地真值。
             var reason = local?.Reason ?? default;
-            string marenAt = reason.Is("actor_absent", "maren") ? "catacombs" : "cathedral";
-            string pipAt = reason.Is("actor_absent", "pip") ? "market" : "docks";
+            var peopleHere = Ids(per, "people_here");
+            bool observedPeople = per.ContainsKey("people_here");
+            string HelperPlace(string id, string usual, string alternate, out bool seeking)
+            {
+                string candidate = reason.Is("actor_absent", id) ? alternate : usual;
+                bool present = peopleHere.Contains(id);
+                // 眼前在场优先于旧失败；眼前缺席只否定当前地点，另一个常去处仍只是寻访候选。
+                seeking = observedPeople && !present && (here == usual || here == candidate);
+                if (present) return here;
+                return observedPeople && here == candidate ? (candidate == usual ? alternate : usual) : candidate;
+            }
+            string marenAt = HelperPlace("maren", "cathedral", "catacombs", out bool seekMaren);
+            string pipAt = HelperPlace("pip", "docks", "market", out bool seekPip);
+            string HelperWhy(bool seeking, string intent) => seeking ? "去另一常去处寻访，不保证目标在场；找到后再" + intent : intent;
 
             var steps = new List<DsPlanStep>();
             int acts = 0;
@@ -123,7 +135,8 @@ namespace Town.Core.Dragonsleep
             if (status != "caged_castle" && status != "with_mother")
             {
                 if (allowed == null || options.Any(o => o.id == "pip"))
-                    Add("act", "confide", "pip", place: pipAt, cites: new[] { "obs_whelp" }, when: "helper=pip", why: "请皮普望风");
+                    Add("act", "confide", "pip", place: pipAt, cites: new[] { "obs_whelp" }, when: "helper=pip",
+                        why: HelperWhy(seekPip, "请皮普望风"));
                 if (options.Any(o => o.id == "maren"))
                 {
                     if (!custody)
@@ -131,9 +144,10 @@ namespace Town.Core.Dragonsleep
                         if (!pactHeld) Add("act", "search", place: "catacombs", cites: new[] { "b_maren_page" }, when: "helper=maren", why: "找回契约页");
                         Add("act", custodyRequested ? "give" : "show", "maren", "pact_page", place: marenAt,
                             cites: new[] { "b_maren_pact", "b_maren_page" }, when: "helper=maren",
-                            why: custodyRequested ? "交付原件核验" : "给梅伦看凭据");
+                            why: HelperWhy(seekMaren, custodyRequested ? "交付原件核验" : "给梅伦看凭据"));
                     }
-                    Add("act", "confide", "maren", place: marenAt, cites: new[] { "b_maren_pact" }, when: "helper=maren", why: "请梅伦同行");
+                    Add("act", "confide", "maren", place: marenAt, cites: new[] { "b_maren_pact" }, when: "helper=maren",
+                        why: HelperWhy(seekMaren, "请梅伦同行"));
                 }
             }
 
@@ -153,7 +167,7 @@ namespace Town.Core.Dragonsleep
             if (choice != null && choice.Options.Count < 2) choice = null;
             if (choice == null) steps.RemoveAll(x => x.When != "");
             string summary = (status == "caged_castle" ? "趁黄昏换岗撬开铁笼救出小烬，" : bond < 0.4 && !status.StartsWith("following") ? "先用熏鱼取得小烬信任，" : "") +
-                             "用斗篷遮好带在身边，躲在工坊，最后的黄昏上龙骨岗等母亲。";
+                "用斗篷遮好带在身边，躲在工坊，最后的黄昏上龙骨岗等母亲。";
             // 取舍里非首选项对应的步骤，在 when 中已标注；基线最多 14 步。
             if (steps.Count > DsPlan.MaxSteps) steps = steps.Take(DsPlan.MaxSteps).ToList();
             for (int i = 0; i < steps.Count; i++) steps[i].Id = "s" + (i + 1);
