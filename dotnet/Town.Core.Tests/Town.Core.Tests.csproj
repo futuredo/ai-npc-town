@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="../Town.Core/Town.Core.csproj" />
     <ProjectReference Include="../Town.OpenAI/Town.OpenAI.csproj" />
+    <ProjectReference Include="../Town.PieGame/Town.PieGame.csproj" />
     <Compile Include="../Town.Research/PlanCases.cs" Link="Golden/PlanCases.cs" />
     <None Update="Golden/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

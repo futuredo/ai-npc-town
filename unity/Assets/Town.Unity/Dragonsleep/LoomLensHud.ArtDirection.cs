@@ -108,6 +108,10 @@ namespace Town.Unity.Dragonsleep
                 motion.text = DsUiMotion.Reduced ? "动效：简约" : "动效：完整";
             });
             _shortcuts.Add(motion); _root.Insert(_root.IndexOf(_modal), _shortcuts);
+            var restartAction = SmallLink("再来一局", () => { Game.Restart(); ClearLens(); });
+            restartAction.name = "restartPendingAction";
+            restartAction.style.display = DisplayStyle.None;
+            _shortcuts.Add(restartAction);
             _root.RegisterCallback<GeometryChangedEvent>(_ => FitLayout());
             SetMode(_mode);
             _conversationUntil = 0;
@@ -125,6 +129,9 @@ namespace Town.Unity.Dragonsleep
             bool busy = Game.Busy;
             var ending = _shortcuts?.Q<Button>("reopenEnding");
             if (ending != null) ending.style.display = Game.Ending != null ? DisplayStyle.Flex : DisplayStyle.None;
+            var restartAction = _shortcuts?.Q<Button>("restartPendingAction");
+            if (restartAction != null)
+                restartAction.style.display = Game.Session.KernelActionInFlight ? DisplayStyle.Flex : DisplayStyle.None;
             if (!busy) _location.text = "龙眠镇  /  " + Game.PlaceName;
             _sendButton.SetEnabled(!busy && Game.Ending == null);
             _input.SetEnabled(!busy && Game.Ending == null);

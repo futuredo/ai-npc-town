@@ -495,7 +495,8 @@ namespace Town.Unity.Dragonsleep
             var wl = Wrap(L(r.Whelp, 18, new Color(0.45f, 0.12f, 0.08f), true)); wl.style.marginTop = 14; body.Add(wl);
             body.Add(L($"今天 {r.AiCalls} 次 AI 调用，规则修正 {r.Corrections} 处（Tab 可逐条回看）", 13, InkSoft));
             card.Add(body);
-            card.Add(CardButton("继续", CloseModal));
+            var continueButton = CardButton("继续", CloseModal); continueButton.name = "closeRecap";
+            card.Add(continueButton);
         }
 
         public void ShowEnding(DsEndings.Ending e)

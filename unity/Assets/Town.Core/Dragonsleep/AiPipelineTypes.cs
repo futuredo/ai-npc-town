@@ -50,6 +50,18 @@ namespace Town.Core.Dragonsleep
         public string SchemaName;
         public string Instructions;
         public readonly List<PromptSection> Sections = new List<PromptSection>();
+        public PromptPacket FreezeCopy()
+        {
+            var copy = new PromptPacket
+            {
+                Kind = Kind, ActorId = ActorId, SchemaName = SchemaName, Instructions = Instructions,
+                DialogueSnapshot = DialogueSnapshot, TaskSnapshot = TaskSnapshot,
+                OriginalPlayerInput = OriginalPlayerInput, LocalPlanContext = LocalPlanContext
+            };
+            foreach (var section in Sections)
+                copy.Sections.Add(new PromptSection { Name = section.Name, Text = section.Text, Untrusted = section.Untrusted });
+            return copy;
+        }
         public int TotalChars
         {
             get
@@ -133,6 +145,8 @@ namespace Town.Core.Dragonsleep
         /// <summary>重规划时由系统生成的上下文（失败类别、原因、旧计划摘要），属于冻结感知的一部分。</summary>
         public string PlanContext;
         public string FailureCode;
+        /// <summary>仅显式玩家行动内核路径记录原码；不改变默认/headless 的记录字段。</summary>
+        public string KernelCode;
         public double TotalMillis;
 
         public StageRecord Stage(AiStage stage)
@@ -188,7 +202,7 @@ namespace Town.Core.Dragonsleep
                     sections.Add(new Dictionary<string, object> { ["name"] = s.Name, ["chars"] = s.Text?.Length ?? 0, ["untrusted"] = s.Untrusted });
             var changes = new List<object>();
             foreach (var c in Changes) changes.Add(c.ToString());
-            return new Dictionary<string, object>
+            var record = new Dictionary<string, object>
             {
                 ["seq"] = Sequence, ["request_id"] = RequestId, ["kind"] = Kind.ToString(),
                 ["actor"] = ActorId, ["clock"] = Clock, ["session"] = SessionGen,
@@ -204,6 +218,8 @@ namespace Town.Core.Dragonsleep
                 ["failure"] = FailureCode, ["stages"] = stages, ["total_ms"] = TotalMillis,
                 ["version_before"] = WorldVersionBefore, ["version_after"] = WorldVersionAfter
             };
+            if (KernelCode != null) record["kernel_code"] = KernelCode;
+            return record;
         }
     }
 }

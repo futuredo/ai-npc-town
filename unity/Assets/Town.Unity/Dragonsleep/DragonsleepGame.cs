@@ -38,17 +38,20 @@ namespace Town.Unity.Dragonsleep
         Coroutine _whelpReaction;
         public DragonsleepStageView Stage { get; private set; }
         public DsSceneRuleTransaction SceneTransaction { get; private set; }
+        public Town.PieGame.KernelActionTransaction ActionTransaction => SceneTransaction.ActionTransaction;
+        public int ActionCommits => SceneTransaction.ActionKernel.Commits;
+        public string ActionKernelDigest => SceneTransaction.ActionKernel.Digest;
         readonly System.Threading.CancellationTokenSource _lifetime = new System.Threading.CancellationTokenSource();
 
         public IReadOnlyDictionary<string, Transform> ActorTransforms => _actors;
 
         void Awake()
         {
-            var owner = gameObject.AddComponent<PieGame.AI.Unity.UnityOwnerThreadDispatcher>();
+            var owner = gameObject.AddComponent<global::PieGame.AI.Unity.UnityOwnerThreadDispatcher>();
             Session = new DragonsleepSession(ProviderFactory(), ownerDispatcher: new DsOwnerThreadDispatcher(owner.Dispatcher),
                 requireBoundCraftConfirmation: true);
             var transactions = new GameObject("Scene Transactions"); transactions.transform.SetParent(transform, false);
-            SceneTransaction = new DsSceneRuleTransaction(Session, transactions.AddComponent<PieGame.AI.Unity.UnityKernelBridge>());
+            SceneTransaction = new DsSceneRuleTransaction(Session, transactions.AddComponent<global::PieGame.AI.Unity.UnityKernelBridge>());
             if (PlacesRoot != null)
                 foreach (Transform t in PlacesRoot) _places[t.name.Replace("Place_", "")] = t;
             foreach (var tag in FindObjectsByType<DragonsleepActorTag>(FindObjectsSortMode.None)) _actors[tag.ActorId] = tag.transform;
@@ -67,6 +70,7 @@ namespace Town.Unity.Dragonsleep
 
         void OnDestroy()
         {
+            SceneTransaction?.Detach();
             _lifetime.Cancel();
             (Session?.Provider as IDisposable)?.Dispose();
             _lifetime.Dispose();
@@ -149,6 +153,7 @@ namespace Town.Unity.Dragonsleep
         public async void Submit(LoomMode mode, string text)
         {
             if (Busy || string.IsNullOrWhiteSpace(text) || Ending != null) return;
+            int generation = Session.World.SessionGen;
             Busy = true;
             try
             {
@@ -161,9 +166,9 @@ namespace Town.Unity.Dragonsleep
                     trace = await Session.SpeakAsync(NearestActorId, text, _lifetime.Token);
                     SetPose(NearestActorId, trace.Succeeded ? "Talk" : "Idle");
                 }
-                else if (mode == LoomMode.Act) trace = await Session.ActAsync(text, _lifetime.Token);
+                else if (mode == LoomMode.Act) trace = await Session.ActAsync(text, _lifetime.Token, ActionTransaction);
                 else trace = await Session.CraftAsync(text, _lifetime.Token);
-                if (this == null) return;
+                if (this == null || Session.World.SessionGen != generation) return;
                 var craft = Session.GetCraftProposal(trace);
                 if (craft != null)
                 { Hud?.Present(trace); Hud?.ShowCraftProposal(craft); return; }
@@ -255,11 +260,12 @@ namespace Town.Unity.Dragonsleep
 
         public void Restart()
         {
-            if (Busy || Session.Busy) { Hud?.Toast("请先等待当前操作结束；规划请求可以取消。"); return; }
+            // 只有显式自由行动内核请求可在等待中换局；代际拒绝由 Kernel.Commit 给出，不以取消冒充。
+            if ((Busy || Session.Busy) && !Session.KernelActionInFlight)
+            { Hud?.Toast("请先等待当前操作结束；规划请求可以取消。"); return; }
             ActivePlan?.Abandon(); ActivePlan = null;
             PlanNotice = ""; PlanResultOffset = 0;
             Session.Restart();
-            SceneTransaction.ResetSession();
             Ending = null;
             _dayStartTrace = 0;
             _ruleEventsSeen = 0;

@@ -26,6 +26,9 @@ namespace Town.Core.Dragonsleep
         /// <summary>无模型参与的世界规则事件（移动、换岗巡逻），各自带实际执行回执。</summary>
         public readonly List<DsRuleEvent> RuleEvents = new List<DsRuleEvent>();
         public event Action<DsRuleEvent> RuleEventCompleted;
+        /// <summary>宿主在所有者线程重建/恢复世界后，使共用 SDK 代际失效；不进入模型或记录。</summary>
+        public event Action StateReplaced;
+        public bool KernelActionInFlight { get; private set; }
         private int _ruleSequence;
 
         private readonly DsExecutor _executor;
@@ -82,6 +85,7 @@ namespace Town.Core.Dragonsleep
             RuleEvents.Clear(); _ruleSequence = 0;
             _executor.Reset();
             _pendingCraft = null;
+            StateReplaced?.Invoke();
         }
 
         /// <summary>
@@ -173,8 +177,25 @@ namespace Town.Core.Dragonsleep
         public Task<AiTrace> SpeakAsync(string npcId, string text, CancellationToken ct = default) =>
             RunAsync(AiTaskKind.Dialogue, npcId, text, ct);
 
-        public Task<AiTrace> ActAsync(string text, CancellationToken ct = default) =>
-            RunAsync(AiTaskKind.Adjudicate, "player", text, ct);
+        public Task<AiTrace> ActAsync(string text, CancellationToken ct = default, IDsActionTransaction transaction = null) =>
+            transaction == null ? RunAsync(AiTaskKind.Adjudicate, "player", text, ct) : RunActionTransactionAsync(text, ct, transaction);
+
+        async Task<AiTrace> RunActionTransactionAsync(string text, CancellationToken ct, IDsActionTransaction transaction)
+        {
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            bool failed = false;
+            try
+            {
+                return await RunLockedAsync(AiTaskKind.Adjudicate, "player", text, ct, actionTransaction: transaction).ConfigureAwait(false);
+            }
+            catch { failed = true; throw; }
+            finally
+            {
+                try { await Owner(() => { KernelActionInFlight = false; return true; }).ConfigureAwait(false); }
+                catch when (failed) { }
+                finally { _gate.Release(); }
+            }
+        }
 
         public Task<AiTrace> CraftAsync(string text, CancellationToken ct = default) =>
             RunAsync(AiTaskKind.Craft, "player", text, ct);
@@ -190,6 +211,13 @@ namespace Town.Core.Dragonsleep
             _sequence = 0; _latestByActor.Clear(); Traces.Clear(); _executor.Reset();
             RuleEvents.Clear(); _ruleSequence = 0;
             _pendingCraft = null;
+            StateReplaced?.Invoke();
+        }
+
+        internal void ApplyActionCandidate(DsWorld prepared, int spent)
+        {
+            DsWorldSnapshot.CopyInto(prepared, World);
+            _spent = spent;
         }
 
         /// <summary>
@@ -383,18 +411,29 @@ namespace Town.Core.Dragonsleep
             internal IAiProvider Provider;
             internal PromptPacket Packet;
             internal bool Completed;
+            internal IDsActionTransaction ActionTransaction;
+            internal IDsActionRequest ActionRequest;
         }
 
         async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
-            IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null, Action guard = null)
+            IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null, Action guard = null,
+            IDsActionTransaction actionTransaction = null)
         {
-            var call = new CallState();
+            var call = new CallState { ActionTransaction = actionTransaction };
             bool failed = false;
             try
             {
                 if (!await Owner(() => BeginCall(call, kind, actorId, playerText, providerOverride, planContext,
                     localPlanContext, ct, guard)).ConfigureAwait(false))
                     return call.Trace;
+                if (call.ActionTransaction != null)
+                {
+                    // Unity 桥的排队入口本身属于 owner；这里只启动准备，provider/handler 在桥的 worker 内运行。
+                    var preparation = await Owner(() => call.ActionTransaction.PrepareAsync(call.ActionRequest, call.Provider, ct))
+                        .ConfigureAwait(false);
+                    var prepared = await preparation.ConfigureAwait(false);
+                    return await Owner(() => FinishActionTransaction(call, prepared, ct)).ConfigureAwait(false);
+                }
                 ProviderResult r = null;
                 bool cancelled = false;
                 try { r = await call.Provider.CompleteAsync(call.Packet, ct).ConfigureAwait(false); }
@@ -437,7 +476,8 @@ namespace Town.Core.Dragonsleep
             // 必须在读取 World、分配请求编号或创建 trace 之前，于实际 Owner 执行时检查。
             guard?.Invoke();
             var w = call.World = World;
-            call.RequestHash = CaptureState().Hash;
+            // 内核路径的 before 由 Kernel.Begin 捕获；不重复保存宿主 stale_context 摘要。
+            if (call.ActionTransaction == null) call.RequestHash = CaptureState().Hash;
             var t = new AiTrace
             {
                 Sequence = ++_sequence, Kind = kind, ActorId = actorId, PlayerInput = playerText,
@@ -451,7 +491,8 @@ namespace Town.Core.Dragonsleep
             bool ready = false, failed = false;
             try
             {
-                if (ct.IsCancellationRequested) { Stale(t, "cancelled", "请求已取消，提案未提交"); return false; }
+                if (call.ActionTransaction == null && ct.IsCancellationRequested)
+                { Stale(t, "cancelled", "请求已取消，提案未提交"); return false; }
                 // ① 感知分区
                 var sw = call.StageTime = Stopwatch.StartNew();
                 Begin(t, AiStage.Context);
@@ -481,15 +522,113 @@ namespace Town.Core.Dragonsleep
                 // ③ 模型调用
                 sw.Restart(); Begin(t, AiStage.Provider);
                 guard?.Invoke();
-                if (ct.IsCancellationRequested) { Stale(t, "cancelled", "请求已取消，提案未提交"); return false; }
+                if (call.ActionTransaction == null && ct.IsCancellationRequested)
+                { Stale(t, "cancelled", "请求已取消，提案未提交"); return false; }
                 _latestByActor[actorId ?? ""] = t.RequestId;
                 call.Gen = w.SessionGen;
                 call.Provider = providerOverride ?? Provider;
                 call.Packet = t.Prompt;
+                if (call.ActionTransaction != null)
+                {
+                    call.ActionRequest = call.ActionTransaction.Begin(t.RequestId, call.Packet);
+                    KernelActionInFlight = true;
+                }
                 return ready = true;
             }
             catch { failed = true; throw; }
             finally { if (!ready) CompleteCallPreservingFailure(call, failed); }
+        }
+
+        AiTrace FinishActionTransaction(CallState call, IDsActionPreparation prepared, CancellationToken ct)
+        {
+            bool failed = false;
+            var t = call.Trace;
+            var sw = call.StageTime;
+            try
+            {
+                t.Provider = prepared.Provider;
+                var provider = t.Provider;
+                bool providerFailed = provider == null || provider.Error != null || string.IsNullOrEmpty(provider.RawText);
+                End(t, AiStage.Provider, providerFailed ? StageStatus.Fail : StageStatus.Ok,
+                    providerFailed ? provider?.Error ?? "empty_response" :
+                    $"{provider.ProviderName}；输入 {provider.InputTokens?.ToString() ?? "?"} / 输出 {provider.OutputTokens?.ToString() ?? "?"} tokens；" +
+                    (provider.EstimatedUsd.HasValue ? $"估算 ${provider.EstimatedUsd.Value:0.000000}" : "费用未知"), sw);
+                // 同一角色更新请求是宿主策略；不重复核对世界引用、局代次或整世界摘要。
+                if (_latestByActor.TryGetValue(t.ActorId ?? "", out var latest) && latest != t.RequestId)
+                { Stale(t, "superseded", "已有更新的请求"); return t; }
+
+                var plan = prepared.Plan;
+                if (plan != null)
+                {
+                    sw.Restart(); Begin(t, AiStage.Parse);
+                    // 解析/裁决已在隔离 handler 完成；这里仅在 owner 上投影不可变旁路结果。
+                    MiniJson.TryParseObject(provider.RawText, out var proposal, out _);
+                    t.Proposal = proposal;
+                    End(t, AiStage.Parse, StageStatus.Ok, $"{proposal.Count} 个字段", sw);
+                    sw.Restart(); Begin(t, AiStage.Validate);
+                    t.ValidationIssues.AddRange(plan.Evaluation.ValidationIssues);
+                    t.Verdict = plan.Evaluation.Verdict;
+                    t.Presented = plan.Evaluation.Presented;
+                    End(t, AiStage.Validate, plan.FailureCode != null ? StageStatus.Fail :
+                        t.ValidationIssues.Count > 0 ? StageStatus.Warn : StageStatus.Ok,
+                        t.ValidationIssues.Count == 0 ? "结构、引用与规则前置条件通过" : string.Join("；", t.ValidationIssues), sw);
+                    if (plan.FailureCode == null)
+                    {
+                        sw.Restart(); Begin(t, AiStage.Adjudicate);
+                        End(t, AiStage.Adjudicate, t.Verdict.Kind == VerdictKind.Accepted ? StageStatus.Ok :
+                            t.Verdict.Kind == VerdictKind.Partial ? StageStatus.Warn : StageStatus.Fail,
+                            t.Verdict.Kind + "：" + t.Verdict.Reason + (t.Verdict.Notes.Count > 0 ? "｜" + string.Join("；", t.Verdict.Notes) : ""), sw);
+                    }
+                    else t.Stage(AiStage.Adjudicate).Status = StageStatus.Skipped;
+                }
+                else SkipRest(t, AiStage.Parse);
+
+                sw.Restart(); Begin(t, AiStage.Commit);
+                var write = plan == null ? null : new DsActionWrite(plan, ApplyActionCandidate);
+                DsActionCommit result;
+                try { result = call.ActionTransaction.Commit(prepared, write, ct); }
+                finally { write?.Close(); }
+                t.KernelCode = result.KernelCode;
+                if ((result.KernelCode == "committed") != (write?.Applied == true)) throw new InvalidOperationException("action_write_contract");
+                if (plan != null)
+                {
+                    bool changed = result.KernelCode == "committed" && plan.BeforeHash != plan.AfterHash;
+                    t.Receipt = new DsExecutionReceipt(plan,
+                        result.KernelCode == "committed" && !changed ? "no_change" : result.KernelCode, changed, CaptureState());
+                    if (changed) t.Changes.AddRange(plan.Evaluation.Changes);
+                }
+                if (result.KernelCode != "committed")
+                {
+                    t.FailureCode = result.FailureCode ?? result.KernelCode;
+                    t.Presented = ActionKernelMessage(result.KernelCode, t.FailureCode);
+                    t.Verdict.Kind = VerdictKind.Rejected;
+                    t.Verdict.Reason = t.Presented;
+                }
+                End(t, AiStage.Commit, t.FailureCode != null ? StageStatus.Fail :
+                    t.Receipt?.Applied == true ? StageStatus.Ok : StageStatus.Skipped,
+                    (t.Receipt?.Status ?? result.KernelCode) +
+                    $"；实际 {t.Receipt?.Effects.Count ?? 0} 处状态差异，时间 {t.Receipt?.TimeCost ?? 0} 点，" +
+                    $"版本 {t.Receipt?.VersionBefore ?? t.WorldVersionBefore}→{t.Receipt?.VersionAfter ?? World.Version}", sw);
+                return t;
+            }
+            catch { failed = true; throw; }
+            finally { CompleteCallPreservingFailure(call, failed); }
+        }
+
+        static string ActionKernelMessage(string code, string failure)
+        {
+            switch (code)
+            {
+                case "stale_session": return "新局已开始，旧回复丢弃。";
+                case "stale_state": return "世界状态已改变，提案未执行。";
+                case "duplicate": return "该行动已经提交，不重复执行。";
+                case "request_conflict": return "请求编号冲突，提案未执行。";
+                case "cancelled": return "请求已取消，提案未提交。";
+                case "late_after_cancel": return "取消后才收到回复，提案已丢弃。";
+                case "parse_failed": return "织言机没听懂这团乱线。";
+                case "host_rejected": return "行动未通过结构或规则校验，未提交。";
+                default: return "织言机的丝线断了。（" + failure + "）";
+            }
         }
 
         AiTrace FinishCall(CallState call, AiTaskKind kind, string actorId, ProviderResult r, bool cancelled, CancellationToken ct, Action guard)

@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- 无引擎适配层，Unity 与 .NET 使用完全相同的实现。 -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>Town.PieGame</RootNamespace>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../unity/Assets/Town.PieGame/**/*.cs" />
+    <ProjectReference Include="../Town.Core/Town.Core.csproj" />
+    <ProjectReference Include="../PieGame.AI.Kernel/PieGame.AI.Kernel.csproj" />
+  </ItemGroup>
+</Project>

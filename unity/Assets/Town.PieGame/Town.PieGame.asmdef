@@ -1,0 +1,7 @@
+{
+  "name": "Town.PieGame",
+  "rootNamespace": "Town.PieGame",
+  "references": ["Town.Core", "PieGame.AI.Kernel"],
+  "autoReferenced": true,
+  "noEngineReferences": true
+}

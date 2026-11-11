@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Town.Core.Dragonsleep
 {
-    /// <summary>规则只能修改私有候选世界；本类是 Session 内唯一的提案提交入口。</summary>
+    /// <summary>规则只修改私有候选世界；旧路径由本类提交，显式行动内核路径只复用 Prepare。</summary>
     public sealed class DsExecutor
     {
         public const string RulesVersion = "dragonsleep-rules-8";
@@ -198,6 +198,10 @@ namespace Town.Core.Dragonsleep
         public string FailureCode => Evaluation.FailureCode;
         public string BeforeHash => Before.Hash;
         public string AfterHash => After.Hash;
+        /// <summary>本地候选/事务使用，包含世界真值，禁止传给提供方。</summary>
+        public string BeforeJson => Before.Json;
+        public string AfterJson => After.Json;
+        public DsActionEvaluation EvaluationSnapshot => new DsActionEvaluation(this);
         public int TimeCost { get; }
         internal DsExecutionPlan(DsWorldSnapshot before, DsWorldSnapshot after, AiTrace evaluation, string identity, int timeCost, bool sceneRule = false)
         { Before = before; After = after; Evaluation = evaluation; Identity = identity; TimeCost = timeCost; SceneRule = sceneRule; }

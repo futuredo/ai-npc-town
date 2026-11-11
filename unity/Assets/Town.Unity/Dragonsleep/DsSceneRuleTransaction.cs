@@ -3,6 +3,7 @@ using System.Threading;
 using PieGame.AI.Kernel;
 using PieGame.AI.Unity;
 using Town.Core.Dragonsleep;
+using Town.PieGame;
 
 namespace Town.Unity.Dragonsleep
 {
@@ -15,9 +16,9 @@ namespace Town.Unity.Dragonsleep
         readonly DragonsleepSession _session;
         readonly UnityKernelBridge _bridge;
         readonly int _thread;
-        DsSceneRuleWrite _write;
-        DsDayPhaseWrite _dayWrite;
-        string _after;
+        readonly DsKernelStatePort _port;
+        public DsActionKernelBridge ActionKernel { get; }
+        public KernelActionTransaction ActionTransaction { get; }
         bool _inside;
         bool _resetting;
         public int Commits { get; private set; }
@@ -28,7 +29,11 @@ namespace Town.Unity.Dragonsleep
         {
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _bridge = bridge != null ? bridge : throw new ArgumentNullException(nameof(bridge));
-            _bridge.Initialize(new StatePort(this), DsExecutor.RulesVersion);
+            _port = new DsKernelStatePort(session.CaptureState);
+            _bridge.Initialize(_port, DsExecutor.RulesVersion);
+            ActionKernel = new DsActionKernelBridge(_bridge, _port);
+            ActionTransaction = new KernelActionTransaction(ActionKernel);
+            _session.StateReplaced += ResetSession;
             _thread = Thread.CurrentThread.ManagedThreadId;
         }
 
@@ -44,14 +49,14 @@ namespace Town.Unity.Dragonsleep
             {
                 LastReceipt = null;
                 // StateStamp 只在本次同步调用中存活。端口读取会话当前快照，不缓存影子状态。
-                var stamp = _bridge.CaptureState();
+                StateStamp stamp;
+                using (_port.OpenRead()) stamp = _bridge.CaptureState();
                 if (stamp.State != before.Json || stamp.Digest != before.Hash) return "stale_state";
-                _after = after.Json; _write = write;
-                LastReceipt = _bridge.Transact(requestId, stamp, after.Json);
+                using (_port.OpenScene(write, after.Json)) LastReceipt = _bridge.Transact(requestId, stamp, after.Json);
                 if (LastReceipt.Code == "committed") Commits++;
                 return LastReceipt.Code;
             }
-            finally { _write = null; _after = null; _inside = false; }
+            finally { _inside = false; }
         }
 
         public string Commit(string requestId, DsWorldSnapshot before, DsWorldSnapshot after, DsDayPhaseWrite write)
@@ -67,26 +72,28 @@ namespace Town.Unity.Dragonsleep
             try
             {
                 LastReceipt = null;
-                var stamp = _bridge.CaptureState();
+                StateStamp stamp;
+                using (_port.OpenRead()) stamp = _bridge.CaptureState();
                 if (stamp.State != before.Json || stamp.Digest != before.Hash) return "stale_state";
-                _after = after.Json; _dayWrite = write;
-                LastReceipt = _bridge.Transact(requestId, stamp, after.Json);
+                using (_port.OpenDay(write, after.Json)) LastReceipt = _bridge.Transact(requestId, stamp, after.Json);
                 if (LastReceipt.Code == "committed") { Commits++; DayCommits++; }
                 return LastReceipt.Code;
             }
-            finally { _dayWrite = null; _after = null; _inside = false; }
+            finally { _inside = false; }
         }
 
         /// <summary>仅在 Game 空闲并已重建 Session 后调用；失效旧 SDK 请求 ID，不再次写入游戏。</summary>
         public void ResetSession()
         {
             CheckThread();
-            if (_inside || _resetting || _session.Busy) throw new InvalidOperationException("scene_transaction_busy");
+            if (_inside || _resetting || (_session.Busy && !_session.KernelActionInFlight))
+                throw new InvalidOperationException("scene_transaction_busy");
             _resetting = true;
             try
             {
-                _bridge.Reset(_session.CaptureState().Json);
+                using (_port.OpenReset()) _bridge.Reset(_session.CaptureState().Json);
                 LastReceipt = null; Commits = 0; DayCommits = 0;
+                ActionKernel.ResetCounters();
             }
             finally { _resetting = false; }
         }
@@ -96,28 +103,7 @@ namespace Town.Unity.Dragonsleep
             if (Thread.CurrentThread.ManagedThreadId != _thread) throw new InvalidOperationException("scene_transaction_wrong_thread");
         }
 
-        sealed class StatePort : IStatePort
-        {
-            readonly DsSceneRuleTransaction _owner;
-            public StatePort(DsSceneRuleTransaction owner) { _owner = owner; }
-            public string Read()
-            {
-                if (!_owner._inside && !_owner._resetting) throw new InvalidOperationException("scene_transaction_not_active");
-                return _owner._session.CaptureState().Json;
-            }
-            public void Write(string state)
-            {
-                if (_owner._resetting)
-                {
-                    // Reset 不写第二次世界，只允许 SDK 对现有完全相同的初态更新自己的代际。
-                    if (state != Read()) throw new InvalidOperationException("scene_transaction_not_active");
-                    return;
-                }
-                if (!_owner._inside || (_owner._write == null && _owner._dayWrite == null) || state != _owner._after)
-                    throw new InvalidOperationException("scene_transaction_candidate_changed");
-                if (_owner._dayWrite != null) _owner._dayWrite.Apply();
-                else _owner._write.Apply();
-            }
-        }
+        public void Detach() { CheckThread(); _session.StateReplaced -= ResetSession; }
+
     }
 }

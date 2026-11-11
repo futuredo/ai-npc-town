@@ -28,6 +28,8 @@
 
 059–060 继续收敛运行安全：计划的准备 / 采用 / 移动 / 等待 / 结果更新使用同一 owner，旧局排队操作不能作用新世界；Game 的图样显示和决定绑定确切候选，旧按钮不再领取最新槽位，原请求取消后无权耗料。**357 项 .NET、83 项 PlayMode**通过，默认两组研究核心与黄金不变；本轮未调用真实模型，不能据此改写 M3 成绩，见[计划与图样契约](docs/PieGame计划所有权与图样授权.md)、[059](docs/开发日志/2026-11-11_059_计划异步所有权与换局护栏.md)与[060](docs/开发日志/2026-11-11_060_造物确切候选与原请求授权.md)。
 
+061 将 Game 自由行动接入真实 **Kernel Begin → PrepareAsync → Commit**，该路径不再经过宿主 stale_context / 执行器去重提交。其余 Adjudicate 计划步骤、headless默认与研究扰动继续旧路径；新无引擎 `Town.PieGame` 供.NET / Unity共源适配。**423项.NET、89项PlayMode、18次实际Player**通过，原黄金与90/27核心相同，本轮真实API为0；标准预算12次行动保留before文本88596个UTF-8字节，非总内存。结论仅为“第三条入口验证通过”，见[接入契约](docs/PieGame玩家行动接入.md)和[061日志](docs/开发日志/2026-11-11_061_玩家行动模型请求接入PieGame内核.md)。
+
 ## 打开与运行
 
 环境：Unity `6000.3.23f1`、URP `17.3.0`、.NET 8。
@@ -63,7 +65,7 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 合作 / SDK / 末段 / 图样为 `DragonsleepJourneyProbeTests`（8 项），托付条件 4 项、合作意图 3 项、原件补救 3 项、SDK 场景 7 项、SDK 日间 4 项、Session owner 3 项、Plan owner 3 项、绑定图样 3 项；连同既有表现 4 项共 **64 项游戏回归**。独立桥 11 项、独立调度器 8 项另计，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 **83 项**。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 合作 / SDK / 末段 / 图样 / 自由行动为 `DragonsleepJourneyProbeTests`（9 项），托付条件 4 项、合作意图 3 项、原件补救 3 项、SDK 场景 7 项、SDK 日间 4 项、Session owner 3 项、Plan owner 3 项、绑定图样 3 项、自由行动内核 5 项；连同既有表现 4 项共 **70 项游戏回归**。独立桥 11 项、独立调度器 8 项另计，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 **89 项**。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
 
@@ -75,11 +77,12 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
 unity/Assets/
   Town.Core/Dragonsleep/      纯 C# 世界、规则、合法感知、AI 管线、计划与回放
   Town.OpenAI/               在线提供方、结构化输出、预算和密钥读取边界
+  Town.PieGame/              无引擎行动适配、冻结编码、纯候选和共用状态端口
   Town.Unity/Dragonsleep/     场景输入、角色表现、镜头、织言镜 HUD
   Town.Unity/Shared/          跨场景共享资源（保留原 GUID 的 UI 主题）
   Town.Editor/               场景构建、授权注入与素材/截图工具
   Town.Tests.PlayMode/       现行 Unity 集成测试
-  PieGame.AI.Kernel/          可复用内核，场景移动及日间推进经显式宿主接缝复用
+  PieGame.AI.Kernel/          可复用内核，场景 / 日间 / 显式自由行动三条接缝
   PieGame.AI.Unity/           主线程生命周期桥与独立同步块调度器，非全游戏迁移
   PieGame.AI.Unity.Tests.PlayMode/ 独立桥与调度契约测试，不引用 Town
   Town.Content/              预留内容目录，尚非已实现的数据驱动内容库
@@ -90,11 +93,11 @@ art/                         素材来源、许可证、导入与筛选审计
 tools/                       素材索引/审计脚本及其测试
 ```
 
-`dotnet/Town.Core`、`Town.OpenAI`、`PieGame.AI.Kernel` 直接编译 Unity 目录下的同一份源码，**不是三份重复实现**。六个 .NET 工程分别承担共享库、测试和研究宿主；两个旧 CLI 已删除。
+`dotnet/Town.Core`、`Town.OpenAI`、`Town.PieGame`、`PieGame.AI.Kernel` 直接编译 Unity 目录下的同一份源码，不是重复实现。七个 .NET 工程分别承担共享库、测试和研究宿主；两个旧 CLI 已删除。
 
 AI 只提出方案：角色感知先冻结，结果经结构/引用/规则校验，候选世界裁决后才提交。对话仍为 `action=none`；造物必须确认图样，多步计划确认后逐步执行。PieGame 已有 ToyHost、Unity 主线程 / 生命周期桥，实际接入**玩家场景移动、清晨→正午 / 正午→黄昏**；日间将世界与 spent 一起 compare/write，不先推进时钟再补交。**291 项 .NET、64 项联合 PlayMode**通过，同一实际 macOS 包 12 次分模式运行通过。模型、计划、黄昏 / 夜间与造物仍走原管线，不代表全游戏迁移或成熟发布 SDK；见[首入口](docs/PieGame首条场景事务接入.md)、[日间契约](docs/PieGame日间原子事务接入.md)、[桥契约](docs/PieGameUnity桥契约.md)与[053 日志](docs/开发日志/2026-11-10_053_PieGame日间世界与时间原子提交.md)。
 
-055 另增可复用的 `IOwnerThreadDispatcher`：worker 显式排入同步块，Unity 所有者线程限量执行；销毁取消尚未执行的工作，不覆盖已提交事实。057 接入生产 Session，059 接入 Plan 的异步编排同步块，060 收紧图样候选身份与原 token。同步公开调用仍由宿主保证 owner；**Kernel 权威事务仍只有场景 / 日间两条**，线程归属和本机图样授权不冒充第三条 Kernel 接入，见[生产调度契约](docs/PieGame生产Session所有者调度.md)与[计划图样边界](docs/PieGame计划所有权与图样授权.md)。
+055–060 的线程与图样治理本身不计第三入口；061 才新增显式自由行动的 Kernel 模型链路。同步公开调用仍由宿主保证 owner；计划、夜间、造物和其它模型提交未迁 Kernel，见[生产调度契约](docs/PieGame生产Session所有者调度.md)、[计划图样边界](docs/PieGame计划所有权与图样授权.md)与[当前行动契约](docs/PieGame玩家行动接入.md)。
 
 ## 素材与协作边界
 

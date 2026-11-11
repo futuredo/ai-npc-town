@@ -36,6 +36,9 @@ namespace Town.Unity.Dragonsleep
             public string cooperationMode;
             public bool lateRescue;
             public bool craftOnly, boundCraftConfirmed, oldCraftRejected;
+            public bool actionOnly;
+            public int actionCommits, actionRetainedRequests;
+            public long actionRetainedBeforeUtf8Bytes;
             public int sessionOwnerCallbacks, sessionWrongThreadCallbacks;
             public double elapsedSeconds, longestFrameSeconds;
             public string[] checkpoints;
@@ -96,12 +99,13 @@ namespace Town.Unity.Dragonsleep
                 bool day = args.Contains("--dragonsleep-journey-day");
                 bool late = args.Contains("--dragonsleep-journey-late-rescue");
                 bool craft = args.Contains("--dragonsleep-journey-craft");
+                bool action = args.Contains("--dragonsleep-journey-action");
                 string cooperation = args.FirstOrDefault(a => a.StartsWith("--dragonsleep-journey-cooperation=", StringComparison.Ordinal));
                 cooperation = cooperation?.Substring("--dragonsleep-journey-cooperation=".Length);
                 Require((social ? 1 : 0) + (scene ? 1 : 0) + (privatePlan ? 1 : 0) + (day ? 1 : 0) +
-                    (cooperation != null ? 1 : 0) + (late ? 1 : 0) + (craft ? 1 : 0) <= 1, "验证模式不可混用。");
+                    (cooperation != null ? 1 : 0) + (late ? 1 : 0) + (craft ? 1 : 0) + (action ? 1 : 0) <= 1, "验证模式不可混用。");
                 probe.Begin(social || late ? 109 : cooperation != null ? 253421 : 7932,
-                    output, true, privatePlan, social, scene, cooperation, day, late, craft);
+                    output, true, privatePlan, social, scene, cooperation, day, late, craft, action);
                 Application.runInBackground = true;
             }
             catch (Exception e)
@@ -114,12 +118,13 @@ namespace Town.Unity.Dragonsleep
         /// <summary>测试可显式创建同一验证器；不替换提供方、不调用 Game 的行动方法，不绕过确认按钮。</summary>
         public void Begin(int seed = 7932, string output = null, bool exitWhenFinished = false, bool privatePlan = false,
             bool socialFixture = false, bool sceneOnly = false, string cooperationMode = null, bool dayOnly = false,
-            bool lateRescue = false, bool craftOnly = false)
+            bool lateRescue = false, bool craftOnly = false, bool actionOnly = false)
         {
             if (Result != null) throw new InvalidOperationException("验证器不能重复启动。");
             Require(cooperationMode == null || new[] { "solo", "maren", "pip" }.Contains(cooperationMode), "合作验证模式无效。");
             Require((privatePlan ? 1 : 0) + (socialFixture ? 1 : 0) + (sceneOnly ? 1 : 0) + (dayOnly ? 1 : 0) +
-                (cooperationMode != null ? 1 : 0) + (lateRescue ? 1 : 0) + (craftOnly ? 1 : 0) <= 1, "验证模式不可混用。");
+                (cooperationMode != null ? 1 : 0) + (lateRescue ? 1 : 0) + (craftOnly ? 1 : 0) +
+                (actionOnly ? 1 : 0) <= 1, "验证模式不可混用。");
             if (output != null) output = ValidateOutput(output);
             _output = output; _exit = exitWhenFinished;
             _started = _lastFrame = Time.realtimeSinceStartupAsDouble;
@@ -132,6 +137,8 @@ namespace Town.Unity.Dragonsleep
             if (dayOnly) Result.scope = "真实观察耗时后，地图按钮日间 SDK 两次提交；非夜间或模型提交迁移验收。";
             if (lateRescue) Result.scope = "显式第三天黄昏被捕夹具、默认离线提供方与实际按钮救援归巢；不是自然走出的新局或必胜证明。";
             Result.craftOnly = craftOnly;
+            Result.actionOnly = actionOnly;
+            if (actionOnly) Result.scope = "默认离线新局的十二次真实自由行动按钮与内核保留量；不是付费模型或完整归巢验收。";
             if (craftOnly) Result.scope = "真实造物按钮准备、放弃和绑定确认；旧句柄负例直接调用授权入口，不冒充 OS 点击或完整短局。";
             Application.logMessageReceived += OnLog;
         }
@@ -153,6 +160,7 @@ namespace Town.Unity.Dragonsleep
                 if (Result.sceneOnly) { DriveScene(); return; }
                 if (Result.dayOnly) { DriveDay(); return; }
                 if (Result.craftOnly) { DriveCraft(); return; }
+                if (Result.actionOnly) { DriveAction(); return; }
                 if (Result.cooperationMode != null) CheckCooperationActions();
                 if (Result.privatePlan)
                 {
