@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Town.Core.Dragonsleep
 {
-    /// <summary>一条自足的本机回放帧。冻结世界保存在本地；回放提供方完全不联网。</summary>
+    /// <summary>
+    /// 一条自足的本机回放帧。冻结世界保存在本地；回放提供方完全不联网。
+    /// v1 仅重放 pending/confirmed/declined 三态造物；不记录本机句柄或原令牌生命周期，
+    /// 因此不支持图样生成后取消的 cancelled 终态，也不据此声称验证了确认绑定或取消时序。
+    /// </summary>
     public sealed class DsReplayFrame
     {
         public const string Format = "dragonsleep-replay-v1";
@@ -75,6 +79,7 @@ namespace Town.Core.Dragonsleep
         async Task<bool> VerifyInternal(bool requireMatchingPrompt, CancellationToken ct)
         {
             if (RulesVersion != DsExecutor.RulesVersion) return false;
+            if (Kind == AiTaskKind.Craft && CraftDecision == "cancelled") return false;
             var s = new DragonsleepSession(new RecordedProvider(this, requireMatchingPrompt));
             s.RestoreState(Before);
             var t = await s.RunAsync(Kind, ActorId, Input, ct, PlanContext).ConfigureAwait(false);

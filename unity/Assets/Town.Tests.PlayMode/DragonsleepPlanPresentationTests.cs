@@ -99,6 +99,12 @@ namespace Town.Tests.PlayMode
             while (_game != null && _game.Busy && Time.realtimeSinceStartup < deadline) yield return null;
             Assert.IsTrue(_game == null || !_game.Busy, "操作必须收尾，不能悬挂 Busy"); yield return null;
         }
+        IEnumerator ProviderPending()
+        {
+            float deadline = Time.realtimeSinceStartup + 12;
+            while (_provider.Pending == null && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.IsNotNull(_provider.Pending, "先建立提供方真实等待屏障，再验证忽略取消后的迟到回复");
+        }
         IEnumerator Open() { Click("openPlan"); yield return null; Assert.IsNotNull(_root.Q("planPanel")); }
         string State() => _game.Session.CaptureState().Hash;
         string Text() => string.Join("\n", _root.Q("planPanel").Query<Label>().ToList().Select(l => l.text));
@@ -223,7 +229,7 @@ namespace Town.Tests.PlayMode
             }
             _provider.Plans.Enqueue(ChoicePlan()); _provider.DelayPlan = true;
             string before = State(); int generation = _game.Session.World.SessionGen;
-            Click(replan ? "replanPlan" : "proposePlan"); yield return null;
+            Click(replan ? "replanPlan" : "proposePlan"); yield return ProviderPending();
             Assert.IsTrue(_game.Busy); Assert.IsTrue(_game.Player.InputBlocked);
             Click("cancelPlanRequest"); yield return null;
             Assert.IsTrue(_provider.LastCancellation.IsCancellationRequested);
@@ -332,7 +338,7 @@ namespace Town.Tests.PlayMode
             Following(); _provider.Plans.Enqueue(Plan(Step("local", "act", verb: "observe")));
             yield return Open(); Click("proposePlan"); yield return Idle();
             _provider.Plans.Enqueue(ChoicePlan()); _provider.DelayPlan = true;
-            Click("replanPlan"); yield return null; Click("closePlan"); yield return null;
+            Click("replanPlan"); yield return ProviderPending(); Click("closePlan"); yield return null;
             _game.CancelPlanRequest(); _provider.Release(); yield return Idle();
             Assert.IsFalse(_game.Hud.ModalOpen); Assert.AreEqual("abandoned", _game.ActivePlan.Status);
             var labels = _root.Query<Label>().ToList().Select(l => l.text ?? "").ToList();

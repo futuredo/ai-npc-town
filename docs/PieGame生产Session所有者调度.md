@@ -23,8 +23,8 @@
 - 串行 Semaphore gate 仍跨 provider await 持有；等待期间的移动拒绝语义不变，不把它当成 Kernel 短提交锁。
 - 所有者队列关闭后，任务取消或以明确关闭异常结束；原 gate 必须释放，绝不 fallback 到 worker 写世界或补发通知。关闭后不保证完成通知还能发送。
 - 同步 `ConfirmCraft`、`EnterPlace`、Restart 等仍由调用方负责在线程上正确调用；本轮 Game 的确认 / 放弃在 Unity 主线程。没有新增“所有同步 API 都支持 worker”的承诺。
-- `DsPlanRun` 的 Adopt、结果列表更新、部分同步移动和世界读取仍有未迁续体；Game 外层 await 回主线程不代表 Plan 内部全程 owner。Busy 防护继续保留。
-- pendingCraft 的原取消、候选授权和覆盖语义没有借本次接线悄悄改造，须另立任务。
+- 057 交付时 `DsPlanRun` 的上层续体尚未迁移；059 后续已将提案 / 采纳、逐步移动 / 等待 / 回执消费与重规划同步块接入同一个 owner。同步公开调用和集合读取仍由调用者保证 owner，Busy 防护继续保留。
+- 057 未改变原 pendingCraft 协议；060 后续引入确切候选句柄、原 token 校验和拒绝覆盖，Game 使用严格绑定，headless 保留受信任 bool 兼容。当前契约见[计划所有权与图样授权](PieGame计划所有权与图样授权.md)。
 - Kernel 权威 compare/write 仍只有场景移动、日间世界＋spent 两个限域入口。Session 线程所有权接线不是第三条 Kernel 提交入口，也不是全游戏统一 runtime。
 - 不新增联网、自动重试、确认授权、自动提交或 Unity 严格回放。
 
@@ -34,4 +34,4 @@
 
 3 项真实主场景 PlayMode 使用真正延迟的离线提供方，由 worker 释放回复：行动全阶段、图样准备 / 放弃 / 确认在主线程；销毁已排队后半段不执行、不补通知、gate 释放。不是只用同步 RuleProvider 证明异步线程正确。
 
-实际 Player 短局另统计 Session 的 StageChanged / TraceCompleted 回调线程；**只覆盖这两种 Session 通知，不覆盖 Plan 自己的所有读写或所有同步规则事件**。普通运行不创建验证器；离线快速按钮运行不代表真实网络、OS 像素命中、真人体验或性能验收。最终执行记录见 [057 日志](开发日志/2026-11-10_057_PieGame生产Session所有者调度.md)。
+实际 Player 短局另统计 Session 的 StageChanged / TraceCompleted 回调线程；**该计数本身只覆盖这两种通知，Plan 所有权由独立 TCS / pump 测试证明，不靠该计数外推**。普通运行不创建验证器；离线快速按钮运行不代表真实网络、OS 像素命中、真人体验或性能验收。057 的原交付记录见[历史日志](开发日志/2026-11-10_057_PieGame生产Session所有者调度.md)，后续扩展见[059](开发日志/2026-11-11_059_计划异步所有权与换局护栏.md)与[060](开发日志/2026-11-11_060_造物确切候选与原请求授权.md)。

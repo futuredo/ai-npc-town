@@ -31,19 +31,28 @@ namespace Town.Core.Dragonsleep
         private readonly DsExecutor _executor;
         private int _sequence;
         private int _spent;
-        private DsExecutionPlan _pendingCraft;
-        private AiTrace _pendingCraftTrace;
+        private PendingCraft _pendingCraft;
+        private readonly bool _requireBoundCraftConfirmation;
         public bool HasPendingCraft => _pendingCraft != null;
-        public string PendingCraftDescription
+        public string PendingCraftDescription => _pendingCraft?.Handle.Description ?? "";
+
+        // 仅在本机会话中保存。每次生成全新的句柄，以引用身份绑定候选；不复用 RequestId，
+        // Restart/Restore 清槽后即使重现相同世界与请求编号，旧句柄也不可能匹配（ABA 安全）。
+        sealed class PendingCraft
         {
-            get
+            internal readonly DsExecutionPlan Plan;
+            internal readonly AiTrace Trace;
+            internal readonly CancellationToken OriginalCancellation;
+            internal readonly DsCraftProposal Handle;
+
+            internal PendingCraft(DsExecutionPlan plan, AiTrace trace, CancellationToken originalCancellation)
             {
-                if (_pendingCraft == null) return "";
-                var before = _pendingCraft.Before.Restore(); var after = _pendingCraft.After.Restore();
+                Plan = plan; Trace = trace; OriginalCancellation = originalCancellation;
+                var before = plan.Before.Restore(); var after = plan.After.Restore();
                 var item = after.Items.Values.First(i => !before.Items.ContainsKey(i.Id));
                 var consumed = before.Items.Values.Where(i => i.Holder != "consumed" && after.Items[i.Id].Holder == "consumed").Select(i => i.Name);
-                return "「" + item.Name + "」\n" + item.Look + "\n\n消耗：" + string.Join("、", consumed) +
-                    "\n效果：" + string.Join("、", item.Tags.Select(DsContent.ItemTagName)) + "\n时间：" + _pendingCraft.TimeCost + " 点。";
+                Handle = new DsCraftProposal("「" + item.Name + "」\n" + item.Look + "\n\n消耗：" + string.Join("、", consumed) +
+                    "\n效果：" + string.Join("、", item.Tags.Select(DsContent.ItemTagName)) + "\n时间：" + plan.TimeCost + " 点。");
             }
         }
         private readonly Dictionary<string, string> _latestByActor = new Dictionary<string, string>();
@@ -51,10 +60,12 @@ namespace Town.Core.Dragonsleep
         private readonly IDsOwnerThreadDispatcher _ownerDispatcher;
 
         public DragonsleepSession(IAiProvider provider, int seed = 20261108,
-            IDsRoll rolls = null, DsExecutionMode executionMode = DsExecutionMode.Live, IDsOwnerThreadDispatcher ownerDispatcher = null)
+            IDsRoll rolls = null, DsExecutionMode executionMode = DsExecutionMode.Live, IDsOwnerThreadDispatcher ownerDispatcher = null,
+            bool requireBoundCraftConfirmation = false)
         {
             Provider = provider ?? throw new ArgumentNullException(nameof(provider));
             _ownerDispatcher = ownerDispatcher;
+            _requireBoundCraftConfirmation = requireBoundCraftConfirmation;
             _executor = new DsExecutor(rolls, executionMode);
             World = DsContent.NewWorld(seed);
         }
@@ -70,7 +81,7 @@ namespace Town.Core.Dragonsleep
             Traces.Clear();
             RuleEvents.Clear(); _ruleSequence = 0;
             _executor.Reset();
-            _pendingCraft = null; _pendingCraftTrace = null;
+            _pendingCraft = null;
         }
 
         /// <summary>
@@ -178,18 +189,57 @@ namespace Town.Core.Dragonsleep
             World = snapshot.Restore(); _spent = snapshot.Spent; PhaseBudget = snapshot.PhaseBudget;
             _sequence = 0; _latestByActor.Clear(); Traces.Clear(); _executor.Reset();
             RuleEvents.Clear(); _ruleSequence = 0;
-            _pendingCraft = null; _pendingCraftTrace = null;
+            _pendingCraft = null;
         }
 
-        /// <summary>玩家确认图样后提交；不产生第二次模型调用。过期图样仍会被完整状态检查拒绝。</summary>
+        /// <summary>
+        /// 只为本次造物 trace 返回当前图样；请求编号相同、内容相同或旧 trace 均不能替代引用身份。
+        /// 同步入口由调用者保证在会话所有者线程调用。
+        /// </summary>
+        public DsCraftProposal GetCraftProposal(AiTrace expectedTrace) =>
+            _pendingCraft != null && ReferenceEquals(_pendingCraft.Trace, expectedTrace) ? _pendingCraft.Handle : null;
+
+        /// <summary>兼容 headless 调用；严格绑定会话拒绝此入口，不消费候选。同步调用须在所有者线程。</summary>
         public AiTrace ConfirmCraft(bool accept)
         {
             if (!_gate.Wait(0)) return null;
             try
             {
-                if (_pendingCraft == null) return null;
-                var plan = _pendingCraft; var t = _pendingCraftTrace;
-                _pendingCraft = null; _pendingCraftTrace = null;
+                if (_requireBoundCraftConfirmation) return null;
+                return ConfirmCraftLocked(_pendingCraft?.Handle, accept);
+            }
+            finally { _gate.Release(); }
+        }
+
+        /// <summary>
+        /// 仅确认持有的这张图样，不产生第二次模型调用。忙碌、空、跨会话或过期句柄不消费当前候选，
+        /// 不改 trace、不通知。同步调用须在所有者线程；世界过期仍由原执行器检查。
+        /// </summary>
+        public AiTrace ConfirmCraft(DsCraftProposal proposal, bool accept)
+        {
+            if (!_gate.Wait(0)) return null;
+            try { return ConfirmCraftLocked(proposal, accept); }
+            finally { _gate.Release(); }
+        }
+
+        AiTrace ConfirmCraftLocked(DsCraftProposal proposal, bool accept)
+        {
+            var pending = _pendingCraft;
+            if (pending == null || proposal == null || !ReferenceEquals(pending.Handle, proposal)) return null;
+            // 先取走且仅取走一次；取消与玩家取舍共用此终态入口，无后台取消回调写状态。
+            _pendingCraft = null;
+            var plan = pending.Plan; var t = pending.Trace;
+            bool cancelled = pending.OriginalCancellation.IsCancellationRequested;
+            if (cancelled)
+            {
+                t.CraftDecision = "cancelled";
+                t.Receipt = new DsExecutionReceipt(plan, "cancelled", false, CaptureState());
+                t.FailureCode = "cancelled";
+                t.Verdict = new Verdict { Kind = VerdictKind.Rejected, Reason = "造物请求已取消，图样未提交" };
+                t.Presented = "造物请求已取消，这张图样不再提交；没有消耗材料和时间。";
+            }
+            else
+            {
                 t.CraftDecision = accept ? "confirmed" : "declined";
                 t.Receipt = accept ? _executor.Commit(plan, World, ref _spent, PhaseBudget)
                     : new DsExecutionReceipt(plan, "declined", false, CaptureState());
@@ -201,16 +251,22 @@ namespace Town.Core.Dragonsleep
                     t.Presented = accept ? "材料或地点已改变，这张图样已失效。" : "图样已收起，没有消耗材料和时间。";
                     if (accept) t.FailureCode = t.Receipt.Status;
                 }
-                t.WorldVersionAfter = World.Version;
-                t.Stage(AiStage.Commit).Status = t.Receipt.Applied ? StageStatus.Ok : accept ? StageStatus.Fail : StageStatus.Skipped;
-                t.Stage(AiStage.Commit).Detail = t.Receipt.Status + "；实际状态差异 " + t.Receipt.Effects.Count;
-                TraceCompleted?.Invoke(t);
-                return t;
             }
-            finally { _gate.Release(); }
+            // 一旦进入正常提交路径，之后的令牌取消不回滚已完成的同步提交。
+            t.WorldVersionAfter = World.Version;
+            t.Stage(AiStage.Commit).Status = t.Receipt.Applied ? StageStatus.Ok : cancelled || accept ? StageStatus.Fail : StageStatus.Skipped;
+            t.Stage(AiStage.Commit).Detail = t.Receipt.Status + "；实际状态差异 " + t.Receipt.Effects.Count;
+            TraceCompleted?.Invoke(t);
+            return t;
         }
 
-        public async Task<List<AiTrace>> EndPhaseAsync(CancellationToken ct = default)
+        public Task<List<AiTrace>> EndPhaseAsync(CancellationToken ct = default) => EndPhaseCoreAsync(ct, null);
+
+        /// <summary>计划跨夜的窄入口：在实际所有者边界同步验证原操作仍然有效。</summary>
+        internal Task<List<AiTrace>> EndPlanPhaseAsync(CancellationToken ct, Action ensureCurrent) =>
+            EndPhaseCoreAsync(ct, ensureCurrent);
+
+        async Task<List<AiTrace>> EndPhaseCoreAsync(CancellationToken ct, Action guard)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             try
@@ -219,6 +275,7 @@ namespace Town.Core.Dragonsleep
                 DsWorld w = null;
                 var actors = await Owner(() =>
                 {
+                    guard?.Invoke();
                     w = World;
                     bool night = w.Phase == DayPhase.Night;
                     bool advanced = false;
@@ -230,18 +287,23 @@ namespace Town.Core.Dragonsleep
                 if (actors == null) return result;
                 foreach (var id in actors)
                 {
-                    result.Add(await RunLockedAsync(AiTaskKind.AgentPlan, id, null, ct).ConfigureAwait(false));
-                    if (await Owner(() => World != w || ct.IsCancellationRequested).ConfigureAwait(false)) return result;
+                    result.Add(await RunLockedAsync(AiTaskKind.AgentPlan, id, null, ct, guard: guard).ConfigureAwait(false));
+                    if (await Owner(() =>
+                    {
+                        guard?.Invoke();
+                        return World != w || ct.IsCancellationRequested;
+                    }).ConfigureAwait(false)) return result;
                 }
-                result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
+                result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct, guard: guard).ConfigureAwait(false));
                 bool finalDawn = await Owner(() =>
                 {
+                    guard?.Invoke();
                     if (World != w || ct.IsCancellationRequested) return false;
                     w.Advance();
                     RunRuleLocked("phase_start", _executor.PhaseStart);
                     return w.FinalDawn;
                 }).ConfigureAwait(false);
-                if (finalDawn) result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct).ConfigureAwait(false));
+                if (finalDawn) result.Add(await RunLockedAsync(AiTaskKind.Direct, "gm", null, ct, guard: guard).ConfigureAwait(false));
                 return result;
             }
             finally { _gate.Release(); }
@@ -261,10 +323,14 @@ namespace Town.Core.Dragonsleep
         public Task<AiTrace> PlanAsync(string goal, string planContext = null, CancellationToken ct = default) =>
             RunAsync(AiTaskKind.Plan, "player", goal, ct, planContext);
 
-        internal async Task<AiTrace> PlanWithLocalContextAsync(string goal, string context, DsPlanLocalContext local, CancellationToken ct)
+        internal Task<AiTrace> PlanWithLocalContextAsync(string goal, string context, DsPlanLocalContext local, CancellationToken ct) =>
+            PlanGuardedAsync(goal, context, local, ct, null);
+
+        /// <summary>计划提案/重规划：不让排队期间失效的操作重新绑定当前世界。</summary>
+        internal async Task<AiTrace> PlanGuardedAsync(string goal, string context, DsPlanLocalContext local, CancellationToken ct, Action ensureCurrent)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
-            try { return await RunLockedAsync(AiTaskKind.Plan, "player", goal, ct, null, context, local).ConfigureAwait(false); }
+            try { return await RunLockedAsync(AiTaskKind.Plan, "player", goal, ct, null, context, local, ensureCurrent).ConfigureAwait(false); }
             finally { _gate.Release(); }
         }
 
@@ -274,6 +340,15 @@ namespace Town.Core.Dragonsleep
         /// </summary>
         public Task<AiTrace> RunStepAsync(Dictionary<string, object> proposal, string label, CancellationToken ct = default) =>
             RunWithProviderAsync(AiTaskKind.Adjudicate, "player", label, new FixedProvider("计划步骤（结构化，无模型调用）", MiniJson.Write(proposal)), ct);
+
+        /// <summary>计划步骤的窄入口：在实际开始与提交前同步复核原操作。</summary>
+        internal async Task<AiTrace> RunPlanStepAsync(Dictionary<string, object> proposal, string label, CancellationToken ct, Action ensureCurrent)
+        {
+            var provider = new FixedProvider("计划步骤（结构化，无模型调用）", MiniJson.Write(proposal));
+            await _gate.WaitAsync(ct).ConfigureAwait(false);
+            try { return await RunLockedAsync(AiTaskKind.Adjudicate, "player", label, ct, provider, guard: ensureCurrent).ConfigureAwait(false); }
+            finally { _gate.Release(); }
+        }
 
         /// <summary>用指定的提供方跑一次管线（计划步骤、研究扰动）。仍经过全部校验与单次提交。</summary>
         public async Task<AiTrace> RunWithProviderAsync(AiTaskKind kind, string actorId, string text, IAiProvider provider, CancellationToken ct = default)
@@ -293,7 +368,8 @@ namespace Town.Core.Dragonsleep
                 Task.FromResult(new ProviderResult { ProviderName = Name, RawText = _raw, Simulated = true, EstimatedUsd = 0m });
         }
 
-        Task<T> Owner<T>(Func<T> synchronousBlock) => _ownerDispatcher == null
+        // 计划编排复用同一个所有者；只能派发同步块，不能在块内等待异步会话请求。
+        internal Task<T> Owner<T>(Func<T> synchronousBlock) => _ownerDispatcher == null
             ? Task.FromResult(synchronousBlock()) : _ownerDispatcher.InvokeAsync(synchronousBlock);
 
         sealed class CallState
@@ -310,21 +386,22 @@ namespace Town.Core.Dragonsleep
         }
 
         async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
-            IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null)
+            IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null, Action guard = null)
         {
             var call = new CallState();
-            bool providerFailed = false;
+            bool failed = false;
             try
             {
-                if (!await Owner(() => BeginCall(call, kind, actorId, playerText, providerOverride, planContext, localPlanContext)).ConfigureAwait(false))
+                if (!await Owner(() => BeginCall(call, kind, actorId, playerText, providerOverride, planContext,
+                    localPlanContext, ct, guard)).ConfigureAwait(false))
                     return call.Trace;
                 ProviderResult r = null;
                 bool cancelled = false;
                 try { r = await call.Provider.CompleteAsync(call.Packet, ct).ConfigureAwait(false); }
                 catch (OperationCanceledException) { cancelled = true; }
-                catch { providerFailed = true; throw; }
-                return await Owner(() => FinishCall(call, kind, actorId, r, cancelled, ct)).ConfigureAwait(false);
+                return await Owner(() => FinishCall(call, kind, actorId, r, cancelled, ct, guard)).ConfigureAwait(false);
             }
+            catch { failed = true; throw; }
             finally
             {
                 try
@@ -335,8 +412,8 @@ namespace Town.Core.Dragonsleep
                         return true;
                     }).ConfigureAwait(false);
                 }
-                // 保留提供方原异常；关闭或取消调度时绝不在 worker 补写或补发通知。
-                catch when (providerFailed) { }
+                // 保留任何已有主异常；关闭或取消调度时绝不在 worker 补写或补发通知。
+                catch when (failed) { }
             }
         }
 
@@ -348,9 +425,17 @@ namespace Town.Core.Dragonsleep
             TraceCompleted?.Invoke(call.Trace);
         }
 
-        bool BeginCall(CallState call, AiTaskKind kind, string actorId, string playerText,
-            IAiProvider providerOverride, string planContext, DsPlanLocalContext localPlanContext)
+        void CompleteCallPreservingFailure(CallState call, bool failed)
         {
+            try { CompleteCall(call); }
+            catch when (failed) { }
+        }
+
+        bool BeginCall(CallState call, AiTaskKind kind, string actorId, string playerText,
+            IAiProvider providerOverride, string planContext, DsPlanLocalContext localPlanContext, CancellationToken ct, Action guard)
+        {
+            // 必须在读取 World、分配请求编号或创建 trace 之前，于实际 Owner 执行时检查。
+            guard?.Invoke();
             var w = call.World = World;
             call.RequestHash = CaptureState().Hash;
             var t = new AiTrace
@@ -363,9 +448,10 @@ namespace Town.Core.Dragonsleep
             foreach (AiStage s in Enum.GetValues(typeof(AiStage))) t.Stage(s);
             Traces.Add(t);
             call.Trace = t;
-            bool ready = false;
+            bool ready = false, failed = false;
             try
             {
+                if (ct.IsCancellationRequested) { Stale(t, "cancelled", "请求已取消，提案未提交"); return false; }
                 // ① 感知分区
                 var sw = call.StageTime = Stopwatch.StartNew();
                 Begin(t, AiStage.Context);
@@ -394,19 +480,24 @@ namespace Town.Core.Dragonsleep
 
                 // ③ 模型调用
                 sw.Restart(); Begin(t, AiStage.Provider);
+                guard?.Invoke();
+                if (ct.IsCancellationRequested) { Stale(t, "cancelled", "请求已取消，提案未提交"); return false; }
                 _latestByActor[actorId ?? ""] = t.RequestId;
                 call.Gen = w.SessionGen;
                 call.Provider = providerOverride ?? Provider;
                 call.Packet = t.Prompt;
                 return ready = true;
             }
-            finally { if (!ready) CompleteCall(call); }
+            catch { failed = true; throw; }
+            finally { if (!ready) CompleteCallPreservingFailure(call, failed); }
         }
 
-        AiTrace FinishCall(CallState call, AiTaskKind kind, string actorId, ProviderResult r, bool cancelled, CancellationToken ct)
+        AiTrace FinishCall(CallState call, AiTaskKind kind, string actorId, ProviderResult r, bool cancelled, CancellationToken ct, Action guard)
         {
+            bool failed = false;
             try
             {
+                guard?.Invoke();
                 var t = call.Trace; var w = call.World; var sw = call.StageTime;
                 if (cancelled) r = new ProviderResult { ProviderName = call.Provider.Name, Error = "cancelled" };
                 t.Provider = r;
@@ -462,6 +553,9 @@ namespace Town.Core.Dragonsleep
 
                 // ⑦ 单次提交：完整状态比对 + 幂等标识；回执来自实际差异，而非模型宣称。
                 sw.Restart(); Begin(t, AiStage.Commit);
+                // 阶段通知也可能同步触发放弃/重启；在任何回执或世界提交前再检查一次。
+                guard?.Invoke();
+                if (ct.IsCancellationRequested) { Stale(t, "cancelled", "请求已取消，提案未提交"); return t; }
                 if (kind == AiTaskKind.Plan)
                 {
                     // 计划只是提案：不提交、不耗时；玩家确认后逐步执行，每步各自产生回执。
@@ -471,7 +565,7 @@ namespace Town.Core.Dragonsleep
                 }
                 if (kind == AiTaskKind.Craft && plan.FailureCode == null && t.Verdict.Kind != VerdictKind.Rejected)
                 {
-                    _pendingCraft = plan; _pendingCraftTrace = t; t.CraftDecision = "pending";
+                    _pendingCraft = new PendingCraft(plan, t, ct); t.CraftDecision = "pending";
                     t.Receipt = new DsExecutionReceipt(plan, "awaiting_confirmation", false, plan.Before);
                     t.Presented = "图样已经画好，确认材料与效果后才能织造。";
                     End(t, AiStage.Commit, StageStatus.Warn, "等待玩家确认；材料、时间与世界均未改变", sw);
@@ -489,13 +583,15 @@ namespace Town.Core.Dragonsleep
                     $"版本 {t.Receipt.VersionBefore}→{t.Receipt.VersionAfter}", sw);
                 return t;
             }
-            finally { CompleteCall(call); }
+            catch { failed = true; throw; }
+            finally { CompleteCallPreservingFailure(call, failed); }
         }
 
         string Precondition(AiTaskKind kind, string actorId)
         {
             var w = World;
             if (w.FinalDawn && kind != AiTaskKind.Direct) return "第三个黎明已至，一切交由苍穹之母裁决。";
+            if (kind == AiTaskKind.Craft && HasPendingCraft) return "请先确认或收起当前图样，再绘制新的图样。";
             if (kind == AiTaskKind.Dialogue)
             {
                 if (!w.Actors.TryGetValue(actorId ?? "", out var a)) return "没有这个人。";

@@ -435,24 +435,42 @@ namespace Town.Unity.Dragonsleep
         }
 
         bool _craftConfirmation;
+        DsCraftProposal _craftProposal;
         void CloseModal()
         {
+            if (_craftConfirmation)
+            {
+                DecideDisplayedCraft(_craftProposal, false);
+                return;
+            }
             _planPanelOpen = false;
             _modal.style.display = DisplayStyle.None;
-            if (_craftConfirmation) { _craftConfirmation = false; Game.DecideCraft(false); }
         }
 
-        public void ShowCraftProposal()
+        void DecideDisplayedCraft(DsCraftProposal proposal, bool accept)
         {
+            // 旧卡片的回调不能关闭或决定另一张图样；忙时保持原卡片和绑定，不先丢授权。
+            if (!_craftConfirmation || !ReferenceEquals(_craftProposal, proposal)) return;
+            if (!Game.DecideCraft(proposal, accept) && (Game.Busy || Game.Session.Busy)) return;
+            // 无候选的旧卡可收起，但从不借旧句柄领取另一张图样；新卡的引用检查已在上方拦截。
+            _craftConfirmation = false;
+            _craftProposal = null;
+            CloseModal();
+        }
+
+        public void ShowCraftProposal(DsCraftProposal proposal)
+        {
+            if (proposal == null) return;
             var card = Card(720); _craftConfirmation = true;
+            _craftProposal = proposal;
             card.name = "craftProposal";
             card.Add(L("织 造 图 样", 30, Ink, true));
-            var description = Wrap(L(Game.Session.PendingCraftDescription, 18, InkSoft));
+            var description = Wrap(L(proposal.Description, 18, InkSoft));
             description.style.marginTop = 18; description.style.alignSelf = Align.Stretch; card.Add(description);
             var row = Row();
-            var confirm = CardButton("按图织造", () => { _craftConfirmation = false; CloseModal(); Game.DecideCraft(true); });
+            var confirm = CardButton("按图织造", () => DecideDisplayedCraft(proposal, true));
             confirm.name = "confirmCraft"; confirm.style.marginRight = 12;
-            var cancel = CardButton("先不织造", CloseModal); cancel.name = "declineCraft";
+            var cancel = CardButton("先不织造", () => DecideDisplayedCraft(proposal, false)); cancel.name = "declineCraft";
             row.Add(confirm); row.Add(cancel); card.Add(row);
         }
 

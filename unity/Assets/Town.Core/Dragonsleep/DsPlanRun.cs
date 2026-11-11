@@ -58,6 +58,7 @@ namespace Town.Core.Dragonsleep
     /// <summary>
     /// 一次“提出目标 → 计划 → 玩家确认取舍 → 逐步执行 → 失败重规划”的完整过程。
     /// 每一步都单独经过执行器提交并产生回执；计划永远不会一次提交多步。
+    /// 异步入口经 Session.Owner 准备及消费；同步 Accept/Abandon/MeetsObjective/ToRecord 和公开集合读取由调用方保证 owner。
     /// </summary>
     public sealed class DsPlanRun
     {
@@ -89,6 +90,51 @@ namespace Town.Core.Dragonsleep
         int _next;
         DsWorldSnapshot _expected;
         DsPlanStep _failedStep;
+        // 首次 Owner 准备时绑定局身份；Restart/RestoreState 更换世界后不能复用旧 run。
+        DsWorld _runWorld;
+        int _runSessionGen;
+        long _generation;
+        RunOperation _pendingOperation;
+
+        // 这些 context 只在 Owner 中准备和消费；块外仅使用已冻结的调用参数和调度结果。
+        sealed class RunOperation
+        {
+            internal long Generation;
+            internal CancellationTokenSource Cancellation;
+            internal CancellationToken Token;
+        }
+
+        sealed class PlanRequest
+        {
+            internal RunOperation Operation;
+            internal string Context;
+            internal DsPlanLocalContext LocalContext;
+            internal DsReplanRecord Replan;
+        }
+
+        enum StepAwait { Done, InitialNight, Action, Wait }
+
+        sealed class StepContext
+        {
+            internal RunOperation Operation;
+            internal DsPlanStep Step;
+            internal DsPlanStepResult Result;
+            internal int FromEvent, WaitTarget;
+            internal DsWorldSnapshot BeforeWait;
+        }
+
+        sealed class StepDispatch
+        {
+            internal readonly StepAwait Await;
+            internal readonly CancellationToken Token;
+            internal readonly Dictionary<string, object> Proposal;
+            internal readonly string Label;
+            internal readonly DsPlanStepResult Result;
+
+            internal StepDispatch(StepAwait pending, CancellationToken token = default,
+                Dictionary<string, object> proposal = null, string label = null, DsPlanStepResult result = null)
+            { Await = pending; Token = token; Proposal = proposal; Label = label; Result = result; }
+        }
 
         public DsPlanRun(DragonsleepSession session, string goal, bool requireHomecoming = false, DsPlanConstraints constraints = null)
         {
@@ -98,20 +144,57 @@ namespace Town.Core.Dragonsleep
             Constraints = constraints ?? DsPlanConstraints.Unrestricted;
         }
 
-        public async Task<AiTrace> ProposeAsync(CancellationToken ct = default)
+        void EnsureRunWorld()
         {
-            var context = RequireHomecoming ? new Dictionary<string, object>
-            { ["objective"] = "homecoming", ["completion"] = "小烬与母亲团聚；局部步骤结束仍需继续规划" } : null;
-            if (Constraints.HasRestrictions)
+            if (_runWorld == null)
             {
-                context = context ?? new Dictionary<string, object>();
-                context["player_constraints"] = Constraints.ToRecord();
+                _runWorld = Session.World;
+                _runSessionGen = _runWorld.SessionGen;
             }
-            AddDeadlineRecovery(context);
-            var t = await Session.PlanAsync(Goal, context == null ? null : MiniJson.Write(context), ct).ConfigureAwait(false);
-            Adopt(t);
-            return t;
+            if (Session.World != _runWorld || _runWorld.SessionGen != _runSessionGen)
+                throw new OperationCanceledException("新局已开始，旧计划运行已失效");
         }
+
+        RunOperation BeginOperation(CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            if (Status == "abandoned") throw new OperationCanceledException("玩家已放弃计划");
+            // 一个 run 不并发消费同一个 _next；Session 的门闩只串行事务，不保护计划索引。
+            if (_pendingOperation != null) throw new InvalidOperationException("计划操作尚未结束");
+            EnsureRunWorld();
+            var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            return _pendingOperation = new RunOperation
+            { Generation = ++_generation, Cancellation = cancellation, Token = cancellation.Token };
+        }
+
+        void CheckOperation(RunOperation operation)
+        {
+            operation.Token.ThrowIfCancellationRequested();
+            CheckOperationIdentity(operation);
+        }
+
+        void CheckOperationIdentity(RunOperation operation)
+        {
+            if (_pendingOperation != operation || operation.Generation != _generation || Status == "abandoned")
+                throw new OperationCanceledException("计划运行已失效");
+            EnsureRunWorld();
+        }
+
+        void ReleaseOperation(RunOperation operation)
+        {
+            if (operation == null) return;
+            if (_pendingOperation == operation) _pendingOperation = null;
+            operation.Cancellation.Dispose();
+        }
+
+        void InvalidateOperation()
+        {
+            _generation++;
+            // 让已经发起的 Session 调用在其提交边界停止；已提交的规则后果不回滚。
+            _pendingOperation?.Cancellation.Cancel();
+        }
+
+        public Task<AiTrace> ProposeAsync(CancellationToken ct = default) => RequestPlanAsync(false, false, ct);
 
         void Adopt(AiTrace t)
         {
@@ -128,10 +211,12 @@ namespace Town.Core.Dragonsleep
 
         /// <summary>
         /// 玩家确认（可改选取舍）。若提出计划后世界已变，先复核剩余步骤，不可行则直接要求重规划。
+        /// 同步入口由调用者保证在会话所有者线程执行，不自动派发。
         /// </summary>
         public void Accept(IDictionary<string, string> selection = null)
         {
             if (Status != "awaiting_confirmation") throw new InvalidOperationException("没有待确认的计划");
+            EnsureRunWorld();
             var chosen = Plan.DefaultSelection();
             bool modified = false;
             if (selection != null)
@@ -169,6 +254,7 @@ namespace Town.Core.Dragonsleep
                 if (!actualBranch.Feasible || (RequireHomecoming && !actualBranch.ReachesGoal))
                     throw new InvalidOperationException("当前选择未通过重新校验：" + actualBranch.Reason);
             }
+            InvalidateOperation();
             Selection = chosen;
             AcceptedRequestIds.Add(LatestPlanTrace?.RequestId);
             _active = frozenSteps ?? Plan.ActiveSteps(Selection);
@@ -190,34 +276,84 @@ namespace Town.Core.Dragonsleep
             var pending = Replans.LastOrDefault(r => r.Decision == "pending");
             if (pending != null) pending.Decision = "abandoned";
             Status = "abandoned";
+            InvalidateOperation();
         }
 
         /// <summary>执行下一步。返回该步结果；计划已结束返回 null。</summary>
         public async Task<DsPlanStepResult> StepAsync(CancellationToken ct = default)
         {
+            var context = new StepContext();
+            bool failed = true;
+            try
+            {
+                var next = await Session.Owner(() => PrepareStep(context, ct)).ConfigureAwait(false);
+                // 是否继续由 Owner 决定；块外只分派已冻结的调用，不检查世界或计划状态。
+                while (true)
+                {
+                    if (next.Await == StepAwait.Done)
+                    {
+                        failed = false;
+                        return next.Result;
+                    }
+                    if (next.Await == StepAwait.Action)
+                    {
+                        var trace = await Session.RunPlanStepAsync(next.Proposal, next.Label, next.Token,
+                            () => CheckOperationIdentity(context.Operation)).ConfigureAwait(false);
+                        next = await Session.Owner(() => ConsumeAction(context, trace)).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        var traces = await Session.EndPlanPhaseAsync(next.Token,
+                            () => CheckOperation(context.Operation)).ConfigureAwait(false);
+                        bool initialNight = next.Await == StepAwait.InitialNight;
+                        next = await Session.Owner(() => ConsumePhase(context, traces, initialNight)).ConfigureAwait(false);
+                    }
+                }
+            }
+            finally
+            {
+                if (failed)
+                {
+                    try
+                    {
+                        await Session.Owner(() => { ReleaseOperation(context.Operation); return true; }).ConfigureAwait(false);
+                    }
+                    // 调度关闭后没有 worker 补写；也不能用清理异常覆盖此前已提交之后的原异常。
+                    catch { }
+                }
+            }
+        }
+
+        StepDispatch PrepareStep(StepContext context, CancellationToken ct)
+        {
             if (Status != "running") throw new InvalidOperationException("计划不在执行中：" + Status);
+            context.Operation = BeginOperation(ct);
             var w = Session.World;
-            if (w.FinalDawn || w.Whelp.WithMother || _next >= _active.Count) { FinishOrContinue(); return null; }
+            if (w.FinalDawn || w.Whelp.WithMother || _next >= _active.Count)
+            { FinishOrContinue(); return StepDone(context, null); }
             // 移动事件/居民异步回调可以触达公开草稿。检查与实际执行必须消费同一份独立步骤，含集合。
-            var step = FreezeStep(_active[_next]);
-            var r = new DsPlanStepResult { StepId = step.Id, Op = step.Op, Brief = step.Brief(), Clock = w.ClockText };
+            var step = context.Step = FreezeStep(_active[_next]);
+            var r = context.Result = new DsPlanStepResult { StepId = step.Id, Op = step.Op, Brief = step.Brief(), Clock = w.ClockText };
             // 再核对实际下一步，不能依赖曾经检查过的可变提案；必须早于跨夜、移动、掷骰和耗时。
             if (!Constraints.Allows(step))
-                return Fail(r, step, DsPlanFailure.Precondition, Constraints.HasCooperationIntent
+                return StepDone(context, Fail(r, step, DsPlanFailure.Precondition, Constraints.HasCooperationIntent
                     ? "托付或原件交付违反玩家明确选择，步骤未执行" : "托付对象违反玩家明确选择，步骤未执行", executed: false,
-                    reasonCode: new DsReason("player_constraint"));
+                    reasonCode: new DsReason("player_constraint")));
 
             // 时间已到深夜：居民照常行动，之后再判断世界是否变了。
             if (Session.NightPending)
             {
-                int events = Session.RuleEvents.Count;
-                var night = await Session.EndPhaseAsync(ct).ConfigureAwait(false);
-                r.RequestIds.AddRange(night.Select(x => x.RequestId));
-                r.Receipts.AddRange(night.Select(x => x.Receipt));
-                if (CapturedByPatrol(events)) return Fail(r, step, DsPlanFailure.Dice, "换岗巡逻发现了小烬");
-                if (Session.World.FinalDawn) { FinishOrContinue(); return null; }
+                context.FromEvent = Session.RuleEvents.Count;
+                return new StepDispatch(StepAwait.InitialNight, context.Operation.Token);
             }
+            return PrepareExecution(context);
+        }
 
+        StepDispatch PrepareExecution(StepContext context)
+        {
+            CheckOperation(context.Operation);
+            var step = context.Step;
+            var r = context.Result;
             var now = Session.CaptureState();
             if (now.Hash != _expected.Hash)
             {
@@ -226,73 +362,113 @@ namespace Town.Core.Dragonsleep
                 remaining.Insert(0, step);
                 var check = DsPlanValidator.Simulate(now, remaining, Selection);
                 if (changes.Count > 0 || !check.Feasible)
-                    return Fail(r, step, DsPlanFailure.Stale, changes.Count > 0 ? string.Join("；", changes) :
-                        "剩余步骤在 " + check.FailedStep + " 无法保证前置条件，请根据当前可见状态重新规划", executed: false);
+                    return StepDone(context, Fail(r, step, DsPlanFailure.Stale, changes.Count > 0 ? string.Join("；", changes) :
+                        "剩余步骤在 " + check.FailedStep + " 无法保证前置条件，请根据当前可见状态重新规划", executed: false));
             }
 
             if (step.Place != "" && step.Place != Session.World.PlayerPlace)
             {
                 var ev = Session.EnterPlace(step.Place);
-                if (ev == null) return Fail(r, step, DsPlanFailure.Precondition, "会话正忙，未能移动", executed: false);
+                // 同步规则也会通知调用者；回调可能放弃计划或换局，不能接着发起旧步骤。
+                CheckOperation(context.Operation);
+                if (ev == null) return StepDone(context, Fail(r, step, DsPlanFailure.Precondition, "会话正忙，未能移动", executed: false));
                 r.RequestIds.Add(ev.RequestId); r.Receipts.Add(ev.Receipt); Append(r, ev.Presented);
-                if (ev.FailureCode == "stale_state") return Fail(r, step, DsPlanFailure.Stale, "移动时世界已变", executed: false);
-                if (ev.WhelpCaptured) return Fail(r, step, DsPlanFailure.Dice, "前往" + Session.World.Places[step.Place] + "时，卫兵发现了小烬");
+                if (ev.FailureCode == "stale_state") return StepDone(context, Fail(r, step, DsPlanFailure.Stale, "移动时世界已变", executed: false));
+                if (ev.WhelpCaptured) return StepDone(context, Fail(r, step, DsPlanFailure.Dice, "前往" + Session.World.Places[step.Place] + "时，卫兵发现了小烬"));
                 if (ev.FailureCode != null || ev.Verdict.Kind == VerdictKind.Rejected)
-                    return Fail(r, step, DsPlanFailure.Precondition, ev.Verdict.Reason, executed: false, reasonCode: ev.Verdict.ReasonCode);
+                    return StepDone(context, Fail(r, step, DsPlanFailure.Precondition, ev.Verdict.Reason, executed: false, reasonCode: ev.Verdict.ReasonCode));
                 if (ev.Verdict.Kind == VerdictKind.Partial)
-                    return Fail(r, step, DsPlanFailure.Dice, ev.Verdict.Reason, reasonCode: ev.Verdict.ReasonCode);
+                    return StepDone(context, Fail(r, step, DsPlanFailure.Dice, ev.Verdict.Reason, reasonCode: ev.Verdict.ReasonCode));
             }
 
             switch (step.Op)
             {
                 case "act":
-                {
-                    var t = await Session.RunStepAsync(step.ToProposal(Session.World.PlayerPlace), "计划步骤 " + step.Brief(), ct).ConfigureAwait(false);
-                    r.RequestIds.Add(t.RequestId); r.Receipts.Add(t.Receipt); Append(r, t.Presented);
-                    if (t.FailureCode == "stale_state" || t.FailureCode == "stale_context")
-                        return Fail(r, step, DsPlanFailure.Stale, t.Presented, executed: false);
-                    if (t.FailureCode != null)
-                        return Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, executed: false, reasonCode: t.Verdict.ReasonCode);
-                    if (t.Changes.Any(c => c.Path == "whelp.captured_by" && c.After == "osric" && c.Before != "osric"))
-                        return Fail(r, step, DsPlanFailure.Dice, "换岗巡逻发现了小烬");
-                    if (t.Verdict.Kind == VerdictKind.Rejected)
-                    {
-                        bool rolled = t.Verdict.Roll.HasValue && t.Verdict.Difficulty.HasValue && t.Verdict.Roll.Value < t.Verdict.Difficulty.Value;
-                        return rolled ? Fail(r, step, DsPlanFailure.Dice, t.Verdict.Reason, reasonCode: t.Verdict.ReasonCode)
-                                      : Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason,
-                                          executed: t.Receipt?.Applied == true, reasonCode: t.Verdict.ReasonCode);
-                    }
-                    if (t.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide")
-                        return Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, reasonCode: t.Verdict.ReasonCode);
-                    break;
-                }
+                    return new StepDispatch(StepAwait.Action, context.Operation.Token,
+                        step.ToProposal(Session.World.PlayerPlace), "计划步骤 " + step.Brief());
                 case "wait":
-                {
                     DsMoment.TryParse(step.Until, out var until);
-                    int target = until.Index;
-                    while (Session.World.TimeIndex < target && !Session.World.FinalDawn)
-                    {
-                        var before = Session.CaptureState();
-                        int events = Session.RuleEvents.Count;
-                        var traces = await Session.EndPhaseAsync(ct).ConfigureAwait(false);
-                        r.RequestIds.AddRange(traces.Select(x => x.RequestId));
-                        r.Receipts.AddRange(traces.Select(x => x.Receipt));
-                        if (CapturedByPatrol(events)) return Fail(r, step, DsPlanFailure.Dice, "等待时换岗巡逻发现了小烬");
-                        var changes = RelevantChanges(before, Session.CaptureState());
-                        if (changes.Count > 0 && !Session.World.Whelp.WithMother)
-                            return Fail(r, step, DsPlanFailure.Stale, string.Join("；", changes));
-                    }
-                    Append(r, "等到了" + Session.World.ClockText + "。");
-                    break;
-                }
+                    context.WaitTarget = until.Index;
+                    return PrepareWait(context);
+                default:
+                    return CompleteStep(context);
             }
+        }
 
+        StepDispatch ConsumeAction(StepContext context, AiTrace t)
+        {
+            CheckOperation(context.Operation);
+            var step = context.Step;
+            var r = context.Result;
+            r.RequestIds.Add(t.RequestId); r.Receipts.Add(t.Receipt); Append(r, t.Presented);
+            if (t.FailureCode == "stale_state" || t.FailureCode == "stale_context")
+                return StepDone(context, Fail(r, step, DsPlanFailure.Stale, t.Presented, executed: false));
+            if (t.FailureCode != null)
+                return StepDone(context, Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, executed: false, reasonCode: t.Verdict.ReasonCode));
+            if (t.Changes.Any(c => c.Path == "whelp.captured_by" && c.After == "osric" && c.Before != "osric"))
+                return StepDone(context, Fail(r, step, DsPlanFailure.Dice, "换岗巡逻发现了小烬"));
+            if (t.Verdict.Kind == VerdictKind.Rejected)
+            {
+                bool rolled = t.Verdict.Roll.HasValue && t.Verdict.Difficulty.HasValue && t.Verdict.Roll.Value < t.Verdict.Difficulty.Value;
+                return StepDone(context, rolled ? Fail(r, step, DsPlanFailure.Dice, t.Verdict.Reason, reasonCode: t.Verdict.ReasonCode)
+                    : Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason,
+                        executed: t.Receipt?.Applied == true, reasonCode: t.Verdict.ReasonCode));
+            }
+            if (t.Verdict.Kind == VerdictKind.Partial && step.Verb == "confide")
+                return StepDone(context, Fail(r, step, DsPlanFailure.Precondition, t.Verdict.Reason, reasonCode: t.Verdict.ReasonCode));
+            return CompleteStep(context);
+        }
+
+        StepDispatch ConsumePhase(StepContext context, List<AiTrace> traces, bool initialNight)
+        {
+            CheckOperation(context.Operation);
+            var r = context.Result;
+            r.RequestIds.AddRange(traces.Select(x => x.RequestId));
+            r.Receipts.AddRange(traces.Select(x => x.Receipt));
+            if (CapturedByPatrol(context.FromEvent))
+                return StepDone(context, Fail(r, context.Step, DsPlanFailure.Dice,
+                    initialNight ? "换岗巡逻发现了小烬" : "等待时换岗巡逻发现了小烬"));
+            if (initialNight)
+            {
+                if (Session.World.FinalDawn) { FinishOrContinue(); return StepDone(context, null); }
+                return PrepareExecution(context);
+            }
+            var changes = RelevantChanges(context.BeforeWait, Session.CaptureState());
+            if (changes.Count > 0 && !Session.World.Whelp.WithMother)
+                return StepDone(context, Fail(r, context.Step, DsPlanFailure.Stale, string.Join("；", changes)));
+            return PrepareWait(context);
+        }
+
+        StepDispatch PrepareWait(StepContext context)
+        {
+            CheckOperation(context.Operation);
+            // 原 while 的每次条件、快照与巡逻起点都在同一 Owner 块中决定。
+            if (Session.World.TimeIndex < context.WaitTarget && !Session.World.FinalDawn)
+            {
+                context.BeforeWait = Session.CaptureState();
+                context.FromEvent = Session.RuleEvents.Count;
+                return new StepDispatch(StepAwait.Wait, context.Operation.Token);
+            }
+            Append(context.Result, "等到了" + Session.World.ClockText + "。");
+            return CompleteStep(context);
+        }
+
+        StepDispatch CompleteStep(StepContext context)
+        {
+            CheckOperation(context.Operation);
+            var r = context.Result;
             r.Status = "success";
             Results.Add(r);
             _next++;
             _expected = Session.CaptureState();
             if (_next >= _active.Count || Session.World.FinalDawn || Session.World.Whelp.WithMother) FinishOrContinue();
-            return r;
+            return StepDone(context, r);
+        }
+
+        StepDispatch StepDone(StepContext context, DsPlanStepResult result)
+        {
+            ReleaseOperation(context.Operation);
+            return new StepDispatch(StepAwait.Done, result: result);
         }
 
         void FinishOrContinue()
@@ -317,15 +493,7 @@ namespace Town.Core.Dragonsleep
         }
 
         /// <summary>显式修正被拒的首个提案；不是 HTTP 重试，也不会自动确认或执行。</summary>
-        public Task<AiTrace> RepairProposalAsync(CancellationToken ct = default)
-        {
-            if (Status != "planning" || LatestPlanTrace == null || LatestPlanTrace.Provider?.Error != null)
-                throw new InvalidOperationException("当前没有可修正的语义提案");
-            LastReason = "首个提案未通过校验，请根据拒绝反馈重新规划";
-            LastReasonCode = new DsReason("proposal_rejected");
-            Status = "needs_replan";
-            return ReplanAsync(ct);
-        }
+        public Task<AiTrace> RepairProposalAsync(CancellationToken ct = default) => RequestPlanAsync(true, true, ct);
 
         // 只送失败步骤与有限的校验反馈，不把试运行中探知的其他地点人物/雏龙状态泄露给模型。
         Dictionary<string, object> RejectedFeedback()
@@ -375,9 +543,74 @@ namespace Town.Core.Dragonsleep
         }
 
         /// <summary>从当前感知重新规划；历史步骤与旧计划仅保留在本地记录，防止过去的成功被误当成当前状态。</summary>
-        public async Task<AiTrace> ReplanAsync(CancellationToken ct = default)
+        public Task<AiTrace> ReplanAsync(CancellationToken ct = default) => RequestPlanAsync(true, false, ct);
+
+        async Task<AiTrace> RequestPlanAsync(bool replan, bool repair, CancellationToken ct)
         {
-            if (Status != "needs_replan") throw new InvalidOperationException("当前不需要重规划：" + Status);
+            var request = new PlanRequest();
+            bool failed = true;
+            try
+            {
+                await Session.Owner(() => { PreparePlan(request, replan, repair, ct); return true; }).ConfigureAwait(false);
+                var t = await Session.PlanGuardedAsync(Goal, request.Context, request.LocalContext, request.Operation.Token,
+                    () => CheckOperationIdentity(request.Operation)).ConfigureAwait(false);
+                var adopted = await Session.Owner(() =>
+                {
+                    CheckOperation(request.Operation);
+                    if (request.Replan != null)
+                    {
+                        var record = request.Replan;
+                        record.NewPlan = t.PlanReport?.Plan?.Brief(); record.NewRequestId = t.RequestId;
+                        record.NewPlanVerdict = t.Presented; record.NewPlanExecutable = MeetsObjective(t);
+                        if (!record.NewPlanExecutable) record.Decision = "rejected";
+                        Replans.Add(record);
+                    }
+                    Adopt(t);
+                    ReleaseOperation(request.Operation);
+                    return t;
+                }).ConfigureAwait(false);
+                failed = false;
+                return adopted;
+            }
+            finally
+            {
+                if (failed)
+                {
+                    try
+                    {
+                        await Session.Owner(() => { ReleaseOperation(request.Operation); return true; }).ConfigureAwait(false);
+                    }
+                    catch { }
+                }
+            }
+        }
+
+        void PreparePlan(PlanRequest request, bool replan, bool repair, CancellationToken ct)
+        {
+            if (repair && (Status != "planning" || LatestPlanTrace == null || LatestPlanTrace.Provider?.Error != null))
+                throw new InvalidOperationException("当前没有可修正的语义提案");
+            if (replan && !repair && Status != "needs_replan")
+                throw new InvalidOperationException("当前不需要重规划：" + Status);
+            request.Operation = BeginOperation(ct);
+            if (repair)
+            {
+                LastReason = "首个提案未通过校验，请根据拒绝反馈重新规划";
+                LastReasonCode = new DsReason("proposal_rejected");
+                Status = "needs_replan";
+            }
+            if (!replan)
+            {
+                var initial = RequireHomecoming ? new Dictionary<string, object>
+                { ["objective"] = "homecoming", ["completion"] = "小烬与母亲团聚；局部步骤结束仍需继续规划" } : null;
+                if (Constraints.HasRestrictions)
+                {
+                    initial = initial ?? new Dictionary<string, object>();
+                    initial["player_constraints"] = Constraints.ToRecord();
+                }
+                AddDeadlineRecovery(initial);
+                request.Context = initial == null ? null : MiniJson.Write(initial);
+                return;
+            }
             var context = new Dictionary<string, object>
             {
                 ["failure"] = Label(LastFailure), ["reason"] = LastReason,
@@ -387,18 +620,13 @@ namespace Town.Core.Dragonsleep
             };
             if (Constraints.HasRestrictions) context["player_constraints"] = Constraints.ToRecord();
             AddDeadlineRecovery(context);
-            var t = await Session.PlanWithLocalContextAsync(Goal, MiniJson.Write(context), new DsPlanLocalContext(LastReasonCode), ct)
-                .ConfigureAwait(false);
-            var record = new DsReplanRecord
+            request.Context = MiniJson.Write(context);
+            request.LocalContext = new DsPlanLocalContext(LastReasonCode);
+            // 与该次请求的上下文一起冻结，不能在回包时借用后来一轮失败的字段。
+            request.Replan = new DsReplanRecord
             {
                 Failure = LastFailure, Reason = LastReason, ReasonCode = LastReasonCode, FailedStep = _failedStep?.Id, OldPlan = Plan?.Brief(),
-                NewPlan = t.PlanReport?.Plan?.Brief(), NewRequestId = t.RequestId, NewPlanVerdict = t.Presented,
-                NewPlanExecutable = MeetsObjective(t),
             };
-            if (!record.NewPlanExecutable) record.Decision = "rejected";
-            Replans.Add(record);
-            Adopt(t);
-            return t;
         }
 
         // 只对显式 v2 目标补充眼前已知的末段约束；不读取远处岗哨、居民认知或预测位置。
@@ -505,6 +733,7 @@ namespace Town.Core.Dragonsleep
             return reasons;
         }
 
+        /// <summary>同步本地记录读取；调用方须处于 owner，不与异步结果消费并发枚举。</summary>
         public Dictionary<string, object> ToRecord()
         {
             var record = new Dictionary<string, object>

@@ -45,7 +45,8 @@ namespace Town.Unity.Dragonsleep
         void Awake()
         {
             var owner = gameObject.AddComponent<PieGame.AI.Unity.UnityOwnerThreadDispatcher>();
-            Session = new DragonsleepSession(ProviderFactory(), ownerDispatcher: new DsOwnerThreadDispatcher(owner.Dispatcher));
+            Session = new DragonsleepSession(ProviderFactory(), ownerDispatcher: new DsOwnerThreadDispatcher(owner.Dispatcher),
+                requireBoundCraftConfirmation: true);
             var transactions = new GameObject("Scene Transactions"); transactions.transform.SetParent(transform, false);
             SceneTransaction = new DsSceneRuleTransaction(Session, transactions.AddComponent<PieGame.AI.Unity.UnityKernelBridge>());
             if (PlacesRoot != null)
@@ -163,8 +164,9 @@ namespace Town.Unity.Dragonsleep
                 else if (mode == LoomMode.Act) trace = await Session.ActAsync(text, _lifetime.Token);
                 else trace = await Session.CraftAsync(text, _lifetime.Token);
                 if (this == null) return;
-                if (Session.HasPendingCraft)
-                { Hud?.Present(trace); Hud?.ShowCraftProposal(); return; }
+                var craft = Session.GetCraftProposal(trace);
+                if (craft != null)
+                { Hud?.Present(trace); Hud?.ShowCraftProposal(craft); return; }
                 ReflectWorld(trace);
                 Hud?.Present(trace);
                 if (Session.NightPending) await RunNight();
@@ -174,18 +176,36 @@ namespace Town.Unity.Dragonsleep
             finally { Busy = false; }
         }
 
-        public async void DecideCraft(bool accept)
+        public bool DecideCraft(DsCraftProposal proposal, bool accept)
         {
-            if (Busy) return;
+            if (Busy || Session.Busy) return false;
             Busy = true;
+            AiTrace trace;
             try
             {
-                var trace = Session.ConfirmCraft(accept);
-                if (trace == null) return;
+                trace = Session.ConfirmCraft(proposal, accept);
+                if (trace == null) { Busy = false; return false; }
+            }
+            catch { Busy = false; throw; }
+            _ = FinishCraftDecisionAsync(trace);
+            return true;
+        }
+
+        async Task FinishCraftDecisionAsync(AiTrace trace)
+        {
+            try
+            {
+                // 先把决定已领取的结果返回 HUD，让其关闭对应旧卡；不能随后误关跨夜新弹出的回顾卡。
+                await Task.Yield();
+                if (this == null) return;
                 ReflectWorld(); Hud?.Present(trace);
                 if (Session.NightPending) await RunNight();
             }
             catch (OperationCanceledException) { }
+            catch (Exception e)
+            {
+                if (this != null) { Debug.LogWarning("织造收尾中断：" + e.GetType().Name); Hud?.Toast("已提交的后果保留，请查看回执。"); }
+            }
             finally { Busy = false; }
         }
 

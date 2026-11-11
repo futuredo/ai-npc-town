@@ -200,6 +200,37 @@ namespace Town.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator 实际造物按钮绑定候选_旧授权不能决定新图样且仅提交一次()
+        {
+            var factory = DragonsleepGame.ProviderFactory;
+            DragonsleepJourneyProbe probe = null;
+            try
+            {
+                DragonsleepGame.ProviderFactory = () => new RuleProvider();
+#if UNITY_EDITOR
+                yield return EditorSceneManager.LoadSceneAsyncInPlayMode("Assets/LocalThirdParty/Dragonsleep/Dragonsleep_Town.unity",
+                    new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                yield return SceneManager.LoadSceneAsync("Dragonsleep_Town");
+#endif
+                probe = new GameObject("CraftProbeTest").AddComponent<DragonsleepJourneyProbe>();
+                probe.Begin(craftOnly: true);
+                float deadline = Time.realtimeSinceStartup + 20;
+                while (!probe.Finished && Time.realtimeSinceStartup < deadline) yield return null;
+                Assert.IsTrue(probe.Finished);
+                Assert.IsTrue(probe.Result.passed, probe.Result.failure);
+                Assert.IsTrue(probe.Result.craftOnly && probe.Result.boundCraftConfirmed && probe.Result.oldCraftRejected);
+                Assert.AreEqual(0, probe.Result.runtimeErrors);
+                Assert.AreEqual(0, probe.Result.sessionWrongThreadCallbacks);
+            }
+            finally
+            {
+                if (probe != null) Object.Destroy(probe.gameObject);
+                DragonsleepGame.ProviderFactory = factory;
+            }
+        }
+
+        [UnityTest]
         public IEnumerator 普通最终跨夜后立即重开_旧揭示协程不能填回新局详情()
         {
             var factory = DragonsleepGame.ProviderFactory; bool reduced = DsUiMotion.Reduced;
