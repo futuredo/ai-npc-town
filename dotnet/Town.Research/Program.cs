@@ -17,8 +17,8 @@ internal static class Program
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
         if (args.Contains("--action-kernel"))
         {
-            if (args.Any(x => x != "--action-kernel" && x != "--live")) return 2;
-            return ActionKernelResearch.Run(root, args.Contains("--live"));
+            if (args.Any(x => x != "--action-kernel" && x != "--live" && x != "--transfer")) return 2;
+            return ActionKernelResearch.Run(root, args.Contains("--live"), transfer: args.Contains("--transfer"));
         }
         if (args.Contains("--plan-intent"))
         {

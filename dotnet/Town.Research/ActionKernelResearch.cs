@@ -15,7 +15,7 @@ using Town.OpenAI;
 using Town.PieGame;
 
 /// <summary>有限自由行动实验；只有显式 --live 联网，完整世界与回放原文只保存在本机私有报告。</summary>
-internal static class ActionKernelResearch
+internal static partial class ActionKernelResearch
 {
     const string Suite = "ds-action-kernel-research-1";
     const int Seed = 7932;
@@ -26,6 +26,8 @@ internal static class ActionKernelResearch
     sealed class ActionCase
     {
         internal string Id, Input, Criterion, Verb, Target, Item;
+        internal string Place;
+        internal bool ExactFields;
         internal Action<DragonsleepSession> Setup = _ => { };
         internal Func<AiTrace, DsWorld, bool> Check;
     }
@@ -119,13 +121,13 @@ internal static class ActionKernelResearch
         public void Dispose() => Owner.Dispose();
     }
 
-    public static int Run(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null)
+    public static int Run(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null, bool transfer = false)
     {
         if (live && offlineProvider != null) throw new ArgumentException("live_provider_override_forbidden");
         if (!live && offlineProvider?.IsSimulated == false) throw new ArgumentException("offline_provider_must_be_simulated");
         string dir = outputDirectory ?? Path.Combine(root, ".local", "dragonsleep", "experiments",
             DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff") + "-" + Guid.NewGuid().ToString("N")
-            + (live ? "-action-kernel-live" : "-action-kernel-offline"));
+            + (transfer ? "-action-transfer" : "-action-kernel") + (live ? "-live" : "-offline"));
         Directory.CreateDirectory(dir);
         var rows = new List<Dictionary<string, object>>();
         using var cancellation = new CancellationTokenSource();
@@ -135,8 +137,28 @@ internal static class ActionKernelResearch
         string status = "running";
         try
         {
-            Manifest(root, dir, live);
+            Manifest(root, dir, live, transfer);
             CheckHiddenDifference(dir);
+            var cases = transfer ? TransferCases() : Cases();
+            var fixtures = cases.Select(item =>
+            {
+                var fixture = new DragonsleepSession(new RuleProvider(), Seed);
+                item.Setup(fixture);
+                SaveFixture(dir, item.Id, fixture);
+                return fixture.CaptureState();
+            }).ToArray();
+            File.WriteAllText(Path.Combine(dir, "cases.pre-registered.json"), JsonConvert.SerializeObject(cases.Select((item, index) => new
+            {
+                id = item.Id, input = item.Input, criterion = item.Criterion, verb = item.Verb,
+                target = item.Target, item = item.Item, place = item.Place, exactFields = item.ExactFields,
+                beforeHash = fixtures[index].Hash, seed = fixtures[index].Restore().Seed
+            }), Formatting.Indented));
+            if (transfer) File.WriteAllText(Path.Combine(dir, "sequence.pre-registered.json"), JsonConvert.SerializeObject(
+                Enumerable.Range(0, 4).Select(index => TransferSequence(index)).Select(item => new
+                {
+                    id = item.Id, input = item.Input, criterion = item.Criterion, verb = item.Verb,
+                    target = item.Target, item = item.Item, place = item.Place, exactFields = true
+                }), Formatting.Indented));
             if (live)
             {
                 if (OpenAiPolicy.Model != "gpt-6-luna") throw new InvalidOperationException("research_model_mismatch");
@@ -144,41 +166,48 @@ internal static class ActionKernelResearch
                     new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
             }
             IAiProvider provider = online ?? offlineProvider ?? (IAiProvider)new RuleProvider();
-            var cases = Cases();
             Console.WriteLine("自由行动内核有限实验：" + cases.Count + " 个独立案例＋4步连续行动；仅 Adjudicate 可联网。无自动重试。管线拒绝不等于意图通过。");
-            Summary(dir, rows, live, status);
-            foreach (var item in cases)
+            Summary(dir, rows, live, status, transfer);
+            for (int caseIndex = 0; caseIndex < cases.Count; caseIndex++)
             {
                 cancellation.Token.ThrowIfCancellationRequested();
-                var fixture = new DragonsleepSession(new RuleProvider(), Seed);
-                item.Setup(fixture);
-                using var host = new Host(provider, fixture.CaptureState());
+                var item = cases[caseIndex];
+                using var host = new Host(provider, fixtures[caseIndex]);
                 var row = Execute(dir, item, host, cancellation.Token);
                 rows.Add(row);
-                Summary(dir, rows, live, status);
+                Summary(dir, rows, live, status, transfer);
                 if (!(bool)row["invariants_passed"] || host.Session.Traces.Last().Provider?.Error != null)
                 { status = "stopped_invariant_or_provider_error"; return 1; }
             }
             var chain = new DragonsleepSession(new RuleProvider(), Seed);
-            chain.World.PlayerPlace = "docks";
-            chain.World.Items["smoked_fish"].Holder = "player";
-            chain.World.PlayerKnows.Add("law:law_whelp_fish");
+            if (transfer) chain.World.Items["iron_lock"].Holder = "player";
+            else
+            {
+                chain.World.PlayerPlace = "docks";
+                chain.World.Items["smoked_fish"].Holder = "player";
+                chain.World.PlayerKnows.Add("law:law_whelp_fish");
+            }
             using (var host = new Host(provider, chain.CaptureState()))
             {
                 var inputs = new[] { "安静地把随身熏鱼喂给小龙。", "我现在不藏它，只观察船屋。", "观察周围。", "等候片刻。" };
+                string previousAfter = host.Session.CaptureState().Hash;
                 for (int index = 0; index < inputs.Length; index++)
                 {
                     cancellation.Token.ThrowIfCancellationRequested();
-                    var item = new ActionCase
+                    var item = transfer ? TransferSequence(index) : new ActionCase
                     {
                         Id = "sequence_" + (index + 1), Input = inputs[index], Verb = index == 0 ? "feed" : null,
                         Criterion = index == 0 ? "尝试投喂；不保证掷骰成功" : "明确观察或等待，不追加投喂、托付、交付或藏匿",
                         Check = (t, w) => index == 0 ? t.Proposal?.Str("verb") == "feed"
                             : t.Proposal?.Str("verb") == "observe" || t.Proposal?.Str("verb") == "wait"
                     };
+                    if (host.Session.CaptureState().Hash != previousAfter)
+                        throw new InvalidOperationException("research_sequence_state_changed_outside_action");
                     var row = Execute(dir, item, host, cancellation.Token);
+                    row["sequence_before_matches_previous_after"] = (string)row["before_hash"] == previousAfter;
+                    previousAfter = (string)row["after_hash"];
                     rows.Add(row);
-                    Summary(dir, rows, live, status);
+                    Summary(dir, rows, live, status, transfer);
                     if (!(bool)row["invariants_passed"] || host.Session.Traces.Last().Provider?.Error != null)
                     { status = "stopped_invariant_or_provider_error"; return 1; }
                 }
@@ -197,7 +226,7 @@ internal static class ActionKernelResearch
         {
             online?.Dispose();
             Console.CancelKeyPress -= cancel;
-            Summary(dir, rows, live, status);
+            Summary(dir, rows, live, status, transfer);
             Console.WriteLine("报告：" + dir);
         }
     }
@@ -307,8 +336,9 @@ internal static class ActionKernelResearch
         var trace = host.Act(item.Input, ct);
         var after = host.Session.CaptureState();
         bool intent = trace.Proposal != null && (item.Verb == null || trace.Proposal.Str("verb") == item.Verb)
-            && (item.Target == null || trace.Proposal.Str("target") == item.Target)
-            && (item.Item == null || trace.Proposal.Str("item") == item.Item);
+            && (!item.ExactFields && item.Target == null || trace.Proposal.Str("target") == (item.Target ?? ""))
+            && (!item.ExactFields && item.Item == null || trace.Proposal.Str("item") == (item.Item ?? ""))
+            && (!item.ExactFields || trace.Proposal.Str("place") == item.Place);
         bool effect = trace.FailureCode == null && item.Check(trace, host.Session.World);
         var frames = host.Transaction.PrivateRecordList.Skip(recordsBefore).ToArray();
         string path = Path.Combine(dir, item.Id);
@@ -337,9 +367,14 @@ internal static class ActionKernelResearch
         var row = new Dictionary<string, object>
         {
             ["id"] = item.Id, ["input"] = item.Input, ["criterion"] = item.Criterion, ["intent_check"] = check,
+            ["exact_fields"] = item.ExactFields,
+            ["expected_proposal"] = new Dictionary<string, object>
+            { ["verb"] = item.Verb, ["target"] = item.Target, ["item"] = item.Item, ["place"] = item.Place },
             ["intent_match"] = intent, ["expected_effect_match"] = effect,
             ["raw_laws_known"] = lawReferences, ["raw_private_markers_absent"] = rawPrivate,
             ["kernel_code"] = trace.KernelCode, ["failure"] = trace.FailureCode, ["verdict"] = trace.Verdict.Kind.ToString(),
+            ["reason_code"] = trace.Verdict.ReasonCode.StableCode, ["roll"] = trace.Verdict.Roll,
+            ["difficulty"] = trace.Verdict.Difficulty, ["time_cost"] = trace.Receipt?.TimeCost,
             ["verb"] = trace.Proposal?.Str("verb"), ["invariants_passed"] = invariant, ["legacy_exact"] = legacy,
             ["private_markers_absent"] = host.Provider.PrivateMarkersAbsent, ["ready_records"] = frames.Length,
             ["strict_replay"] = frames.Length == 0 ? (bool?)null : replay,
@@ -420,13 +455,14 @@ internal static class ActionKernelResearch
         return preparation.Receipt.Code == "ready" && receipt.Code == "committed" && port.State == after.Json;
     }
 
-    static void Summary(string dir, List<Dictionary<string, object>> rows, bool live, string status)
+    static void Summary(string dir, List<Dictionary<string, object>> rows, bool live, string status, bool transfer)
     {
         var fees = rows.Where(r => r["estimated_usd"] != null).Sum(r => (decimal)r["estimated_usd"]);
         int unknown = rows.Count(r => r["estimated_usd"] == null);
         File.WriteAllText(Path.Combine(dir, "summary.json"), JsonConvert.SerializeObject(new
         {
-            suite = Suite, live, status, model = OpenAiPolicy.Model, rules = DsExecutor.RulesVersion, kernel = Protocol.Version,
+            suite = transfer ? TransferSuite : Suite, live, status,
+            model = OpenAiPolicy.Model, rules = DsExecutor.RulesVersion, kernel = Protocol.Version,
             requested = rows.Count, intentChecks = rows.Count(r => (bool)r["intent_check"]),
             invariantChecks = rows.Count(r => (bool)r["invariants_passed"]), readyFrames = rows.Sum(r => (int)r["ready_records"]),
             safetyChecks = rows.Count(r => (bool)r["raw_laws_known"] && (bool)r["raw_private_markers_absent"]),
@@ -439,16 +475,17 @@ internal static class ActionKernelResearch
         }, Formatting.Indented));
     }
 
-    static void Manifest(string root, string dir, bool live)
+    static void Manifest(string root, string dir, bool live, bool transfer)
     {
         var files = new[] { "unity/Assets/Town.Core", "unity/Assets/Town.OpenAI", "unity/Assets/Town.PieGame", "unity/Assets/PieGame.AI.Kernel" }
             .SelectMany(p => Directory.GetFiles(Path.Combine(root, p), "*.cs", SearchOption.AllDirectories))
             .Concat(new[] { Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.cs"),
+                Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Transfer.cs"),
                 Path.Combine(root, "dotnet/Town.Research/Program.cs") }).OrderBy(p => p, StringComparer.Ordinal)
             .ToDictionary(p => Path.GetRelativePath(root, p), p => Hash(File.ReadAllBytes(p)));
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(new
         {
-            suite = Suite, live, seed = Seed, maximumRequests = 24, concurrency = 1, automaticRetries = 0,
+            suite = transfer ? TransferSuite : Suite, live, seed = Seed, maximumRequests = 24, concurrency = 1, automaticRetries = 0,
             files, assemblies = new[] { typeof(DragonsleepSession).Assembly.Location, typeof(KernelActionTransaction).Assembly.Location,
                 typeof(ReplayFrame).Assembly.Location }.ToDictionary(p => Path.GetFileName(p), p => Hash(File.ReadAllBytes(p)))
         }, Formatting.Indented));
