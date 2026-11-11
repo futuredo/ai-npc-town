@@ -5,5 +5,8 @@
     <LangVersion>9.0</LangVersion>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
-  <ItemGroup><ProjectReference Include="../Town.OpenAI/Town.OpenAI.csproj" /></ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Town.OpenAI/Town.OpenAI.csproj" />
+    <ProjectReference Include="../Town.PieGame/Town.PieGame.csproj" />
+  </ItemGroup>
 </Project>

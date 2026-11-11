@@ -30,6 +30,8 @@
 
 061 将 Game 自由行动接入真实 **Kernel Begin → PrepareAsync → Commit**，该路径不再经过宿主 stale_context / 执行器去重提交。其余 Adjudicate 计划步骤、headless默认与研究扰动继续旧路径；新无引擎 `Town.PieGame` 供.NET / Unity共源适配。**423项.NET、89项PlayMode、18次实际Player**通过，原黄金与90/27核心相同，本轮真实API为0；标准预算12次行动保留before文本88596个UTF-8字节，非总内存。结论仅为“第三条入口验证通过”，见[接入契约](docs/PieGame玩家行动接入.md)和[061日志](docs/开发日志/2026-11-11_061_玩家行动模型请求接入PieGame内核.md)。
 
+062 对该自由行动入口执行固定 **24 次真实请求**：意图与效果联合检查 **23/24**，同原文旧路径、提交不变量和私有候选严格回放均 **24/24**；费用合计 **估算 USD 0.0028141**。重复拿已持有物被安全拒绝但未保留预设 take 分类，仍记失败；不是任意自由文本正确率，也不改写 M3 规划结论。新增研究器离线回归后 **425 项 .NET、89 项 PlayMode**通过，默认90/27核心与黄金不变；详见[有限报告](docs/自由行动内核真实模型有限验证.md)与[062 日志](docs/开发日志/2026-11-11_062_自由行动内核真实模型有限验证.md)。
+
 ## 打开与运行
 
 环境：Unity `6000.3.23f1`、URP `17.3.0`、.NET 8。
@@ -53,6 +55,9 @@ dotnet run --project dotnet/Town.Research --configuration Release -- --plan --se
 
 # 显式 v2 三种合作目标的独立夹具；默认离线，不并入原冻结集
 dotnet run --project dotnet/Town.Research --configuration Release -- --plan-intent --seeds=3
+
+# 第三入口的固定20例＋4步连续行动，默认离线；仅获授权后添加 --live
+dotnet run --project dotnet/Town.Research --configuration Release -- --action-kernel
 ```
 
 依赖已还原后可加 `--no-restore`，避免包还原访问网络。CI 只跑离线测试。

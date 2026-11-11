@@ -57,14 +57,22 @@ namespace Town.Tests.PlayMode
             public readonly TaskCompletionSource<ProviderResult> Pending =
                 new TaskCompletionSource<ProviderResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             public ProviderResult Reply; // 仅本地规则或测试提案；不访问任何真实模型。
+            public volatile bool Entered;
+            volatile bool _releaseRequested;
 
             public Task<ProviderResult> CompleteAsync(PromptPacket packet, CancellationToken ct)
             {
                 Reply = new RuleProvider().CompleteAsync(packet, ct).GetAwaiter().GetResult();
+                Entered = true;
+                if (_releaseRequested) Pending.TrySetResult(Reply);
                 return Pending.Task;
             }
 
-            public void Release() => Pending.TrySetResult(Reply);
+            public void Release()
+            {
+                _releaseRequested = true;
+                if (Entered) Pending.TrySetResult(Reply);
+            }
         }
 
         [UnitySetUp]
@@ -376,6 +384,7 @@ namespace Town.Tests.PlayMode
             _gate = new GateRules();
             _game.Session.Provider = _gate;
             var task = _game.Session.PlanAsync("归巢");
+            yield return Until(() => _gate.Entered);
             Assert.IsTrue(_game.Session.Busy, "TCS 未释放时会话必须持锁");
             Assert.IsFalse(_game.Busy, "须隔离仅 Session 忙的边界");
 

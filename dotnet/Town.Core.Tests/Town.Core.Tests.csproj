@@ -14,6 +14,7 @@
     <ProjectReference Include="../Town.OpenAI/Town.OpenAI.csproj" />
     <ProjectReference Include="../Town.PieGame/Town.PieGame.csproj" />
     <Compile Include="../Town.Research/PlanCases.cs" Link="Golden/PlanCases.cs" />
+    <Compile Include="../Town.Research/ActionKernelResearch.cs" Link="Research/ActionKernelResearch.cs" />
     <None Update="Golden/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
