@@ -221,7 +221,7 @@ namespace Town.Core.Dragonsleep
                 ["version_before"] = WorldVersionBefore, ["version_after"] = WorldVersionAfter
             };
             if (KernelCode != null) record["kernel_code"] = KernelCode;
-            if (Kind == AiTaskKind.Adjudicate && Prompt?.ActionPromptVersion == DsActionPrompt.Current)
+            if (Kind == AiTaskKind.Adjudicate && Prompt != null && Prompt.ActionPromptVersion != DsActionPrompt.Legacy)
                 record["action_prompt_version"] = Prompt.ActionPromptVersion;
             if (Kind == AiTaskKind.Adjudicate && Prompt?.ActionPerceptionVersion == DsActionPerception.Current)
                 record["action_perception_version"] = Prompt.ActionPerceptionVersion;

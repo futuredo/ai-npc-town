@@ -36,7 +36,7 @@ namespace Town.Core.Dragonsleep
                 throw new ArgumentException("action_prompt_requires_adjudicate");
             if (kind != AiTaskKind.Adjudicate && actionPerceptionVersion != DsActionPerception.Legacy)
                 throw new ArgumentException("action_perception_requires_adjudicate");
-            if (actionPerceptionVersion == DsActionPerception.Current && actionPromptVersion != DsActionPrompt.Current)
+            if (actionPerceptionVersion == DsActionPerception.Current && !DsActionPrompt.SupportsMemory(actionPromptVersion))
                 throw new ArgumentException("action_memory_requires_current_prompt");
             Dictionary<string, object> view;
             switch (kind)

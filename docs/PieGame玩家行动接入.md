@@ -18,6 +18,8 @@
 
 066 增加第五参数 `actionPerceptionVersion`，默认 `ds-action-perception-v1`；Game自由行动明确传v2，且须同时选择提示v2及事务。旧组合不增加空历史字段，也不向计划 / 其它机制自动传历史。新感知把最近四条核实的亲历行动及作用域说明冻结进TaskSnapshot；这是一条已有SDK入口的感知扩展，不是第四入口，见[066日志](开发日志/2026-11-12_066_亲历行动记忆与连续玩法对照.md)。
 
+067新增可显式选择的提示候选v3，感知v2可与提示v2／v3配套；`DsActionPrompt.Current`及Game仍为v2。候选复用既有版本编码与安全重建，不增加入口、规则权限或隐私来源。候选已知失败集的对照与残余错误见[067复验](当下行动与槽位职责修复复验.md)，不以通过部分探针默认替换生产提示。
+
 `Town.Core` 只声明 `IDsActionTransaction`、请求 / 准备接口、不可变评估及单次 `DsActionWrite`。新 `Town.PieGame` 无引擎程序集引用 Core 与 Kernel；`dotnet/Town.PieGame` 通配编译同一份源码。Unity 只通过 `DsActionKernelBridge` 包装现有 `UnityKernelBridge` 的所有者线程和生命周期；scene / day / action 共用同一个桥、同一个 `DsKernelStatePort`，没有第二份权威世界。
 
 ## 冻结与纯候选

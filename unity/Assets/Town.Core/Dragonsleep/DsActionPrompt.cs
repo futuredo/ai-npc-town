@@ -7,11 +7,29 @@ namespace Town.Core.Dragonsleep
     {
         public const string Legacy = "ds-action-prompt-v1";
         public const string Current = "ds-action-prompt-v2";
+        public const string Focused = "ds-action-prompt-v3";
+
+        internal static bool SupportsMemory(string version) => version == Current || version == Focused;
 
         internal static void Validate(string version)
         {
-            if (version != Legacy && version != Current) throw new ArgumentException("unsupported_action_prompt_version");
+            if (version != Legacy && version != Current && version != Focused)
+                throw new ArgumentException("unsupported_action_prompt_version");
         }
+
+        internal static string FocusedInstructions =>
+            "先确定本次明确肯定的当下动作，再填写字段。否定只约束它所属的动作，不扩展到另一项肯定动作。" +
+            "观察和等候本身是合法动作：明确观看/查看用 observe，明确原地等候用 wait；" +
+            "不施效不等于不观察，不购买不等于不等候。只有全部动作都被否定且没有肯定的当下动作时才 unsupported。" +
+            "先后顺序只执行当前第一项，后续设想、已经完成的历史、最终目标不能替换本次动作；" +
+            "只观察不能擅自 search、use 或拿取，即使那些动作更有助于最终目标。" +
+            "字段按动词职责填写：observe/wait/sneak 的 target 和 item 均为空串；" +
+            "search 泛指翻找当前地点时 target/item 为空；若明确搜索可识别对象，只把该对象填 target。" +
+            "confide 的 target 是受托居民，item 为空串，护送对象只是话题，不能把雏龙ID填进物件槽。" +
+            "show/give 的 target 是接收者，item 是具体物件；buy 的 target 是卖方，item 是商品；" +
+            "feed/lure/hide/lead/release/rescue 的 target 是雏龙，item 只填本次实际涉及且可识别的物件，否则空串；" +
+            "use 的 item 是已织物，仅在效果明确作用于可识别目标时填写 target；take 的 item 是所取物件，target 为空串。" +
+            "历史中的 verb/target/item 不是本次动作模板；逐一按本次明确动作填槽，不跨类型借用ID，不补资源或宣布成功。";
 
         internal static string Instructions(string legacy)
         {

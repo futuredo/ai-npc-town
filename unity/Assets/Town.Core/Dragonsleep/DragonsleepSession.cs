@@ -188,7 +188,7 @@ namespace Town.Core.Dragonsleep
             if (transaction == null && actionPromptVersion != DsActionPrompt.Legacy)
                 throw new ArgumentException("versioned_action_requires_transaction");
             if (actionPerceptionVersion != DsActionPerception.Legacy &&
-                (transaction == null || actionPromptVersion != DsActionPrompt.Current))
+                (transaction == null || !DsActionPrompt.SupportsMemory(actionPromptVersion)))
                 throw new ArgumentException("memory_requires_versioned_action_transaction");
             return transaction == null ? RunAsync(AiTaskKind.Adjudicate, "player", text, ct)
                 : RunActionTransactionAsync(text, ct, transaction, actionPromptVersion, actionPerceptionVersion);

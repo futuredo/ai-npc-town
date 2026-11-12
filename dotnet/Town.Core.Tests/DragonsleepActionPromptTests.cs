@@ -155,7 +155,7 @@ namespace Town.Core.Tests
             var provider = new RawProvider(Buy);
             var session = new DragonsleepSession(provider, 7);
             string before = session.CaptureState().Json;
-            foreach (string version in new[] { null, "", "ds-action-prompt-v3", "DS-ACTION-PROMPT-V2" })
+            foreach (string version in new[] { null, "", "ds-action-prompt-v4", "DS-ACTION-PROMPT-V2" })
             {
                 var captureError = Assert.Throws<ArgumentException>(() =>
                     TaskPerceptionView.Capture(world, AiTaskKind.Adjudicate, "player", 4, null, version));

@@ -230,7 +230,7 @@ namespace Town.Core.Dragonsleep
         {
             var packet = Build(view.Kind, view.ActorId, view.ToDictionary(), playerText);
             packet.TaskSnapshot = view;
-            if (view.Kind == AiTaskKind.Adjudicate && view.ActionPromptVersion == DsActionPrompt.Current)
+            if (view.Kind == AiTaskKind.Adjudicate && DsActionPrompt.SupportsMemory(view.ActionPromptVersion))
                 packet.Instructions = DsActionPrompt.Instructions(packet.Instructions);
             if (view.Kind == AiTaskKind.Adjudicate && view.ActionPerceptionVersion == DsActionPerception.Current)
             {
@@ -239,6 +239,8 @@ namespace Town.Core.Dragonsleep
                     "若物件仅在未核实的玩家叙述中出现，不得编造ID；recent_player_actions内的历史ID只能识别过去对象，不能声称现在持有。")
                     + DsActionPerception.Instructions;
             }
+            if (view.Kind == AiTaskKind.Adjudicate && view.ActionPromptVersion == DsActionPrompt.Focused)
+                packet.Instructions += DsActionPrompt.FocusedInstructions;
             return packet;
         }
 
