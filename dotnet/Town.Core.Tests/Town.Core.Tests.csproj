@@ -16,6 +16,7 @@
     <Compile Include="../Town.Research/PlanCases.cs" Link="Golden/PlanCases.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.cs" Link="Research/ActionKernelResearch.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Transfer.cs" Link="Research/ActionKernelResearch.Transfer.cs" />
+    <Compile Include="../Town.Research/ActionKernelResearch.Semantics.cs" Link="Research/ActionKernelResearch.Semantics.cs" />
     <None Update="Golden/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

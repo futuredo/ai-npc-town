@@ -28,6 +28,7 @@ internal static partial class ActionKernelResearch
         internal string Id, Input, Criterion, Verb, Target, Item;
         internal string Place;
         internal bool ExactFields;
+        internal bool EquivalentCurrentPlace;
         internal Action<DragonsleepSession> Setup = _ => { };
         internal Func<AiTrace, DsWorld, bool> Check;
     }
@@ -121,13 +122,15 @@ internal static partial class ActionKernelResearch
         public void Dispose() => Owner.Dispose();
     }
 
-    public static int Run(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null, bool transfer = false)
+    public static int Run(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null,
+        bool transfer = false, bool semantics = false)
     {
+        if (transfer && semantics) throw new ArgumentException("research_suite_conflict");
         if (live && offlineProvider != null) throw new ArgumentException("live_provider_override_forbidden");
         if (!live && offlineProvider?.IsSimulated == false) throw new ArgumentException("offline_provider_must_be_simulated");
         string dir = outputDirectory ?? Path.Combine(root, ".local", "dragonsleep", "experiments",
             DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff") + "-" + Guid.NewGuid().ToString("N")
-            + (transfer ? "-action-transfer" : "-action-kernel") + (live ? "-live" : "-offline"));
+            + (semantics ? "-action-semantics" : transfer ? "-action-transfer" : "-action-kernel") + (live ? "-live" : "-offline"));
         Directory.CreateDirectory(dir);
         var rows = new List<Dictionary<string, object>>();
         using var cancellation = new CancellationTokenSource();
@@ -137,13 +140,15 @@ internal static partial class ActionKernelResearch
         string status = "running";
         try
         {
-            Manifest(root, dir, live, transfer);
+            Manifest(root, dir, live, transfer, semantics);
             CheckHiddenDifference(dir);
-            var cases = transfer ? TransferCases() : Cases();
+            var cases = semantics ? SemanticCases() : transfer ? TransferCases() : Cases();
             var fixtures = cases.Select(item =>
             {
                 var fixture = new DragonsleepSession(new RuleProvider(), Seed);
                 item.Setup(fixture);
+                if (semantics && fixture.World.PlayerPlace != item.Place)
+                    throw new InvalidOperationException("semantic_fixture_place_mismatch");
                 SaveFixture(dir, item.Id, fixture);
                 return fixture.CaptureState();
             }).ToArray();
@@ -153,12 +158,13 @@ internal static partial class ActionKernelResearch
                 target = item.Target, item = item.Item, place = item.Place, exactFields = item.ExactFields,
                 beforeHash = fixtures[index].Hash, seed = fixtures[index].Restore().Seed
             }), Formatting.Indented));
-            if (transfer) File.WriteAllText(Path.Combine(dir, "sequence.pre-registered.json"), JsonConvert.SerializeObject(
-                Enumerable.Range(0, 4).Select(index => TransferSequence(index)).Select(item => new
+            if (transfer || semantics) File.WriteAllText(Path.Combine(dir, "sequence.pre-registered.json"), JsonConvert.SerializeObject(
+                Enumerable.Range(0, 4).Select(index => semantics ? SemanticSequence(index) : TransferSequence(index)).Select(item => new
                 {
                     id = item.Id, input = item.Input, criterion = item.Criterion, verb = item.Verb,
                     target = item.Target, item = item.Item, place = item.Place, exactFields = true
                 }), Formatting.Indented));
+            if (semantics) SaveSemanticContract(dir, cases);
             if (live)
             {
                 if (OpenAiPolicy.Model != "gpt-6-luna") throw new InvalidOperationException("research_model_mismatch");
@@ -167,7 +173,7 @@ internal static partial class ActionKernelResearch
             }
             IAiProvider provider = online ?? offlineProvider ?? (IAiProvider)new RuleProvider();
             Console.WriteLine("自由行动内核有限实验：" + cases.Count + " 个独立案例＋4步连续行动；仅 Adjudicate 可联网。无自动重试。管线拒绝不等于意图通过。");
-            Summary(dir, rows, live, status, transfer);
+            Summary(dir, rows, live, status, transfer, semantics);
             for (int caseIndex = 0; caseIndex < cases.Count; caseIndex++)
             {
                 cancellation.Token.ThrowIfCancellationRequested();
@@ -175,12 +181,12 @@ internal static partial class ActionKernelResearch
                 using var host = new Host(provider, fixtures[caseIndex]);
                 var row = Execute(dir, item, host, cancellation.Token);
                 rows.Add(row);
-                Summary(dir, rows, live, status, transfer);
+                Summary(dir, rows, live, status, transfer, semantics);
                 if (!(bool)row["invariants_passed"] || host.Session.Traces.Last().Provider?.Error != null)
                 { status = "stopped_invariant_or_provider_error"; return 1; }
             }
             var chain = new DragonsleepSession(new RuleProvider(), Seed);
-            if (transfer) chain.World.Items["iron_lock"].Holder = "player";
+            if (transfer || semantics) chain.World.Items["iron_lock"].Holder = "player";
             else
             {
                 chain.World.PlayerPlace = "docks";
@@ -194,7 +200,7 @@ internal static partial class ActionKernelResearch
                 for (int index = 0; index < inputs.Length; index++)
                 {
                     cancellation.Token.ThrowIfCancellationRequested();
-                    var item = transfer ? TransferSequence(index) : new ActionCase
+                    var item = semantics ? SemanticSequence(index) : transfer ? TransferSequence(index) : new ActionCase
                     {
                         Id = "sequence_" + (index + 1), Input = inputs[index], Verb = index == 0 ? "feed" : null,
                         Criterion = index == 0 ? "尝试投喂；不保证掷骰成功" : "明确观察或等待，不追加投喂、托付、交付或藏匿",
@@ -207,7 +213,7 @@ internal static partial class ActionKernelResearch
                     row["sequence_before_matches_previous_after"] = (string)row["before_hash"] == previousAfter;
                     previousAfter = (string)row["after_hash"];
                     rows.Add(row);
-                    Summary(dir, rows, live, status, transfer);
+                    Summary(dir, rows, live, status, transfer, semantics);
                     if (!(bool)row["invariants_passed"] || host.Session.Traces.Last().Provider?.Error != null)
                     { status = "stopped_invariant_or_provider_error"; return 1; }
                 }
@@ -226,7 +232,7 @@ internal static partial class ActionKernelResearch
         {
             online?.Dispose();
             Console.CancelKeyPress -= cancel;
-            Summary(dir, rows, live, status, transfer);
+            Summary(dir, rows, live, status, transfer, semantics);
             Console.WriteLine("报告：" + dir);
         }
     }
@@ -335,10 +341,13 @@ internal static partial class ActionKernelResearch
         int callsBefore = host.Provider.Calls;
         var trace = host.Act(item.Input, ct);
         var after = host.Session.CaptureState();
-        bool intent = trace.Proposal != null && (item.Verb == null || trace.Proposal.Str("verb") == item.Verb)
+        bool literal = trace.Proposal != null && (item.Verb == null || trace.Proposal.Str("verb") == item.Verb)
             && (!item.ExactFields && item.Target == null || trace.Proposal.Str("target") == (item.Target ?? ""))
             && (!item.ExactFields && item.Item == null || trace.Proposal.Str("item") == (item.Item ?? ""))
             && (!item.ExactFields || trace.Proposal.Str("place") == item.Place);
+        bool intent = item.EquivalentCurrentPlace
+            ? SemanticActionMatches(trace.Proposal, item.Verb, item.Target ?? "", item.Item ?? "", before.Restore().PlayerPlace)
+            : literal;
         bool effect = trace.FailureCode == null && item.Check(trace, host.Session.World);
         var frames = host.Transaction.PrivateRecordList.Skip(recordsBefore).ToArray();
         string path = Path.Combine(dir, item.Id);
@@ -383,6 +392,13 @@ internal static partial class ActionKernelResearch
             ["estimated_usd"] = trace.Provider?.EstimatedUsd, ["before_hash"] = before.Hash, ["after_hash"] = after.Hash,
             ["retained_requests"] = host.Kernel.RetainedRequestCount, ["retained_before_utf8_bytes"] = host.Kernel.RetainedBeforeUtf8Bytes
         };
+        if (item.EquivalentCurrentPlace)
+        {
+            row["literal_fields_match"] = literal;
+            row["place_policy"] = "empty_or_current_before_location";
+            row["raw_place"] = trace.Proposal?.Str("place");
+            row["expected_current_place"] = before.Restore().PlayerPlace;
+        }
         File.WriteAllText(Path.Combine(path, "result.json"), JsonConvert.SerializeObject(row, Formatting.Indented));
         Console.WriteLine(item.Id + ": 意图=" + check + " Kernel=" + trace.KernelCode + " 规则=" + trace.Verdict.Kind
             + " 同原文旧路径=" + legacy + " 回放=" + (frames.Length == 0 ? "未适用" : replay.ToString()));
@@ -455,13 +471,13 @@ internal static partial class ActionKernelResearch
         return preparation.Receipt.Code == "ready" && receipt.Code == "committed" && port.State == after.Json;
     }
 
-    static void Summary(string dir, List<Dictionary<string, object>> rows, bool live, string status, bool transfer)
+    static void Summary(string dir, List<Dictionary<string, object>> rows, bool live, string status, bool transfer, bool semantics)
     {
         var fees = rows.Where(r => r["estimated_usd"] != null).Sum(r => (decimal)r["estimated_usd"]);
         int unknown = rows.Count(r => r["estimated_usd"] == null);
         File.WriteAllText(Path.Combine(dir, "summary.json"), JsonConvert.SerializeObject(new
         {
-            suite = transfer ? TransferSuite : Suite, live, status,
+            suite = semantics ? SemanticSuite : transfer ? TransferSuite : Suite, live, status,
             model = OpenAiPolicy.Model, rules = DsExecutor.RulesVersion, kernel = Protocol.Version,
             requested = rows.Count, intentChecks = rows.Count(r => (bool)r["intent_check"]),
             invariantChecks = rows.Count(r => (bool)r["invariants_passed"]), readyFrames = rows.Sum(r => (int)r["ready_records"]),
@@ -475,17 +491,19 @@ internal static partial class ActionKernelResearch
         }, Formatting.Indented));
     }
 
-    static void Manifest(string root, string dir, bool live, bool transfer)
+    static void Manifest(string root, string dir, bool live, bool transfer, bool semantics)
     {
         var files = new[] { "unity/Assets/Town.Core", "unity/Assets/Town.OpenAI", "unity/Assets/Town.PieGame", "unity/Assets/PieGame.AI.Kernel" }
             .SelectMany(p => Directory.GetFiles(Path.Combine(root, p), "*.cs", SearchOption.AllDirectories))
             .Concat(new[] { Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.cs"),
-                Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Transfer.cs"),
+                 Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Transfer.cs"),
+                 Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Semantics.cs"),
                 Path.Combine(root, "dotnet/Town.Research/Program.cs") }).OrderBy(p => p, StringComparer.Ordinal)
             .ToDictionary(p => Path.GetRelativePath(root, p), p => Hash(File.ReadAllBytes(p)));
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(new
         {
-            suite = transfer ? TransferSuite : Suite, live, seed = Seed, maximumRequests = 24, concurrency = 1, automaticRetries = 0,
+            suite = semantics ? SemanticSuite : transfer ? TransferSuite : Suite,
+            live, seed = Seed, maximumRequests = 24, concurrency = 1, automaticRetries = 0,
             files, assemblies = new[] { typeof(DragonsleepSession).Assembly.Location, typeof(KernelActionTransaction).Assembly.Location,
                 typeof(ReplayFrame).Assembly.Location }.ToDictionary(p => Path.GetFileName(p), p => Hash(File.ReadAllBytes(p)))
         }, Formatting.Indented));

@@ -34,6 +34,8 @@
 
 063 另立新措辞及失败后状态迁移套题，固定 **24 次真实请求、估算 USD 0.0028437**。预注册严格四字段与效果检查 **12/24**：8项仅因合法空地点与预设ID不同，4项重复操作被归为unsupported；正式成绩保留、不事后改分。内核不变量、同原文旧路径与候选回放各24/24，**427项.NET、89项PlayMode**通过，默认90/27与黄金不变。不能将不同判据的23/24与12/24直接比较优劣，见[迁移复验](docs/自由行动新措辞与失败状态复验.md)与[063](docs/开发日志/2026-11-11_063_自由行动新措辞与失败状态迁移复验.md)。
 
+064 在新采样前明确地点语义等价与拒绝分类，另换措辞执行 **24次真实请求、估算USD 0.0028384**，联合 **20/24**。四项仍将重复拿取或已消耗食物投喂归为unsupported，安全拒绝也保留失败；生产提示尚未改。内核不变量 / 旧路径 / 候选回放均24/24，**440项.NET / 89项PlayMode**通过，默认90/27不变，不回填旧套题。见[语义契约与证据](docs/自由行动语义分类契约与复验.md)与[064日志](docs/开发日志/2026-11-12_064_自由行动地点等价与拒绝分类契约.md)。
+
 ## 打开与运行
 
 环境：Unity `6000.3.23f1`、URP `17.3.0`、.NET 8。
@@ -63,6 +65,9 @@ dotnet run --project dotnet/Town.Research --configuration Release -- --action-ke
 
 # 独立的新措辞 / 真实失败、消耗后状态套题；默认离线，不回填原套题
 dotnet run --project dotnet/Town.Research --configuration Release -- --action-kernel --transfer
+
+# 新语义契约：仅地点允许空串或当前ID等价，其余动作分类和对象仍严格；与 --transfer 互斥
+dotnet run --project dotnet/Town.Research --configuration Release -- --action-kernel --semantics
 ```
 
 依赖已还原后可加 `--no-restore`，避免包还原访问网络。CI 只跑离线测试。
