@@ -15,6 +15,11 @@ internal static class Program
         string root = Directory.GetCurrentDirectory();
         if (!File.Exists(Path.Combine(root,"dotnet","Town.sln"))) { Console.Error.WriteLine("请在仓库根目录运行。"); return 2; }
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
+        if (args.Contains("--action-focus-transfer"))
+        {
+            if (args.Any(x => x != "--action-focus-transfer" && x != "--live")) return 2;
+            return ActionKernelResearch.RunFocus(root, args.Contains("--live"), transfer: true);
+        }
         if (args.Contains("--action-focus"))
         {
             if (args.Any(x => x != "--action-focus" && x != "--live")) return 2;

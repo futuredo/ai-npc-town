@@ -19,6 +19,7 @@
     <Compile Include="../Town.Research/ActionKernelResearch.Semantics.cs" Link="Research/ActionKernelResearch.Semantics.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Memory.cs" Link="Research/ActionKernelResearch.Memory.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Focus.cs" Link="Research/ActionKernelResearch.Focus.cs" />
+    <Compile Include="../Town.Research/ActionKernelResearch.FocusTransfer.cs" Link="Research/ActionKernelResearch.FocusTransfer.cs" />
     <None Update="Golden/**/*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

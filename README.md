@@ -42,6 +42,8 @@
 
 067 另立当下动作与槽位提示候选v3，两臂均固定记忆感知v2。**96次真实请求、费用估算USD 0.00788037**，逐步意图v2为42/48、v3为46/48；v3的观察9/9、等待3/3、托付槽位3/3和诱引3/3通过预注册关键门槛，但仍有展示交出原件被判不支持、重复购买漏卖方两个反例。**Game仍使用v2**，不把已知失败集复验当未见泛化或默认上线；当前 **471项.NET / 91项PlayMode**通过，默认90/27与黄金不变，未新构建Player。见[候选复验](docs/当下行动与槽位职责修复复验.md)和[067日志](docs/开发日志/2026-11-12_067_当下行动与槽位职责候选复验.md)。
 
+068 在候选提示冻结后，使用新措辞、两个新种子及重复动作／槽位控制链完成 **96次真实请求、费用估算USD 0.00863409**：生产v2意图47/48、候选v3为48/48，v3关键观察／等待／托付／诱引、重复show／buy和槽位门槛均通过。v2把一次明确等待误判unsupported，虽最终局部目标达成仍记失败；候选仅取得后续集成验收资格，**Game仍为v2**。**475项.NET / 91项PlayMode**通过，默认90/27与黄金相同，没有新Player构建；不是普遍泛化或M3整体验收，见[压力验证报告](docs/候选提示新措辞与重复动作压力验证.md)及[068日志](docs/开发日志/2026-11-12_068_冻结候选的新措辞与重复动作压力验证.md)。
+
 ## 打开与运行
 
 环境：Unity `6000.3.23f1`、URP `17.3.0`、.NET 8。
@@ -83,6 +85,9 @@ dotnet run --project dotnet/Town.Research --configuration Release -- --action-me
 
 # 已知失败集的当下动作 / 槽位提示v2与候选v3对照；默认离线，不自动切换Game提示
 dotnet run --project dotnet/Town.Research --configuration Release -- --action-focus
+
+# 冻结候选后的独立新措辞、重复show/buy及槽位控制压力集；默认离线，门槛采样前固定
+dotnet run --project dotnet/Town.Research --configuration Release -- --action-focus-transfer
 ```
 
 依赖已还原后可加 `--no-restore`，避免包还原访问网络。CI 只跑离线测试。

@@ -17,6 +17,7 @@ internal static partial class ActionKernelResearch
     sealed class MemoryChain
     {
         internal string Id;
+        internal string RepeatKind;
         internal string[] Inputs, Verbs, Targets, Items;
         internal Action<DragonsleepSession> Setup;
         internal Func<DsWorld, bool> Goal;
@@ -237,12 +238,13 @@ internal static partial class ActionKernelResearch
             && (trace.KernelCode != "committed" || frames.Length == 1);
         bool intent = SemanticActionMatches(trace.Proposal, chain.Verbs[step], chain.Targets[step], chain.Items[step], before.Restore().PlayerPlace);
         var prior = before.Restore();
-        bool repeatApplicable = step == 1 && (chain.Id == "feeding" ? prior.Items["smoked_fish"].Holder == "consumed"
-            : chain.Id == "custody" ? prior.Items["pact_page"].Holder == "maren"
-            : chain.Id == "illumination" ? prior.Flags.ContainsKey("used:crafted_1:catacombs:")
-            : prior.Items["smoked_fish"].Holder == "player");
-        string repeatReason = chain.Id == "feeding" ? "item_missing" : chain.Id == "custody" ? "item_not_held"
-            : chain.Id == "illumination" ? "item_effect_already_used" : "seller_absent";
+        string repeatKind = chain.RepeatKind ?? chain.Id;
+        bool repeatApplicable = step == 1 && (repeatKind == "feeding" ? prior.Items["smoked_fish"].Holder == "consumed"
+            : repeatKind == "custody" ? prior.Items["pact_page"].Holder == "maren"
+            : repeatKind == "illumination" ? prior.Flags.ContainsKey("used:crafted_1:catacombs:")
+            : repeatKind == "purchase_control" && prior.Items["smoked_fish"].Holder == "player");
+        string repeatReason = repeatKind == "feeding" ? "item_missing" : repeatKind == "custody" ? "item_not_held"
+            : repeatKind == "illumination" ? "item_effect_already_used" : "seller_absent";
         bool? repeatPassed = repeatApplicable ? intent && trace.Verdict.Kind == VerdictKind.Rejected
             && trace.Verdict.ReasonCode.Code == repeatReason && !trace.Verdict.Roll.HasValue && trace.Receipt?.TimeCost == 0
             && before.Json == after.Json && trace.Changes.Count == 0 : (bool?)null;

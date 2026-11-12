@@ -549,7 +549,8 @@ internal static partial class ActionKernelResearch
                  Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Transfer.cs"),
                   Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Semantics.cs"),
                    Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Memory.cs"),
-                   Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Focus.cs"),
+                    Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Focus.cs"),
+                    Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.FocusTransfer.cs"),
                 Path.Combine(root, "dotnet/Town.Research/Program.cs") }).OrderBy(p => p, StringComparer.Ordinal)
             .ToDictionary(p => Path.GetRelativePath(root, p), p => Hash(File.ReadAllBytes(p)));
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(new

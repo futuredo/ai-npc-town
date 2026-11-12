@@ -14,13 +14,14 @@ internal static partial class ActionKernelResearch
     internal const string FocusSuite = "ds-action-current-intent-1";
 
     // 复用066已知失败集，不作为未见措辞泛化；两臂保留相同记忆版本与真实连续状态。
-    public static int RunFocus(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null)
+    public static int RunFocus(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null,
+        bool transfer = false)
     {
         if (live && offlineProvider != null) throw new ArgumentException("live_provider_override_forbidden");
         if (!live && offlineProvider?.IsSimulated == false) throw new ArgumentException("offline_provider_must_be_simulated");
         string dir = outputDirectory ?? Path.Combine(root, ".local", "dragonsleep", "experiments",
             DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff") + "-" + Guid.NewGuid().ToString("N")
-            + "-action-focus" + (live ? "-live" : "-offline"));
+            + (transfer ? "-action-focus-transfer" : "-action-focus") + (live ? "-live" : "-offline"));
         Directory.CreateDirectory(dir);
         var rows = new List<Dictionary<string, object>>();
         var episodes = new List<object>();
@@ -34,12 +35,14 @@ internal static partial class ActionKernelResearch
             Manifest(root, dir, live, false, false, DsActionPrompt.Current);
             string manifestPath = Path.Combine(dir, "source-manifest.json");
             var manifest = JObject.Parse(File.ReadAllText(manifestPath));
-            manifest["suite"] = FocusSuite;
+            manifest["suite"] = transfer ? FocusTransferSuite : FocusSuite;
             manifest["maximumRequests"] = 96;
             manifest["promptArms"] = JArray.FromObject(new[] { DsActionPrompt.Current, DsActionPrompt.Focused });
             manifest["perceptionVersion"] = DsActionPerception.Current;
+            if (transfer) manifest["worldSeeds"] = JArray.FromObject(new[] { 131, 137 });
             File.WriteAllText(manifestPath, manifest.ToString(Formatting.Indented));
-            var fixtures = MemoryChains().SelectMany(chain => new[] { 109, 110, 111 }.Select(seed =>
+            var fixtures = (transfer ? FocusTransferChains() : MemoryChains())
+                .SelectMany(chain => (transfer ? new[] { 131, 137 } : new[] { 109, 110, 111 }).Select(seed =>
             {
                 var session = new DragonsleepSession(new RuleProvider(), seed);
                 chain.Setup(session);
@@ -51,16 +54,22 @@ internal static partial class ActionKernelResearch
                 File.WriteAllText(Path.Combine(fixtureDirectory, fixture.chain.Id + "-" + fixture.seed + ".json"), fixture.before.Json);
             File.WriteAllText(Path.Combine(dir, "focus-contract.pre-registered.json"), JsonConvert.SerializeObject(new
             {
-                suite = FocusSuite, maximumRequests = 96, automaticRetries = 0, concurrency = 1,
+                suite = transfer ? FocusTransferSuite : FocusSuite, maximumRequests = 96, automaticRetries = 0, concurrency = 1,
                 promptArms = new[] { DsActionPrompt.Current, DsActionPrompt.Focused },
                 perceptionVersion = DsActionPerception.Current,
-                scope = "066已知失败集修复复验；非未见泛化、非自主下一步选择、非完整归巢或真人试玩。",
+                scope = transfer ? "提示v3冻结后的独立新措辞及两个新控制链；熟悉机制，不是全新玩法或总体泛化证明。"
+                    : "066已知失败集修复复验；非未见泛化、非自主下一步选择、非完整归巢或真人试玩。",
                 order = "夹具序号偶数先v2，奇数先v3；固定交替而非随机；链中不重置、补资源或重抽。",
                 intent = "verb/target/item严格字符串；place只能原空串或当前ID；最终目标不能抵销错误。",
-                criticalGate = "每臂observe9、wait3、confide3、无食物lure3分别独立报告；候选仅全部通过才考虑生产启用。",
+                criticalGate = transfer ? FocusTransferGate
+                    : "每臂observe9、wait3、confide3、无食物lure3分别独立报告；候选仅全部通过才考虑生产启用。",
                 contextMatch = "比较世界before及完整冻结感知；仅去recent_player_actions.request_id，不去任何语义历史字段。",
                 effect = "observe/wait必须实际Accepted、Roll=1、耗时2且Applied；confide实际尝试耗时1，不以此保证合作。lure仅验意图不保证骰成。",
-                repeat = "首步未生效则第二步重复挑战不适用，不补资源制造挑战；与最终目标分开。",
+                repeat = transfer ? "首步须正确动词及真实生效后果；buy还须实际扣三银币，take得鱼不算购买。未形成挑战不补成通过。"
+                    : "首步未生效则第二步重复挑战不适用，不补资源制造挑战；与最终目标分开。",
+                successfulIntent = transfer ? "四槽及安全引用符合，且FailureCode为空、Kernel committed；结构或宿主拒绝不能计为成功意图。"
+                    : null,
+                promotion = transfer ? "只记录候选资格，研究器不切换Game；生产启用仍须单独集成与Player验证。" : null,
                 fixtures = fixtures.Select(x => new { x.chain.Id, x.seed, beforeHash = x.before.Hash,
                     inputs = x.chain.Inputs, verbs = x.chain.Verbs, targets = x.chain.Targets, items = x.chain.Items })
             }, Formatting.Indented));
@@ -81,6 +90,7 @@ internal static partial class ActionKernelResearch
                     using var host = new Host(provider, fixture.before, arm, DsActionPerception.Current);
                     string previousAfter = fixture.before.Hash;
                     string episode = fixture.chain.Id + "-" + fixture.seed + "-" + arm;
+                    bool repeatPrefixVerified = false;
                     for (int step = 0; step < 4; step++)
                     {
                         cancellation.Token.ThrowIfCancellationRequested();
@@ -97,11 +107,18 @@ internal static partial class ActionKernelResearch
                         bool safeIntent = (bool)row["intent_match"] && (bool)row["raw_laws_known"]
                             && (bool)row["raw_private_markers_absent"];
                         row["focused_effect_match"] = FocusedEffect(fixture.chain.Verbs[step], trace, safeIntent);
+                        if (transfer)
+                        {
+                            var after = host.Session.CaptureState();
+                            if (step == 0) repeatPrefixVerified = TransferRepeatPrefix(fixture.chain.RepeatKind,
+                                before, after, trace, safeIntent);
+                            AnnotateFocusTransfer(row, fixture.chain, step, before, after, trace, safeIntent, repeatPrefixVerified);
+                        }
                         rows.Add(row);
                         previousAfter = (string)row["after_hash"];
                         string path = Path.Combine(dir, episode, "step-" + (step + 1), "result.json");
                         File.WriteAllText(path, JsonConvert.SerializeObject(row, Formatting.Indented));
-                        FocusSummary(dir, rows, episodes, live, status);
+                        WriteFocusSummary(dir, rows, episodes, live, status, transfer);
                         if (!(bool)row["invariants_passed"] || row["provider_error"] != null)
                         { status = "stopped_invariant_or_provider_error"; return 1; }
                     }
@@ -125,9 +142,16 @@ internal static partial class ActionKernelResearch
         {
             online?.Dispose();
             Console.CancelKeyPress -= cancel;
-            FocusSummary(dir, rows, episodes, live, status);
+            WriteFocusSummary(dir, rows, episodes, live, status, transfer);
             Console.WriteLine("报告：" + dir);
         }
+    }
+
+    static void WriteFocusSummary(string dir, List<Dictionary<string, object>> rows, List<object> episodes,
+        bool live, string status, bool transfer)
+    {
+        FocusSummary(dir, rows, episodes, live, status);
+        if (transfer) CompleteFocusTransferSummary(dir, rows);
     }
 
     internal static string ContextHash(string perception)
