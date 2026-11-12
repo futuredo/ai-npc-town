@@ -17,10 +17,12 @@ internal static class Program
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
         if (args.Contains("--action-kernel"))
         {
-            if (args.Any(x => x != "--action-kernel" && x != "--live" && x != "--transfer" && x != "--semantics") ||
-                args.Contains("--transfer") && args.Contains("--semantics")) return 2;
+            if (args.Any(x => x != "--action-kernel" && x != "--live" && x != "--transfer" && x != "--semantics" && x != "--prompt-v2") ||
+                args.Contains("--transfer") && args.Contains("--semantics") ||
+                args.Contains("--prompt-v2") && !args.Contains("--semantics")) return 2;
             return ActionKernelResearch.Run(root, args.Contains("--live"),
-                transfer: args.Contains("--transfer"), semantics: args.Contains("--semantics"));
+                transfer: args.Contains("--transfer"), semantics: args.Contains("--semantics"),
+                actionPromptVersion: args.Contains("--prompt-v2") ? DsActionPrompt.Current : DsActionPrompt.Legacy);
         }
         if (args.Contains("--plan-intent"))
         {

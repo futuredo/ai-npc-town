@@ -12,7 +12,13 @@ namespace Town.PieGame
     {
         public static string Binding => "Adjudicate|player|" + Protocol.Version + "|" + DsExecutor.RulesVersion;
 
-        public static FrozenPayload Freeze(PromptPacket packet) => new FrozenPayload(Binding, Encode(packet));
+        public static string BindingFor(PromptPacket packet)
+        {
+            if (packet == null) throw new ArgumentNullException(nameof(packet));
+            return packet.ActionPromptVersion == DsActionPrompt.Legacy ? Binding : Binding + "|" + packet.ActionPromptVersion;
+        }
+
+        public static FrozenPayload Freeze(PromptPacket packet) => new FrozenPayload(BindingFor(packet), Encode(packet));
 
         public static byte[] Encode(PromptPacket packet)
         {
@@ -30,6 +36,8 @@ namespace Town.PieGame
                 ["task_snapshot_json"] = MiniJson.Write(Canonical(MiniJson.Parse(packet.TaskSnapshot.Json))),
                 ["original_input"] = packet.OriginalPlayerInput
             };
+            if (packet.ActionPromptVersion != DsActionPrompt.Legacy)
+                data["action_prompt_version"] = packet.ActionPromptVersion;
             return new UTF8Encoding(false, true).GetBytes(MiniJson.Write(Canonical(data)));
         }
 

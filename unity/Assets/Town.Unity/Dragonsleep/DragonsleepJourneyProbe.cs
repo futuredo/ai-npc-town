@@ -37,6 +37,7 @@ namespace Town.Unity.Dragonsleep
             public bool lateRescue;
             public bool craftOnly, boundCraftConfirmed, oldCraftRejected;
             public bool actionOnly;
+            public string actionPromptVersion;
             public int actionCommits, actionRetainedRequests;
             public long actionRetainedBeforeUtf8Bytes;
             public int sessionOwnerCallbacks, sessionWrongThreadCallbacks;
@@ -394,6 +395,13 @@ namespace Town.Unity.Dragonsleep
             StopObserving();
             Result.sessionOwnerCallbacks = _callbackThreads?.Callbacks ?? 0;
             Result.sessionWrongThreadCallbacks = _callbackThreads?.WrongThread ?? 0;
+            if (_game != null)
+            {
+                var actions = _game.Session.Traces.Where(trace => trace.Kind == AiTaskKind.Adjudicate && trace.KernelCode != null).ToArray();
+                Result.actionPromptVersion = actions.LastOrDefault()?.Prompt.ActionPromptVersion;
+                if (failure == null && actions.Any(trace => trace.Prompt.ActionPromptVersion != DsActionPrompt.Current))
+                    failure = "Game 自由行动未使用当前冻结提示版本。";
+            }
             if (failure == null && Result.sessionWrongThreadCallbacks != 0)
                 failure = "Session 阶段或完成回调不在 Unity 所有者线程。";
             Result.failure = failure; Result.passed = failure == null;

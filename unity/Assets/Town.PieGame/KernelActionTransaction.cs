@@ -110,7 +110,7 @@ namespace Town.PieGame
                 try
                 {
                     var current = ActionPromptCodec.Freeze(_request.Packet);
-                    matches = payload != null && payload.Binding == ActionPromptCodec.Binding &&
+                    matches = payload != null && payload.Binding == current.Binding &&
                         payload.Fingerprint == _request.Fingerprint && current.Fingerprint == payload.Fingerprint;
                 }
                 catch (Exception error) when (error is ArgumentException || error is FormatException || error is InvalidOperationException)

@@ -157,5 +157,27 @@ namespace Town.Core.Tests
             Assert.False((bool)row["intent_check"]);
             Assert.True((bool)row["invariants_passed"], "候选与回放一致不能替代意图符合。");
         }
+
+        [Test]
+        public void 显式V2套题保留语义判据_旧原文执行对照只允许声明的提示差异()
+        {
+            string output = Path.Combine(Root(), ".local", "action-research-tests", Guid.NewGuid().ToString("N"));
+            Assert.AreEqual(0, ActionKernelResearch.Run(Root(), false, output, semantics: true,
+                actionPromptVersion: DsActionPrompt.Current));
+            var report = JObject.Parse(File.ReadAllText(Path.Combine(output, "summary.json")));
+            Assert.AreEqual(DsActionPrompt.Current, (string)report["actionPromptVersion"]);
+            Assert.AreEqual(24, (int)report["requested"]);
+            Assert.AreEqual(24, (int)report["invariantChecks"]);
+            Assert.AreEqual(24, (int)report["replayPassed"]);
+            Assert.Less((int)report["intentChecks"], 24, "离线模板未因提示升级自动变成语义全通过。");
+            Assert.True(File.Exists(Path.Combine(output, "prompt-version.pre-registered.json")));
+            foreach (var row in (JArray)report["results"])
+            {
+                Assert.AreEqual(DsActionPrompt.Current, (string)row["action_prompt_version"]);
+                Assert.True((bool)row["legacy_exact"]);
+                if (row["zero_cost_rejection_unchanged"].Type != JTokenType.Null)
+                    Assert.True((bool)row["zero_cost_rejection_unchanged"]);
+            }
+        }
     }
 }

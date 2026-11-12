@@ -177,16 +177,25 @@ namespace Town.Core.Dragonsleep
         public Task<AiTrace> SpeakAsync(string npcId, string text, CancellationToken ct = default) =>
             RunAsync(AiTaskKind.Dialogue, npcId, text, ct);
 
-        public Task<AiTrace> ActAsync(string text, CancellationToken ct = default, IDsActionTransaction transaction = null) =>
-            transaction == null ? RunAsync(AiTaskKind.Adjudicate, "player", text, ct) : RunActionTransactionAsync(text, ct, transaction);
+        public Task<AiTrace> ActAsync(string text, CancellationToken ct = default, IDsActionTransaction transaction = null,
+            string actionPromptVersion = DsActionPrompt.Legacy)
+        {
+            DsActionPrompt.Validate(actionPromptVersion);
+            if (transaction == null && actionPromptVersion != DsActionPrompt.Legacy)
+                throw new ArgumentException("versioned_action_requires_transaction");
+            return transaction == null ? RunAsync(AiTaskKind.Adjudicate, "player", text, ct)
+                : RunActionTransactionAsync(text, ct, transaction, actionPromptVersion);
+        }
 
-        async Task<AiTrace> RunActionTransactionAsync(string text, CancellationToken ct, IDsActionTransaction transaction)
+        async Task<AiTrace> RunActionTransactionAsync(string text, CancellationToken ct, IDsActionTransaction transaction,
+            string actionPromptVersion)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             bool failed = false;
             try
             {
-                return await RunLockedAsync(AiTaskKind.Adjudicate, "player", text, ct, actionTransaction: transaction).ConfigureAwait(false);
+                return await RunLockedAsync(AiTaskKind.Adjudicate, "player", text, ct, actionTransaction: transaction,
+                    actionPromptVersion: actionPromptVersion).ConfigureAwait(false);
             }
             catch { failed = true; throw; }
             finally
@@ -413,13 +422,14 @@ namespace Town.Core.Dragonsleep
             internal bool Completed;
             internal IDsActionTransaction ActionTransaction;
             internal IDsActionRequest ActionRequest;
+            internal string ActionPromptVersion;
         }
 
         async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
             IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null, Action guard = null,
-            IDsActionTransaction actionTransaction = null)
+            IDsActionTransaction actionTransaction = null, string actionPromptVersion = DsActionPrompt.Legacy)
         {
-            var call = new CallState { ActionTransaction = actionTransaction };
+            var call = new CallState { ActionTransaction = actionTransaction, ActionPromptVersion = actionPromptVersion };
             bool failed = false;
             try
             {
@@ -513,7 +523,8 @@ namespace Town.Core.Dragonsleep
                 sw.Restart(); Begin(t, AiStage.Prompt);
                 t.Prompt = kind == AiTaskKind.Dialogue
                     ? ContextBuilder.BuildDialogue(NpcPerceptionView.Capture(w, actorId), playerText)
-                    : ContextBuilder.BuildTask(TaskPerceptionView.Capture(w, kind, actorId, TimeLeftInPhase, planContext), playerText);
+                    : ContextBuilder.BuildTask(TaskPerceptionView.Capture(w, kind, actorId, TimeLeftInPhase, planContext,
+                        call.ActionPromptVersion), playerText);
                 t.Prompt.LocalPlanContext = localPlanContext;
                 bool clipped = playerText != null && playerText.Length > ContextBuilder.MaxPlayerChars;
                 End(t, AiStage.Prompt, clipped ? StageStatus.Warn : StageStatus.Ok,

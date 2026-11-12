@@ -43,6 +43,7 @@ namespace Town.Core.Dragonsleep
         public NpcPerceptionView DialogueSnapshot { get; internal set; }
         public TaskPerceptionView TaskSnapshot { get; internal set; }
         public string OriginalPlayerInput { get; internal set; }
+        public string ActionPromptVersion => TaskSnapshot?.ActionPromptVersion ?? DsActionPrompt.Legacy;
         // 本地离线规划元数据；不属于模型协议，不参与 TotalChars、提示词指纹或回放记录。
         internal DsPlanLocalContext LocalPlanContext { get; set; }
         public AiTaskKind Kind;
@@ -219,6 +220,8 @@ namespace Town.Core.Dragonsleep
                 ["version_before"] = WorldVersionBefore, ["version_after"] = WorldVersionAfter
             };
             if (KernelCode != null) record["kernel_code"] = KernelCode;
+            if (Kind == AiTaskKind.Adjudicate && Prompt?.ActionPromptVersion == DsActionPrompt.Current)
+                record["action_prompt_version"] = Prompt.ActionPromptVersion;
             return record;
         }
     }

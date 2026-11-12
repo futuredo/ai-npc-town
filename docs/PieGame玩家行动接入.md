@@ -14,6 +14,8 @@
 
 因此同一个 `Adjudicate` 有两种路径，选择依据是明确入口及注入，不是任务枚举全局开关。
 
+065 增加显式行动提示版本，未增加SDK入口：`ActAsync(text, ct, transaction, actionPromptVersion)` 第四参数默认 `ds-action-prompt-v1`。当前 Game 自由行动明确传 `ds-action-prompt-v2`，其它未指定入口仍保持旧指令。v2 必须同时注入事务；不能仅因传入事务或任务枚举是 Adjudicate 就自动升级，见[提示版本契约](自由行动提示版本与分类治理.md)。
+
 `Town.Core` 只声明 `IDsActionTransaction`、请求 / 准备接口、不可变评估及单次 `DsActionWrite`。新 `Town.PieGame` 无引擎程序集引用 Core 与 Kernel；`dotnet/Town.PieGame` 通配编译同一份源码。Unity 只通过 `DsActionKernelBridge` 包装现有 `UnityKernelBridge` 的所有者线程和生命周期；scene / day / action 共用同一个桥、同一个 `DsKernelStatePort`，没有第二份权威世界。
 
 ## 冻结与纯候选
@@ -23,6 +25,8 @@
 3. Provider 适配器调用前重新核对收到的 payload、request 和私有 packet 指纹。只传 Begin 时的同一个私有 packet，不读取 live World 或重新组装。错字节或 binding 直接失败，不 fallback。
 4. 正常 `PrepareAsync` 由真实桥 / .NET adapter 的 `Task.Run` 执行。`ActionTaskHandler` 只从 Kernel 的 before JSON 恢复独立世界，沿用 snapshot 的 seed、roll counter、spent 与预算，调用新执行器的 `Prepare`；不 Commit、不访问 live Session、trace 或事件。
 5. 坏 JSON 对应 `FormatException`；结构 / 引用失败对应 `HostRejection`。规则拒绝不等于没有后果：已经掷骰、耗时或跨时段换岗的候选仍交 Kernel 提交。
+
+提示版本由不可变任务快照固定，感知 JSON 不加版本字段。v1 binding / 编码仍保持上述原字节；v2 通过 `ActionPromptCodec.BindingFor` 在 binding 与编码里追加提示版本，指令正文也参加原有指纹。OpenAI 安全重建沿冻结版本，不信任公开可变段落。Kernel 同版 v2 严格回放可验证，跨提示版本指纹不符即拒绝；旧 `DsReplayFrame` 未记录提示版本，不能用允许提示漂移的执行回放冒充 v2 严格验证。
 
 评估旁路按请求隔离，标量和集合复制；`WorldChange` 每次取出深复制。Session 只在 owner 投影它，handler 不写公开 trace。隐私测试对玩家看不到的居民 / 雏龙位置做差分，安全 payload 字节保持相同。
 

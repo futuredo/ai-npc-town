@@ -230,6 +230,8 @@ namespace Town.Core.Dragonsleep
         {
             var packet = Build(view.Kind, view.ActorId, view.ToDictionary(), playerText);
             packet.TaskSnapshot = view;
+            if (view.Kind == AiTaskKind.Adjudicate && view.ActionPromptVersion == DsActionPrompt.Current)
+                packet.Instructions = DsActionPrompt.Instructions(packet.Instructions);
             return packet;
         }
 

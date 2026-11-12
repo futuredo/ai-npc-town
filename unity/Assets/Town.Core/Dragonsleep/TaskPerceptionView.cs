@@ -9,11 +9,16 @@ namespace Town.Core.Dragonsleep
         public AiTaskKind Kind { get; }
         public string ActorId { get; }
         public string Json { get; }
-        TaskPerceptionView(AiTaskKind kind, string actor, Dictionary<string, object> view)
-        { Kind = kind; ActorId = actor; Json = MiniJson.Write(view); }
+        public string ActionPromptVersion { get; }
+        TaskPerceptionView(AiTaskKind kind, string actor, Dictionary<string, object> view, string actionPromptVersion)
+        { Kind = kind; ActorId = actor; Json = MiniJson.Write(view); ActionPromptVersion = actionPromptVersion; }
 
-        public static TaskPerceptionView Capture(DsWorld world, AiTaskKind kind, string actor, int timeLeftInPhase = 4, string planContext = null)
+        public static TaskPerceptionView Capture(DsWorld world, AiTaskKind kind, string actor, int timeLeftInPhase = 4,
+            string planContext = null, string actionPromptVersion = DsActionPrompt.Legacy)
         {
+            DsActionPrompt.Validate(actionPromptVersion);
+            if (kind != AiTaskKind.Adjudicate && actionPromptVersion != DsActionPrompt.Legacy)
+                throw new ArgumentException("action_prompt_requires_adjudicate");
             Dictionary<string, object> view;
             switch (kind)
             {
@@ -35,7 +40,7 @@ namespace Town.Core.Dragonsleep
                     view = ContextBuilder.PlanPerception(world, timeLeftInPhase, planContext); break;
                 default: throw new ArgumentException("unsupported_task");
             }
-            return new TaskPerceptionView(kind, actor, view);
+            return new TaskPerceptionView(kind, actor, view, actionPromptVersion);
         }
         public Dictionary<string, object> ToDictionary() => (Dictionary<string, object>)MiniJson.Parse(Json);
     }

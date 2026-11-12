@@ -107,8 +107,10 @@ internal static partial class ActionKernelResearch
         internal readonly ObservedProvider Provider;
         internal readonly RecordedAction Recorded = new RecordedAction();
         internal readonly DragonsleepSession Legacy;
-        internal Host(IAiProvider provider, DsWorldSnapshot before)
+        internal readonly string ActionPromptVersion;
+        internal Host(IAiProvider provider, DsWorldSnapshot before, string actionPromptVersion = DsActionPrompt.Legacy)
         {
+            ActionPromptVersion = actionPromptVersion;
             Provider = new ObservedProvider(provider);
             Session = new DragonsleepSession(Provider, Seed, ownerDispatcher: Owner);
             Session.RestoreState(before);
@@ -118,19 +120,24 @@ internal static partial class ActionKernelResearch
             Transaction = new KernelActionTransaction(Kernel);
             Session.StateReplaced += () => Kernel.Reset(Session.CaptureState().Json);
         }
-        internal AiTrace Act(string input, CancellationToken ct) => Owner.Pump(Session.ActAsync(input, ct, Transaction));
+        internal AiTrace Act(string input, CancellationToken ct) =>
+            Owner.Pump(Session.ActAsync(input, ct, Transaction, ActionPromptVersion));
         public void Dispose() => Owner.Dispose();
     }
 
     public static int Run(string root, bool live, string outputDirectory = null, IAiProvider offlineProvider = null,
-        bool transfer = false, bool semantics = false)
+        bool transfer = false, bool semantics = false, string actionPromptVersion = DsActionPrompt.Legacy)
     {
+        if (actionPromptVersion != DsActionPrompt.Legacy && actionPromptVersion != DsActionPrompt.Current)
+            throw new ArgumentException("unsupported_action_prompt_version");
+        if (actionPromptVersion != DsActionPrompt.Legacy && !semantics) throw new ArgumentException("v2_requires_semantics_suite");
         if (transfer && semantics) throw new ArgumentException("research_suite_conflict");
         if (live && offlineProvider != null) throw new ArgumentException("live_provider_override_forbidden");
         if (!live && offlineProvider?.IsSimulated == false) throw new ArgumentException("offline_provider_must_be_simulated");
         string dir = outputDirectory ?? Path.Combine(root, ".local", "dragonsleep", "experiments",
             DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fffffff") + "-" + Guid.NewGuid().ToString("N")
-            + (semantics ? "-action-semantics" : transfer ? "-action-transfer" : "-action-kernel") + (live ? "-live" : "-offline"));
+            + (actionPromptVersion == DsActionPrompt.Current ? "-action-prompt-v2" :
+                semantics ? "-action-semantics" : transfer ? "-action-transfer" : "-action-kernel") + (live ? "-live" : "-offline"));
         Directory.CreateDirectory(dir);
         var rows = new List<Dictionary<string, object>>();
         using var cancellation = new CancellationTokenSource();
@@ -140,8 +147,8 @@ internal static partial class ActionKernelResearch
         string status = "running";
         try
         {
-            Manifest(root, dir, live, transfer, semantics);
-            CheckHiddenDifference(dir);
+            Manifest(root, dir, live, transfer, semantics, actionPromptVersion);
+            CheckHiddenDifference(dir, actionPromptVersion);
             var cases = semantics ? SemanticCases() : transfer ? TransferCases() : Cases();
             var fixtures = cases.Select(item =>
             {
@@ -165,6 +172,15 @@ internal static partial class ActionKernelResearch
                     target = item.Target, item = item.Item, place = item.Place, exactFields = true
                 }), Formatting.Indented));
             if (semantics) SaveSemanticContract(dir, cases);
+            if (actionPromptVersion == DsActionPrompt.Current)
+                File.WriteAllText(Path.Combine(dir, "prompt-version.pre-registered.json"), JsonConvert.SerializeObject(new
+                {
+                    actionPromptVersion,
+                    comparison = "复用064相同24输入、前置状态和语义判据；只切换显式生产提示v2，不追改旧批成绩。",
+                    legacy = "同一原文在v1执行器对照；只允许提示版本、提示分段长度和Prompt阶段详情变化。",
+                    rejection = "所有实际无骰、零耗时拒绝必须完整before/after JSON相同、Changes为空、Applied=false。",
+                    unknownIds = "不向当前感知补历史物件ID；已消耗食物若当前不再可识别，仍保留该项失败及证据限制。"
+                }, Formatting.Indented));
             if (live)
             {
                 if (OpenAiPolicy.Model != "gpt-6-luna") throw new InvalidOperationException("research_model_mismatch");
@@ -173,15 +189,15 @@ internal static partial class ActionKernelResearch
             }
             IAiProvider provider = online ?? offlineProvider ?? (IAiProvider)new RuleProvider();
             Console.WriteLine("自由行动内核有限实验：" + cases.Count + " 个独立案例＋4步连续行动；仅 Adjudicate 可联网。无自动重试。管线拒绝不等于意图通过。");
-            Summary(dir, rows, live, status, transfer, semantics);
+            Summary(dir, rows, live, status, transfer, semantics, actionPromptVersion);
             for (int caseIndex = 0; caseIndex < cases.Count; caseIndex++)
             {
                 cancellation.Token.ThrowIfCancellationRequested();
                 var item = cases[caseIndex];
-                using var host = new Host(provider, fixtures[caseIndex]);
+                using var host = new Host(provider, fixtures[caseIndex], actionPromptVersion);
                 var row = Execute(dir, item, host, cancellation.Token);
                 rows.Add(row);
-                Summary(dir, rows, live, status, transfer, semantics);
+                Summary(dir, rows, live, status, transfer, semantics, actionPromptVersion);
                 if (!(bool)row["invariants_passed"] || host.Session.Traces.Last().Provider?.Error != null)
                 { status = "stopped_invariant_or_provider_error"; return 1; }
             }
@@ -193,7 +209,7 @@ internal static partial class ActionKernelResearch
                 chain.World.Items["smoked_fish"].Holder = "player";
                 chain.World.PlayerKnows.Add("law:law_whelp_fish");
             }
-            using (var host = new Host(provider, chain.CaptureState()))
+            using (var host = new Host(provider, chain.CaptureState(), actionPromptVersion))
             {
                 var inputs = new[] { "安静地把随身熏鱼喂给小龙。", "我现在不藏它，只观察船屋。", "观察周围。", "等候片刻。" };
                 string previousAfter = host.Session.CaptureState().Hash;
@@ -213,7 +229,7 @@ internal static partial class ActionKernelResearch
                     row["sequence_before_matches_previous_after"] = (string)row["before_hash"] == previousAfter;
                     previousAfter = (string)row["after_hash"];
                     rows.Add(row);
-                    Summary(dir, rows, live, status, transfer, semantics);
+                    Summary(dir, rows, live, status, transfer, semantics, actionPromptVersion);
                     if (!(bool)row["invariants_passed"] || host.Session.Traces.Last().Provider?.Error != null)
                     { status = "stopped_invariant_or_provider_error"; return 1; }
                 }
@@ -232,7 +248,7 @@ internal static partial class ActionKernelResearch
         {
             online?.Dispose();
             Console.CancelKeyPress -= cancel;
-            Summary(dir, rows, live, status, transfer, semantics);
+            Summary(dir, rows, live, status, transfer, semantics, actionPromptVersion);
             Console.WriteLine("报告：" + dir);
         }
     }
@@ -368,6 +384,13 @@ internal static partial class ActionKernelResearch
             && host.Kernel.Capture() == after.Json && trace.KernelCode != null
             && frames.All(frame => frame.PromptFingerprint == host.Provider.Fingerprint && frame.AfterDigest == after.Hash);
         if (trace.KernelCode == "committed") invariant &= frames.Length == 1;
+        bool? unchangedRejection = null;
+        if (host.ActionPromptVersion == DsActionPrompt.Current && trace.Verdict.Kind == VerdictKind.Rejected
+            && !trace.Verdict.Roll.HasValue && trace.Receipt?.TimeCost == 0)
+        {
+            unchangedRejection = before.Json == after.Json && trace.Changes.Count == 0 && !trace.Receipt.Applied;
+            invariant &= unchangedRejection.Value;
+        }
         // before/after 与 ReplayFrame 原文是本地私有录制，不是发给模型的数据。
         File.WriteAllText(Path.Combine(path, "before.local.json"), before.Json);
         File.WriteAllText(Path.Combine(path, "after.local.json"), after.Json);
@@ -399,6 +422,12 @@ internal static partial class ActionKernelResearch
             row["raw_place"] = trace.Proposal?.Str("place");
             row["expected_current_place"] = before.Restore().PlayerPlace;
         }
+        if (host.ActionPromptVersion == DsActionPrompt.Current)
+        {
+            row["action_prompt_version"] = host.ActionPromptVersion;
+            row["zero_cost_rejection_unchanged"] = unchangedRejection;
+            row["legacy_comparison_scope"] = "rule_receipt_trace_except_declared_prompt_metadata";
+        }
         File.WriteAllText(Path.Combine(path, "result.json"), JsonConvert.SerializeObject(row, Formatting.Indented));
         Console.WriteLine(item.Id + ": 意图=" + check + " Kernel=" + trace.KernelCode + " 规则=" + trace.Verdict.Kind
             + " 同原文旧路径=" + legacy + " 回放=" + (frames.Length == 0 ? "未适用" : replay.ToString()));
@@ -411,20 +440,35 @@ internal static partial class ActionKernelResearch
         if (host.Legacy.CaptureState().Json != before.Json) return false;
         host.Recorded.Result = actual.Provider;
         var expected = host.Owner.Pump(host.Legacy.ActAsync(input));
-        return host.Legacy.CaptureState().Json == after.Json
-            && Stable(expected) == Stable(actual);
+        bool versioned = host.ActionPromptVersion == DsActionPrompt.Current;
+        bool promptBoundary = !versioned || expected.Prompt.ActionPromptVersion == DsActionPrompt.Legacy
+            && actual.Prompt.ActionPromptVersion == DsActionPrompt.Current
+            && expected.Prompt.TaskSnapshot.Json == actual.Prompt.TaskSnapshot.Json
+            && MiniJson.Write(expected.Prompt.Sections.Select(s => (object)new Dictionary<string, object>
+                { ["name"] = s.Name, ["text"] = s.Text, ["untrusted"] = s.Untrusted }).ToList())
+                == MiniJson.Write(actual.Prompt.Sections.Select(s => (object)new Dictionary<string, object>
+                { ["name"] = s.Name, ["text"] = s.Text, ["untrusted"] = s.Untrusted }).ToList());
+        return host.Legacy.CaptureState().Json == after.Json && promptBoundary
+            && Stable(expected, versioned) == Stable(actual, versioned);
     }
 
-    static string Stable(AiTrace trace)
+    static string Stable(AiTrace trace, bool versioned = false)
     {
         var value = trace.ToRecord();
         value.Remove("kernel_code");
         value.Remove("total_ms");
+        if (versioned)
+        {
+            value.Remove("action_prompt_version");
+            foreach (var stage in (List<object>)value["stages"])
+                if (((Dictionary<string, object>)stage).Str("stage") == "Prompt")
+                    ((Dictionary<string, object>)stage)["detail"] = "versioned_prompt_metadata";
+        }
         foreach (var stage in (List<object>)value["stages"]) ((Dictionary<string, object>)stage).Remove("ms");
         return MiniJson.Write(value);
     }
 
-    static void CheckHiddenDifference(string dir)
+    static void CheckHiddenDifference(string dir, string actionPromptVersion)
     {
         var first = DsContent.NewWorld(Seed);
         var second = DsContent.NewWorld(Seed);
@@ -434,7 +478,8 @@ internal static partial class ActionKernelResearch
         {
             Id = "private_canary", Owner = "maren", Topic = "private", Text = HiddenBelief, Source = "private"
         });
-        PromptPacket Packet(DsWorld world) => ContextBuilder.BuildTask(TaskPerceptionView.Capture(world, AiTaskKind.Adjudicate, "player"),
+        PromptPacket Packet(DsWorld world) => ContextBuilder.BuildTask(TaskPerceptionView.Capture(world, AiTaskKind.Adjudicate, "player",
+                actionPromptVersion: actionPromptVersion),
             "观察眼前集市");
         var a = Packet(first);
         var b = Packet(second);
@@ -471,13 +516,15 @@ internal static partial class ActionKernelResearch
         return preparation.Receipt.Code == "ready" && receipt.Code == "committed" && port.State == after.Json;
     }
 
-    static void Summary(string dir, List<Dictionary<string, object>> rows, bool live, string status, bool transfer, bool semantics)
+    static void Summary(string dir, List<Dictionary<string, object>> rows, bool live, string status, bool transfer, bool semantics,
+        string actionPromptVersion)
     {
         var fees = rows.Where(r => r["estimated_usd"] != null).Sum(r => (decimal)r["estimated_usd"]);
         int unknown = rows.Count(r => r["estimated_usd"] == null);
         File.WriteAllText(Path.Combine(dir, "summary.json"), JsonConvert.SerializeObject(new
         {
             suite = semantics ? SemanticSuite : transfer ? TransferSuite : Suite, live, status,
+            actionPromptVersion,
             model = OpenAiPolicy.Model, rules = DsExecutor.RulesVersion, kernel = Protocol.Version,
             requested = rows.Count, intentChecks = rows.Count(r => (bool)r["intent_check"]),
             invariantChecks = rows.Count(r => (bool)r["invariants_passed"]), readyFrames = rows.Sum(r => (int)r["ready_records"]),
@@ -491,7 +538,7 @@ internal static partial class ActionKernelResearch
         }, Formatting.Indented));
     }
 
-    static void Manifest(string root, string dir, bool live, bool transfer, bool semantics)
+    static void Manifest(string root, string dir, bool live, bool transfer, bool semantics, string actionPromptVersion)
     {
         var files = new[] { "unity/Assets/Town.Core", "unity/Assets/Town.OpenAI", "unity/Assets/Town.PieGame", "unity/Assets/PieGame.AI.Kernel" }
             .SelectMany(p => Directory.GetFiles(Path.Combine(root, p), "*.cs", SearchOption.AllDirectories))
@@ -503,6 +550,7 @@ internal static partial class ActionKernelResearch
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(new
         {
             suite = semantics ? SemanticSuite : transfer ? TransferSuite : Suite,
+            actionPromptVersion,
             live, seed = Seed, maximumRequests = 24, concurrency = 1, automaticRetries = 0,
             files, assemblies = new[] { typeof(DragonsleepSession).Assembly.Location, typeof(KernelActionTransaction).Assembly.Location,
                 typeof(ReplayFrame).Assembly.Location }.ToDictionary(p => Path.GetFileName(p), p => Hash(File.ReadAllBytes(p)))

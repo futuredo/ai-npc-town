@@ -81,6 +81,9 @@ namespace Town.Tests.PlayMode
             SendAction(); yield return Until(() => Idle && s.Traces.Count == 1);
             var actual = s.Traces.Single(); var receipt = _game.SceneTransaction.ActionKernel.LastReceipt;
             Assert.AreEqual("committed", actual.KernelCode); Assert.IsTrue(actual.Receipt.Applied);
+            Assert.AreEqual(DsActionPrompt.Current, actual.Prompt.ActionPromptVersion);
+            Assert.AreEqual(DsActionPrompt.Current, actual.ToRecord()["action_prompt_version"]);
+            Assert.AreEqual(DsActionPrompt.Legacy, expected.Result.Prompt.ActionPromptVersion);
             Assert.AreEqual(commits + 1, _game.ActionCommits); Assert.AreEqual("committed", receipt.Code);
             Assert.AreEqual(before.Hash, receipt.BeforeDigest); Assert.AreEqual(s.CaptureState().Hash, receipt.AfterDigest);
             Assert.AreEqual(s.CaptureState().Hash, _game.ActionKernelDigest);
@@ -144,6 +147,8 @@ namespace Town.Tests.PlayMode
             yield return Finish(s.RunWithProviderAsync(AiTaskKind.Adjudicate, "player", "观察四周", new RuleProvider()));
             yield return Finish(s.RunStepAsync(new DsPlanStep { Op = "act", Verb = "observe" }.ToProposal(s.World.PlayerPlace), "计划观察"));
             Assert.IsTrue(s.Traces.All(t => t.KernelCode == null && !t.ToRecord().ContainsKey("kernel_code")));
+            Assert.IsTrue(s.Traces.All(t => t.Prompt.ActionPromptVersion == DsActionPrompt.Legacy
+                && !t.ToRecord().ContainsKey("action_prompt_version")));
             Assert.AreEqual(commits, _game.ActionCommits);
             var headless = new DragonsleepSession(new RuleProvider());
             yield return Finish(headless.ActAsync("观察四周"));

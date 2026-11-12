@@ -36,6 +36,8 @@
 
 064 在新采样前明确地点语义等价与拒绝分类，另换措辞执行 **24次真实请求、估算USD 0.0028384**，联合 **20/24**。四项仍将重复拿取或已消耗食物投喂归为unsupported，安全拒绝也保留失败；生产提示尚未改。内核不变量 / 旧路径 / 候选回放均24/24，**440项.NET / 89项PlayMode**通过，默认90/27不变，不回填旧套题。见[语义契约与证据](docs/自由行动语义分类契约与复验.md)与[064日志](docs/开发日志/2026-11-12_064_自由行动地点等价与拒绝分类契约.md)。
 
+065 将分类收敛为显式生产提示 v2，Game自由行动启用，默认headless / 计划步骤仍保留v1。相同24题各采一次，共 **48次真实请求、估算USD 0.0062909**，v1联合20/24、v2联合23/24；三项重复拿取 / 购买分类改善，已消耗鱼缺当前ID仍失败，不补世界真值。**451项.NET、89项PlayMode、新包18次实际运行**通过，默认90/27与黄金不变；非总体正确率、M3或真人整体验收。见[提示版本契约](docs/自由行动提示版本与分类治理.md)与[065日志](docs/开发日志/2026-11-12_065_自由行动提示版本与拒绝分类治理.md)。
+
 ## 打开与运行
 
 环境：Unity `6000.3.23f1`、URP `17.3.0`、.NET 8。
@@ -68,6 +70,9 @@ dotnet run --project dotnet/Town.Research --configuration Release -- --action-ke
 
 # 新语义契约：仅地点允许空串或当前ID等价，其余动作分类和对象仍严格；与 --transfer 互斥
 dotnet run --project dotnet/Town.Research --configuration Release -- --action-kernel --semantics
+
+# 同一语义套题显式选择生产行动提示v2；默认仍离线，旧套题不被自动升级
+dotnet run --project dotnet/Town.Research --configuration Release -- --action-kernel --semantics --prompt-v2
 ```
 
 依赖已还原后可加 `--no-restore`，避免包还原访问网络。CI 只跑离线测试。
