@@ -15,7 +15,8 @@ namespace Town.PieGame
         public static string BindingFor(PromptPacket packet)
         {
             if (packet == null) throw new ArgumentNullException(nameof(packet));
-            return packet.ActionPromptVersion == DsActionPrompt.Legacy ? Binding : Binding + "|" + packet.ActionPromptVersion;
+            string binding = packet.ActionPromptVersion == DsActionPrompt.Legacy ? Binding : Binding + "|" + packet.ActionPromptVersion;
+            return packet.ActionPerceptionVersion == DsActionPerception.Legacy ? binding : binding + "|" + packet.ActionPerceptionVersion;
         }
 
         public static FrozenPayload Freeze(PromptPacket packet) => new FrozenPayload(BindingFor(packet), Encode(packet));
@@ -38,6 +39,8 @@ namespace Town.PieGame
             };
             if (packet.ActionPromptVersion != DsActionPrompt.Legacy)
                 data["action_prompt_version"] = packet.ActionPromptVersion;
+            if (packet.ActionPerceptionVersion != DsActionPerception.Legacy)
+                data["action_perception_version"] = packet.ActionPerceptionVersion;
             return new UTF8Encoding(false, true).GetBytes(MiniJson.Write(Canonical(data)));
         }
 

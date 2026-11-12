@@ -167,7 +167,8 @@ namespace Town.Unity.Dragonsleep
                     SetPose(NearestActorId, trace.Succeeded ? "Talk" : "Idle");
                 }
                 else if (mode == LoomMode.Act)
-                    trace = await Session.ActAsync(text, _lifetime.Token, ActionTransaction, DsActionPrompt.Current);
+                    trace = await Session.ActAsync(text, _lifetime.Token, ActionTransaction,
+                        DsActionPrompt.Current, DsActionPerception.Current);
                 else trace = await Session.CraftAsync(text, _lifetime.Token);
                 if (this == null || Session.World.SessionGen != generation) return;
                 var craft = Session.GetCraftProposal(trace);

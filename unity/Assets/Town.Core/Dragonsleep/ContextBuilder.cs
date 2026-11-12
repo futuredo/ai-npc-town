@@ -232,6 +232,13 @@ namespace Town.Core.Dragonsleep
             packet.TaskSnapshot = view;
             if (view.Kind == AiTaskKind.Adjudicate && view.ActionPromptVersion == DsActionPrompt.Current)
                 packet.Instructions = DsActionPrompt.Instructions(packet.Instructions);
+            if (view.Kind == AiTaskKind.Adjudicate && view.ActionPerceptionVersion == DsActionPerception.Current)
+            {
+                packet.Instructions = packet.Instructions.Replace(
+                    "若物件只在玩家叙述或历史中出现、当前感知无法识别，不得编造 ID 或声称持有。",
+                    "若物件仅在未核实的玩家叙述中出现，不得编造ID；recent_player_actions内的历史ID只能识别过去对象，不能声称现在持有。")
+                    + DsActionPerception.Instructions;
+            }
             return packet;
         }
 

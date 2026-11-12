@@ -108,9 +108,12 @@ internal static partial class ActionKernelResearch
         internal readonly RecordedAction Recorded = new RecordedAction();
         internal readonly DragonsleepSession Legacy;
         internal readonly string ActionPromptVersion;
-        internal Host(IAiProvider provider, DsWorldSnapshot before, string actionPromptVersion = DsActionPrompt.Legacy)
+        internal readonly string ActionPerceptionVersion;
+        internal Host(IAiProvider provider, DsWorldSnapshot before, string actionPromptVersion = DsActionPrompt.Legacy,
+            string actionPerceptionVersion = DsActionPerception.Legacy)
         {
             ActionPromptVersion = actionPromptVersion;
+            ActionPerceptionVersion = actionPerceptionVersion;
             Provider = new ObservedProvider(provider);
             Session = new DragonsleepSession(Provider, Seed, ownerDispatcher: Owner);
             Session.RestoreState(before);
@@ -121,7 +124,7 @@ internal static partial class ActionKernelResearch
             Session.StateReplaced += () => Kernel.Reset(Session.CaptureState().Json);
         }
         internal AiTrace Act(string input, CancellationToken ct) =>
-            Owner.Pump(Session.ActAsync(input, ct, Transaction, ActionPromptVersion));
+            Owner.Pump(Session.ActAsync(input, ct, Transaction, ActionPromptVersion, ActionPerceptionVersion));
         public void Dispose() => Owner.Dispose();
     }
 
@@ -544,7 +547,8 @@ internal static partial class ActionKernelResearch
             .SelectMany(p => Directory.GetFiles(Path.Combine(root, p), "*.cs", SearchOption.AllDirectories))
             .Concat(new[] { Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.cs"),
                  Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Transfer.cs"),
-                 Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Semantics.cs"),
+                  Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Semantics.cs"),
+                  Path.Combine(root, "dotnet/Town.Research/ActionKernelResearch.Memory.cs"),
                 Path.Combine(root, "dotnet/Town.Research/Program.cs") }).OrderBy(p => p, StringComparer.Ordinal)
             .ToDictionary(p => Path.GetRelativePath(root, p), p => Hash(File.ReadAllBytes(p)));
         File.WriteAllText(Path.Combine(dir, "source-manifest.json"), JsonConvert.SerializeObject(new

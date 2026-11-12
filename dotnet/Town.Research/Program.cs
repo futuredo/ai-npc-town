@@ -15,6 +15,15 @@ internal static class Program
         string root = Directory.GetCurrentDirectory();
         if (!File.Exists(Path.Combine(root,"dotnet","Town.sln"))) { Console.Error.WriteLine("请在仓库根目录运行。"); return 2; }
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
+        if (args.Contains("--action-memory"))
+        {
+            var start = args.FirstOrDefault(x => x.StartsWith("--memory-start-fixture="));
+            int index = 0;
+            if (args.Any(x => x != "--action-memory" && x != "--live" && x != start) ||
+                start != null && !int.TryParse(start.Substring("--memory-start-fixture=".Length), out index) ||
+                index < 0 || index > 11) return 2;
+            return ActionKernelResearch.RunMemory(root, args.Contains("--live"), startFixture: index);
+        }
         if (args.Contains("--action-kernel"))
         {
             if (args.Any(x => x != "--action-kernel" && x != "--live" && x != "--transfer" && x != "--semantics" && x != "--prompt-v2") ||

@@ -28,6 +28,11 @@ namespace Town.Unity.Dragonsleep
                     Require(Result.actionCommits == 12 && Result.actionRetainedRequests == 12, "每次行动须恰好提交一次。");
                     Require(Result.actionRetainedBeforeUtf8Bytes > 0, "未记录 before JSON 的累计 UTF-8 字节量。");
                     Require(_game.ActionTransaction.PrivateRecordList.Count == 12, "每次 ready 须有私有录制。");
+                    var last = _game.Session.Traces.Last(trace => trace.KernelCode != null).Prompt.TaskSnapshot;
+                    Require(last.ActionPerceptionVersion == DsActionPerception.Current &&
+                        last.ToDictionary().TryGetValue("recent_player_actions", out var history) &&
+                        ((System.Collections.Generic.List<object>)history).Count == 4,
+                        "后续真实行动须收到最多四条冻结亲历记录，而不是整个 trace 历史。");
                     Checkpoint("十二次自由行动由内核唯一提交，并测量当前局保留量");
                     Finish(null);
                     return;

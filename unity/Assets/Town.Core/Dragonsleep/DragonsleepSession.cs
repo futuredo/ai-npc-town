@@ -61,6 +61,8 @@ namespace Town.Core.Dragonsleep
         private readonly Dictionary<string, string> _latestByActor = new Dictionary<string, string>();
         private readonly SemaphoreSlim _gate = new SemaphoreSlim(1, 1);
         private readonly IDsOwnerThreadDispatcher _ownerDispatcher;
+        readonly DsPlayerActionMemory _actionMemory = new DsPlayerActionMemory();
+        object _actionMemoryEpoch = new object();
 
         public DragonsleepSession(IAiProvider provider, int seed = 20261108,
             IDsRoll rolls = null, DsExecutionMode executionMode = DsExecutionMode.Live, IDsOwnerThreadDispatcher ownerDispatcher = null,
@@ -85,6 +87,7 @@ namespace Town.Core.Dragonsleep
             RuleEvents.Clear(); _ruleSequence = 0;
             _executor.Reset();
             _pendingCraft = null;
+            _actionMemory.Clear(); _actionMemoryEpoch = new object();
             StateReplaced?.Invoke();
         }
 
@@ -178,24 +181,28 @@ namespace Town.Core.Dragonsleep
             RunAsync(AiTaskKind.Dialogue, npcId, text, ct);
 
         public Task<AiTrace> ActAsync(string text, CancellationToken ct = default, IDsActionTransaction transaction = null,
-            string actionPromptVersion = DsActionPrompt.Legacy)
+            string actionPromptVersion = DsActionPrompt.Legacy, string actionPerceptionVersion = DsActionPerception.Legacy)
         {
             DsActionPrompt.Validate(actionPromptVersion);
+            DsActionPerception.Validate(actionPerceptionVersion);
             if (transaction == null && actionPromptVersion != DsActionPrompt.Legacy)
                 throw new ArgumentException("versioned_action_requires_transaction");
+            if (actionPerceptionVersion != DsActionPerception.Legacy &&
+                (transaction == null || actionPromptVersion != DsActionPrompt.Current))
+                throw new ArgumentException("memory_requires_versioned_action_transaction");
             return transaction == null ? RunAsync(AiTaskKind.Adjudicate, "player", text, ct)
-                : RunActionTransactionAsync(text, ct, transaction, actionPromptVersion);
+                : RunActionTransactionAsync(text, ct, transaction, actionPromptVersion, actionPerceptionVersion);
         }
 
         async Task<AiTrace> RunActionTransactionAsync(string text, CancellationToken ct, IDsActionTransaction transaction,
-            string actionPromptVersion)
+            string actionPromptVersion, string actionPerceptionVersion)
         {
             await _gate.WaitAsync(ct).ConfigureAwait(false);
             bool failed = false;
             try
             {
                 return await RunLockedAsync(AiTaskKind.Adjudicate, "player", text, ct, actionTransaction: transaction,
-                    actionPromptVersion: actionPromptVersion).ConfigureAwait(false);
+                    actionPromptVersion: actionPromptVersion, actionPerceptionVersion: actionPerceptionVersion).ConfigureAwait(false);
             }
             catch { failed = true; throw; }
             finally
@@ -220,6 +227,7 @@ namespace Town.Core.Dragonsleep
             _sequence = 0; _latestByActor.Clear(); Traces.Clear(); _executor.Reset();
             RuleEvents.Clear(); _ruleSequence = 0;
             _pendingCraft = null;
+            _actionMemory.Clear(); _actionMemoryEpoch = new object();
             StateReplaced?.Invoke();
         }
 
@@ -423,13 +431,18 @@ namespace Town.Core.Dragonsleep
             internal IDsActionTransaction ActionTransaction;
             internal IDsActionRequest ActionRequest;
             internal string ActionPromptVersion;
+            internal string ActionPerceptionVersion;
+            internal TaskPerceptionView ActionMemorySource;
+            internal object ActionMemoryEpoch;
         }
 
         async Task<AiTrace> RunLockedAsync(AiTaskKind kind, string actorId, string playerText, CancellationToken ct,
             IAiProvider providerOverride = null, string planContext = null, DsPlanLocalContext localPlanContext = null, Action guard = null,
-            IDsActionTransaction actionTransaction = null, string actionPromptVersion = DsActionPrompt.Legacy)
+            IDsActionTransaction actionTransaction = null, string actionPromptVersion = DsActionPrompt.Legacy,
+            string actionPerceptionVersion = DsActionPerception.Legacy)
         {
-            var call = new CallState { ActionTransaction = actionTransaction, ActionPromptVersion = actionPromptVersion };
+            var call = new CallState { ActionTransaction = actionTransaction, ActionPromptVersion = actionPromptVersion,
+                ActionPerceptionVersion = actionPerceptionVersion };
             bool failed = false;
             try
             {
@@ -485,6 +498,7 @@ namespace Town.Core.Dragonsleep
         {
             // 必须在读取 World、分配请求编号或创建 trace 之前，于实际 Owner 执行时检查。
             guard?.Invoke();
+            call.ActionMemoryEpoch = _actionMemoryEpoch;
             var w = call.World = World;
             // 内核路径的 before 由 Kernel.Begin 捕获；不重复保存宿主 stale_context 摘要。
             if (call.ActionTransaction == null) call.RequestHash = CaptureState().Hash;
@@ -516,14 +530,18 @@ namespace Town.Core.Dragonsleep
                     SkipRest(t, AiStage.Prompt);
                     return false;
                 }
-                t.Perception = kind == AiTaskKind.Plan ? ContextBuilder.PlanPerception(World, TimeLeftInPhase, planContext) : Perceive(kind, actorId);
+                var view = call.ActionTransaction == null ? null : TaskPerceptionView.CaptureAction(w, TimeLeftInPhase,
+                    call.ActionPromptVersion, call.ActionPerceptionVersion, _actionMemory);
+                call.ActionMemorySource = view;
+                t.Perception = view?.ToDictionary() ?? (kind == AiTaskKind.Plan
+                    ? ContextBuilder.PlanPerception(World, TimeLeftInPhase, planContext) : Perceive(kind, actorId));
                 End(t, AiStage.Context, StageStatus.Ok, $"{t.Perception.Count} 个字段；仅含{(kind == AiTaskKind.Direct ? "汇总状态" : "该视角可见信息")}", sw);
 
                 // ② 提示组装
                 sw.Restart(); Begin(t, AiStage.Prompt);
                 t.Prompt = kind == AiTaskKind.Dialogue
                     ? ContextBuilder.BuildDialogue(NpcPerceptionView.Capture(w, actorId), playerText)
-                    : ContextBuilder.BuildTask(TaskPerceptionView.Capture(w, kind, actorId, TimeLeftInPhase, planContext,
+                    : ContextBuilder.BuildTask(view ?? TaskPerceptionView.Capture(w, kind, actorId, TimeLeftInPhase, planContext,
                         call.ActionPromptVersion), playerText);
                 t.Prompt.LocalPlanContext = localPlanContext;
                 bool clipped = playerText != null && playerText.Length > ContextBuilder.MaxPlayerChars;
@@ -559,6 +577,8 @@ namespace Town.Core.Dragonsleep
             {
                 t.Provider = prepared.Provider;
                 var provider = t.Provider;
+                string executedRaw = provider?.RawText;
+                var memoryEvaluation = prepared.Plan?.EvaluationSnapshot;
                 bool providerFailed = provider == null || provider.Error != null || string.IsNullOrEmpty(provider.RawText);
                 End(t, AiStage.Provider, providerFailed ? StageStatus.Fail : StageStatus.Ok,
                     providerFailed ? provider?.Error ?? "empty_response" :
@@ -614,6 +634,13 @@ namespace Town.Core.Dragonsleep
                     t.Presented = ActionKernelMessage(result.KernelCode, t.FailureCode);
                     t.Verdict.Kind = VerdictKind.Rejected;
                     t.Verdict.Reason = t.Presented;
+                }
+                if (result.KernelCode == "committed" && plan != null && ReferenceEquals(call.ActionMemoryEpoch, _actionMemoryEpoch) &&
+                    MiniJson.TryParseObject(executedRaw, out var executed, out _))
+                {
+                    // 必须在 Commit 完成通知前冻结，通知中重开会清空；不扫描可变 trace 或世界真值。
+                    _actionMemory.Append(call.ActionMemorySource, memoryEvaluation,
+                        plan.RequestId, call.ActionMemorySource.ToDictionary().Str("time"), executed);
                 }
                 End(t, AiStage.Commit, t.FailureCode != null ? StageStatus.Fail :
                     t.Receipt?.Applied == true ? StageStatus.Ok : StageStatus.Skipped,

@@ -38,6 +38,8 @@
 
 065 将分类收敛为显式生产提示 v2，Game自由行动启用，默认headless / 计划步骤仍保留v1。相同24题各采一次，共 **48次真实请求、估算USD 0.0062909**，v1联合20/24、v2联合23/24；三项重复拿取 / 购买分类改善，已消耗鱼缺当前ID仍失败，不补世界真值。**451项.NET、89项PlayMode、新包18次实际运行**通过，默认90/27与黄金不变；非总体正确率、M3或真人整体验收。见[提示版本契约](docs/自由行动提示版本与分类治理.md)与[065日志](docs/开发日志/2026-11-12_065_自由行动提示版本与拒绝分类治理.md)。
 
+066 将玩家亲历的最近四次规则裁决作为显式感知v2，历史只说明当时做过什么，不证明现在持有或在场。四类连续玩法链两臂共 **96次真实请求、费用估算USD 0.00878730**：首批比较器误报停止的31/32与续批64/64分别保留，没有重抽。描述性意图匹配无记忆31/48、记忆41/48，真正适用的重复动作挑战3/11与10/12；记忆改善同物指代，但观察被误执行为搜索、等待被吞掉等失败仍在。**464项.NET、91项PlayMode、新包原18次实际运行**通过，默认90/27与黄金不变；干预含历史说明，非纯数据因果或完整归巢验收，见[玩法现象与边界](docs/亲历行动记忆与连续玩法有限验证.md)及[066日志](docs/开发日志/2026-11-12_066_亲历行动记忆与连续玩法对照.md)。
+
 ## 打开与运行
 
 环境：Unity `6000.3.23f1`、URP `17.3.0`、.NET 8。
@@ -73,6 +75,9 @@ dotnet run --project dotnet/Town.Research --configuration Release -- --action-ke
 
 # 同一语义套题显式选择生产行动提示v2；默认仍离线，旧套题不被自动升级
 dotnet run --project dotnet/Town.Research --configuration Release -- --action-kernel --semantics --prompt-v2
+
+# 四类真实连续行动的记忆 / 无记忆方案，默认离线；最多96次，不补资源、不重抽
+dotnet run --project dotnet/Town.Research --configuration Release -- --action-memory
 ```
 
 依赖已还原后可加 `--no-restore`，避免包还原访问网络。CI 只跑离线测试。
@@ -85,7 +90,7 @@ unity test "$PWD/unity" --editor-version 6000.3.23f1 \
   --output "$PWD/.local/cleanup-20261109/playmode.xml" --timeout 600 --format json
 ```
 
-若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 合作 / SDK / 末段 / 图样 / 自由行动为 `DragonsleepJourneyProbeTests`（9 项），托付条件 4 项、合作意图 3 项、原件补救 3 项、SDK 场景 7 项、SDK 日间 4 项、Session owner 3 项、Plan owner 3 项、绑定图样 3 项、自由行动内核 5 项；连同既有表现 4 项共 **70 项游戏回归**。独立桥 11 项、独立调度器 8 项另计，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 **89 项**。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
+若工程已打开，优先在该 Editor 的 Test Runner 中执行，不为同一工程启动第二份。计划 UI 为 `DragonsleepPlanPresentationTests`（13 项），实体为 `DragonsleepStagePresentationTests`（9 项），短局 / 重开 / 社会 / 合作 / SDK / 末段 / 图样 / 自由行动为 `DragonsleepJourneyProbeTests`（9 项），托付条件 4 项、合作意图 3 项、原件补救 3 项、SDK 场景 7 项、SDK 日间 4 项、Session owner 3 项、Plan owner 3 项、绑定图样 3 项、自由行动内核 5 项、亲历记忆 2 项；连同既有表现 4 项共 **72 项游戏回归**。独立桥 11 项、独立调度器 8 项另计，联合 filter 为 `Dragonsleep;PieGame.AI.Unity.Tests.PlayMode`，共 **91 项**。自动导航按钮回归不能代替鼠标命中、真人手感、美术、设备性能或全部玩法验收。
 
 局内按 **P** 或底栏“归巢计划”：写目标 → 提出 → 选取舍 → 确认 → 每次执行一步；失败后重新规划仍需再确认。取消规划会等待提供方收尾，不会接纳迟到草稿；放弃计划不撤销已经提交的后果。
 

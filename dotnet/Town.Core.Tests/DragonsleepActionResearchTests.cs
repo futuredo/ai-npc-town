@@ -43,12 +43,116 @@ namespace Town.Core.Tests
             }
         }
 
+        sealed class WrongConfideItem : IAiProvider
+        {
+            public string Name => "离线非法物件托付反例";
+            public bool IsSimulated => true;
+            public Task<ProviderResult> CompleteAsync(PromptPacket packet, CancellationToken ct)
+            {
+                if (packet.OriginalPlayerInput != "付三银币，向玛尔妲买走待售熏鱼。")
+                    return new RuleProvider().CompleteAsync(packet, ct);
+                return Task.FromResult(new ProviderResult
+                {
+                    ProviderName = Name, Simulated = true,
+                    RawText = "{\"verb\":\"confide\",\"target\":\"maren\",\"item\":\"whelp\",\"place\":\"\"," +
+                        "\"laws\":[],\"difficulty\":0.2,\"narration\":\"本地非法物件反例\"}"
+                });
+            }
+        }
+
         static string Root()
         {
             var root = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             while (root != null && !File.Exists(Path.Combine(root.FullName, "dotnet", "Town.sln"))) root = root.Parent;
             Assert.NotNull(root, "须在本仓库构建输出中运行。");
             return root.FullName;
+        }
+
+        [Test]
+        public void 亲历记忆两臂连续研究离线_世界承接与候选回放独立于模型意图成绩()
+        {
+            string output = Path.Combine(Root(), ".local", "action-research-tests", Guid.NewGuid().ToString("N"));
+            Assert.AreEqual(0, ActionKernelResearch.RunMemory(Root(), false, output));
+            var report = JObject.Parse(File.ReadAllText(Path.Combine(output, "summary.json")));
+            Assert.AreEqual(96, (int)report["requested"]);
+            Assert.AreEqual(96, (int)report["invariants"]);
+            Assert.AreEqual(96, (int)report["replayPassed"]);
+            Assert.Less((int)report["intentChecks"], 96, "离线提供方不因记忆说明改变而自动获得理解能力。");
+            Assert.AreEqual(24, ((JArray)report["episodes"]).Count);
+            var rows = (JArray)report["results"];
+            Assert.True(rows.All(row => (bool)row["before_matches_previous_after"]));
+            Assert.True(rows.Where(row => (string)row["perception_version"] == DsActionPerception.Legacy)
+                .All(row => (int)row["memory_count"] == 0));
+            Assert.True(rows.Where(row => (string)row["perception_version"] == DsActionPerception.Current)
+                .All(row => (int)row["memory_count"] == (int)row["step"] - 1));
+            Assert.True(File.Exists(Path.Combine(output, "memory-contract.pre-registered.json")));
+            var repeated = rows.Where(row => (bool)row["repeat_probe_applicable"]).ToArray();
+            Assert.IsNotEmpty(repeated);
+            Assert.True(repeated.All(row => row["repeat_probe_passed"].Type == JTokenType.Boolean));
+            Assert.True(rows.Where(row => !(bool)row["repeat_probe_applicable"])
+                .All(row => row["repeat_probe_passed"].Type == JTokenType.Null));
+        }
+
+        [Test]
+        public void 记忆研究只归一已声明的宿主拒绝映射_错误物件仍算意图失败且无回放帧()
+        {
+            string output = Path.Combine(Root(), ".local", "action-research-tests", Guid.NewGuid().ToString("N"));
+            Assert.AreEqual(0, ActionKernelResearch.RunMemory(Root(), false, output, new WrongConfideItem(), startFixture: 11));
+            var report = JObject.Parse(File.ReadAllText(Path.Combine(output, "summary.json")));
+            Assert.AreEqual(8, (int)report["maximumRequests"]);
+            Assert.AreEqual(8, (int)report["requested"]);
+            Assert.AreEqual(8, (int)report["invariants"]);
+            Assert.AreEqual(2, ((JArray)report["episodes"]).Count);
+            var rejected = ((JArray)report["results"]).Where(row => (int)row["step"] == 1).ToArray();
+            Assert.AreEqual(2, rejected.Length);
+            foreach (var row in rejected)
+            {
+                Assert.AreEqual("host_rejected", (string)row["kernel_code"]);
+                Assert.False((bool)row["intent_match"]);
+                Assert.True((bool)row["same_raw_rules_exact"]);
+                Assert.AreEqual((string)row["before_hash"], (string)row["after_hash"]);
+                Assert.AreEqual(0, (int)row["time_cost"]);
+                Assert.AreEqual(0, (int)row["ready_frames"]);
+                Assert.AreEqual(JTokenType.Null, row["strict_replay"].Type);
+            }
+        }
+
+        [Test]
+        public void 拒绝映射不能忽略其他错误码_校验问题或完整回执效果()
+        {
+            const string raw = "{\"verb\":\"confide\",\"target\":\"maren\",\"item\":\"whelp\",\"place\":\"\"," +
+                "\"laws\":[],\"difficulty\":0.2,\"narration\":\"离线反例\"}";
+            var session = new DragonsleepSession(new WrongConfideItem());
+            var before = session.CaptureState();
+            var legacy = session.RunStepAsync((System.Collections.Generic.Dictionary<string, object>)MiniJson.Parse(raw), "反例")
+                .GetAwaiter().GetResult();
+            var mapped = new AiTrace
+            {
+                RequestId = legacy.RequestId, KernelCode = "host_rejected", FailureCode = legacy.FailureCode,
+                Proposal = (System.Collections.Generic.Dictionary<string, object>)MiniJson.Parse(raw),
+                Verdict = new Verdict { Kind = VerdictKind.Rejected, Reason = "行动未通过结构或规则校验，未提交。",
+                    ReasonCode = legacy.Verdict.ReasonCode }
+            };
+            mapped.ValidationIssues.AddRange(legacy.ValidationIssues);
+            mapped.Receipt = typeof(DsExecutionReceipt).GetConstructors(System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic).Single().Invoke(new object[]
+                {
+                    new DsExecutor().Prepare(before.Restore(), before.Spent, before.PhaseBudget, AiTaskKind.Adjudicate,
+                        "player", legacy.RequestId, mapped.Proposal), "host_rejected", false, before
+                }) as DsExecutionReceipt;
+            Assert.True(ActionKernelResearch.MemoryRulesMatch(before, legacy, mapped));
+            mapped.FailureCode = "schema_invalid";
+            Assert.False(ActionKernelResearch.MemoryRulesMatch(before, legacy, mapped));
+            mapped.FailureCode = legacy.FailureCode;
+            mapped.ValidationIssues.Add("不同的校验问题");
+            Assert.False(ActionKernelResearch.MemoryRulesMatch(before, legacy, mapped));
+            mapped.ValidationIssues.RemoveAt(mapped.ValidationIssues.Count - 1);
+            mapped.Changes.Add(new WorldChange { Path = "coins", Before = "12", After = "11" });
+            Assert.False(ActionKernelResearch.MemoryRulesMatch(before, legacy, mapped));
+            mapped.Changes.Clear();
+            mapped.Verdict.Reason = "另一个不在映射契约里的文案";
+            Assert.False(ActionKernelResearch.MemoryRulesMatch(before, legacy, mapped));
+            Assert.AreEqual(before.Json, session.CaptureState().Json);
         }
 
         [Test]

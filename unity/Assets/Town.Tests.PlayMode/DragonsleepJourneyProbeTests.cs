@@ -253,6 +253,8 @@ namespace Town.Tests.PlayMode
                 Assert.AreEqual(12, probe.Result.actionCommits);
                 Assert.AreEqual(12, probe.Result.actionRetainedRequests);
                 Assert.Greater(probe.Result.actionRetainedBeforeUtf8Bytes, 0);
+                Assert.AreEqual(DsActionPerception.Current, probe.Result.actionPerceptionVersion);
+                Assert.AreEqual(4, probe.Result.actionMemoryEntries);
                 Assert.AreEqual(0, probe.Result.runtimeErrors);
             }
             finally

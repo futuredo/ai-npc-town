@@ -82,6 +82,7 @@ namespace Town.Tests.PlayMode
             var actual = s.Traces.Single(); var receipt = _game.SceneTransaction.ActionKernel.LastReceipt;
             Assert.AreEqual("committed", actual.KernelCode); Assert.IsTrue(actual.Receipt.Applied);
             Assert.AreEqual(DsActionPrompt.Current, actual.Prompt.ActionPromptVersion);
+            Assert.AreEqual(DsActionPerception.Current, actual.Prompt.ActionPerceptionVersion);
             Assert.AreEqual(DsActionPrompt.Current, actual.ToRecord()["action_prompt_version"]);
             Assert.AreEqual(DsActionPrompt.Legacy, expected.Result.Prompt.ActionPromptVersion);
             Assert.AreEqual(commits + 1, _game.ActionCommits); Assert.AreEqual("committed", receipt.Code);
