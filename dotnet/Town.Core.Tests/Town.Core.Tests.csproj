@@ -14,6 +14,9 @@
     <ProjectReference Include="../Town.OpenAI/Town.OpenAI.csproj" />
     <ProjectReference Include="../Town.PieGame/Town.PieGame.csproj" />
     <Compile Include="../Town.Research/PlanCases.cs" Link="Golden/PlanCases.cs" />
+    <Compile Include="../Town.Research/ExperimentCases.cs" Link="Research/ExperimentCases.cs" />
+    <Compile Include="../Town.Research/FourMechanismCases.cs" Link="Research/FourMechanismCases.cs" />
+    <Compile Include="../Town.Research/FourMechanismResearch.cs" Link="Research/FourMechanismResearch.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.cs" Link="Research/ActionKernelResearch.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Transfer.cs" Link="Research/ActionKernelResearch.Transfer.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Semantics.cs" Link="Research/ActionKernelResearch.Semantics.cs" />

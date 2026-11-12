@@ -10,15 +10,22 @@ using Town.OpenAI;
 
 internal static class Journey
 {
-    public static async Task<int> Run(string root, bool live, int seed=18, int nights=1)
+    public static async Task<int> Run(string root, bool live, int seed=18, int nights=1, bool fourMechanisms=false)
     {
+        if(fourMechanisms)FourMechanismResearch.VerifyRegistration(root,FourMechanismResearch.Folder(root));
         string dir=Path.Combine(root,".local","dragonsleep","experiments",DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")+(live?"-journey-live":"-journey-offline"));
+        if(fourMechanisms)
+        {
+            dir=Path.Combine(FourMechanismResearch.Folder(root),live?"c-live":"c-offline");
+            if(Directory.Exists(dir))throw new InvalidOperationException("journey_already_exists_no_resampling");
+        }
         Directory.CreateDirectory(dir);
         var frames=new List<(string Id,DsReplayFrame Frame)>();
         var before=new Dictionary<string,DsWorldSnapshot>();
         var traces=new List<AiTrace>(); string step="";
         using var online=live?new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,OpenAiRunProfile.SixMechanismResearch),profile:OpenAiRunProfile.SixMechanismResearch):null;
-        var s=new DragonsleepSession(online??(IAiProvider)new RuleProvider(),seed);
+        using var limited=fourMechanisms?new FourMechanismResearch.LimitedProvider(online??(IAiProvider)new RuleProvider(),live,live?FourMechanismResearch.Folder(root):dir):null;
+        var s=new DragonsleepSession(limited??(IAiProvider)online??new RuleProvider(),seed,requireBoundCraftConfirmation:fourMechanisms);
         s.StageChanged+=(t,stage)=>{if(stage==AiStage.Context&&!before.ContainsKey(t.RequestId))before[t.RequestId]=s.CaptureState();};
         s.TraceCompleted+=t=>
         {
@@ -27,6 +34,15 @@ internal static class Journey
             var f=DsReplayFrame.Capture(before[t.RequestId],s.CaptureState(),t);frames.Add((id,f));traces.Add(t);
             File.WriteAllText(Path.Combine(dir,id+".replay.json"),MiniJson.Write(f.ToRecord(),true));
             File.WriteAllText(Path.Combine(dir,id+".trace.json"),MiniJson.Write(t.ToRecord(),true));
+            if(fourMechanisms)
+            {
+                if(t.Prompt!=null)File.WriteAllText(Path.Combine(dir,id+".payload.json"),OpenAiDragonsleepProvider.BuildPayload(t.Prompt,OpenAiRunProfile.SixMechanismResearch).ToString());
+                bool replayOk=f.VerifyAsync().GetAwaiter().GetResult();
+                var privacy=Newtonsoft.Json.Linq.JObject.FromObject(FourMechanismResearch.Privacy(f.Before,t.Kind,t.ActorId,t.PlayerInput));
+                FourMechanismResearch.Write(Path.Combine(dir,id+".audit.json"),new {privacy,strict_replay=replayOk});
+                if(t.Provider?.Error!=null||!replayOk||!(bool)privacy["same_payload"]||!(bool)privacy["marker_absent"])
+                {limited.Stop(t.Provider?.Error??"journey_invariant_failed");throw new InvalidOperationException("journey_stopped");}
+            }
             Console.WriteLine(id+": "+t.Verdict.Kind+" "+t.FailureCode+" | "+t.Presented);
         };
         try
@@ -36,7 +52,12 @@ internal static class Journey
             step="buy";await s.ActAsync("我数出三枚银币交到厨娘掌心，换她那串熏鱼。");StopOnError(traces);
             s.World.PlayerPlace="workshop";
             step="craft";await s.CraftAsync("用这一串熏鱼和工坊的余烬灰，织成可以让雏龙靠近、也可以喂给它的小点心。只消耗这两种材料。");
-            if(s.HasPendingCraft)s.ConfirmCraft(true);StopOnError(traces);
+            if(s.HasPendingCraft)
+            {
+                if(fourMechanisms)s.ConfirmCraft(s.GetCraftProposal(s.Traces.Last()),true);
+                else s.ConfirmCraft(true);
+            }
+            StopOnError(traces);
             var item=s.World.Items.Values.FirstOrDefault(i=>i.Crafted&&i.Holder=="player");
             if(item==null) { Console.WriteLine("未获得生成物件，停止依赖它的后续步骤。");return 1; }
             s.World.PlayerPlace="docks";

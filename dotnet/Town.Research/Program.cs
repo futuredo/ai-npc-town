@@ -14,6 +14,21 @@ internal static class Program
     {
         string root = Directory.GetCurrentDirectory();
         if (!File.Exists(Path.Combine(root,"dotnet","Town.sln"))) { Console.Error.WriteLine("请在仓库根目录运行。"); return 2; }
+        // 独立诊断入口；不带此开关的历史入口、过滤、种子与默认离线行为保持原样。
+        if (args.Contains("--four-mechanisms"))
+        {
+            if (args.Any(x=>x!="--four-mechanisms"&&x!="--prepare"&&x!="--legacy"&&x!="--holdout"&&x!="--live"&&x!="--journey"&&x!="--three-nights")) return 2;
+            try
+            {
+                if(args.Contains("--prepare"))return args.Length==2?FourMechanismResearch.Prepare(root):2;
+                if(args.Contains("--journey"))return args.Contains("--three-nights")&&!args.Contains("--legacy")&&!args.Contains("--holdout")
+                    ? await Journey.Run(root,args.Contains("--live"),18,3,fourMechanisms:true):2;
+                if(args.Contains("--three-nights")||args.Contains("--legacy")&&args.Contains("--holdout"))return 2;
+                return await FourMechanismResearch.Run(root,args.Contains("--live"),args.Contains("--legacy")?"a":args.Contains("--holdout")?"holdout":"b");
+            }
+            catch(Exception e) when(e is IOException||e is UnauthorizedAccessException||e is InvalidOperationException||e is ArgumentException)
+            { Console.Error.WriteLine("四机制诊断停止；保留已落盘证据，不补跑，不输出凭据或异常正文。"); return 2; }
+        }
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
         if (args.Contains("--action-focus-transfer"))
         {
@@ -71,7 +86,7 @@ internal static class Program
             if (args.Any(x => x != recovery && x != "--live")) return 2;
             return await PlanRecovery.Run(root, recovery.Substring(16), args.Contains("--live"));
         }
-        bool live = args.Contains("--live");
+        bool live = FourMechanismResearch.RequiresLive(args);
         string filter = args.FirstOrDefault(x=>x.StartsWith("--cases="))?.Substring(8);
         if (args.Any(x=>x!="--live"&&x!="--holdout"&&!x.StartsWith("--cases=")&&!x.StartsWith("--seed="))) { Console.Error.WriteLine("用法：无参数离线；--live 显式真实实验；--cases=id,id；--holdout 新措辞集；--seed=N；--journey --three-nights；--replay 目录"); return 2; }
         var cases = args.Contains("--holdout")?ExperimentCases.Holdout():ExperimentCases.All();
