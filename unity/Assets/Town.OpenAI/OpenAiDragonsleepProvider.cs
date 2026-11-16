@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,54 @@ using Town.Core.Dragonsleep;
 
 namespace Town.OpenAI
 {
+    /// <summary>
+    /// Responses API 响应的安全形态摘要。只包含结构、长度、哈希和用量元数据，
+    /// 不保存文本、请求头、密钥或完整响应；不会进入公开 AiTrace/HUD/模型输入。
+    /// </summary>
+    public sealed class OpenAiResponseShape
+    {
+        public string Status { get; internal set; }
+        public OpenAiIncompleteDetailsShape IncompleteDetails { get; internal set; }
+        public OpenAiUsageShape Usage { get; internal set; }
+        public readonly System.Collections.Generic.List<string> OutputItemTypes = new System.Collections.Generic.List<string>();
+        public readonly System.Collections.Generic.List<OpenAiMessageShape> Messages = new System.Collections.Generic.List<OpenAiMessageShape>();
+        public readonly System.Collections.Generic.List<OpenAiTextSegmentShape> OutputTextSegments = new System.Collections.Generic.List<OpenAiTextSegmentShape>();
+        public int ReasoningItemCount { get; internal set; }
+        public int RefusalContentCount { get; internal set; }
+
+        public bool HasReasoning => ReasoningItemCount > 0;
+        public bool HasRefusal => RefusalContentCount > 0;
+    }
+
+    public sealed class OpenAiIncompleteDetailsShape
+    {
+        public bool Present { get; internal set; }
+        public string TokenType { get; internal set; }
+        public string Reason { get; internal set; }
+        public readonly System.Collections.Generic.List<string> Keys = new System.Collections.Generic.List<string>();
+    }
+
+    public sealed class OpenAiUsageShape
+    {
+        public bool Present { get; internal set; }
+        public int? InputTokens { get; internal set; }
+        public int? CachedInputTokens { get; internal set; }
+        public int? OutputTokens { get; internal set; }
+    }
+
+    public sealed class OpenAiMessageShape
+    {
+        public readonly System.Collections.Generic.List<string> ContentTypes = new System.Collections.Generic.List<string>();
+    }
+
+    public sealed class OpenAiTextSegmentShape
+    {
+        public string TokenType { get; internal set; }
+        public int? Length { get; internal set; }
+        public int? Utf8Bytes { get; internal set; }
+        public string Sha256 { get; internal set; }
+    }
+
     /// <summary>
     /// 《龙眠镇》真实模型提供方：Responses API + 按任务类型的严格 JSON Schema。
     /// 只负责“把提示词送出去、把文本拿回来”；校验、裁决全部仍在 Core 的规则管线里，与离线提供方完全相同。
@@ -25,6 +74,15 @@ namespace Town.OpenAI
         private readonly IRequestBudget _budget;
         private readonly OpenAiRunProfile _profile;
         private readonly SemaphoreSlim _single = new SemaphoreSlim(1, 1);
+
+        /// <summary>
+        /// 最近一次响应的私有形态摘要；仅在 missing_output/incomplete_response/refusal 时非空。
+        /// 调用方如需落盘，必须写入私有研究目录，不能放入公开轨迹。
+        /// </summary>
+        public OpenAiResponseShape LastResponseShape { get; private set; }
+
+        /// <summary>失败响应形态的私有研究订阅点；成功响应不会触发。</summary>
+        public event Action<PromptPacket, ProviderResult, OpenAiResponseShape> ResponseShapeObserved;
 
         public string Name => OpenAiPolicy.Model;
         public bool IsSimulated => false;
@@ -42,6 +100,7 @@ namespace Town.OpenAI
         public async Task<ProviderResult> CompleteAsync(PromptPacket packet, CancellationToken cancellationToken)
         {
             if (packet == null) throw new ArgumentNullException(nameof(packet));
+            LastResponseShape = null;
             if (packet.Kind != AiTaskKind.Dialogue && !_profile.AllMechanisms) return Fail("task_not_authorized");
             if (!Verified(packet)) return Fail("unverified_perception");
             if (!await _single.WaitAsync(0).ConfigureAwait(false)) return Fail("busy");
@@ -61,7 +120,13 @@ namespace Town.OpenAI
                         if (!response.IsSuccessStatusCode) return Fail("http_" + (int)response.StatusCode);
                         string json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                         if (json.Length > 65536) return Fail("response_too_large");
-                        return Parse(json);
+                        var result = Parse(json);
+                        if (result.Error == "missing_output" || result.Error == "incomplete_response" || result.Error == "refusal")
+                        {
+                            try { ResponseShapeObserved?.Invoke(packet, result, LastResponseShape); }
+                            catch { /* 诊断落盘不能改变提供方失败码或请求结果。 */ }
+                        }
+                        return result;
                     }
                 }
             }
@@ -82,6 +147,7 @@ namespace Town.OpenAI
         private ProviderResult Parse(string json)
         {
             var response = JObject.Parse(json);
+            LastResponseShape = OpenAiResponseShapeReader.Read(response);
             TokenUsageLite usage = null;
             if (response["usage"] is JObject u)
             {
@@ -98,14 +164,18 @@ namespace Town.OpenAI
                 var incomplete = Fail("incomplete_response", usage);
                 incomplete.ResponseStatus = (string)response["status"];
                 incomplete.IncompleteReason = (string)response["incomplete_details"]?["reason"];
-                // 保留截断文本作为失败证据；Error 仍使 Core 在解析/执行前停止。
-                incomplete.RawText = string.Concat(content.Where(x => (string)x["type"] == "output_text").Select(x => (string)x["text"]));
+                // 仅保留单段截断文本的既有失败证据；多段不拼接，避免把响应形态误当成一段模型输出。
+                var incompleteTexts = content.Where(x => (string)x["type"] == "output_text")
+                    .Select(x => x["text"]).Where(x => x?.Type == JTokenType.String).ToArray();
+                incomplete.RawText = incompleteTexts.Length == 1 ? (string)incompleteTexts[0] : null;
                 return incomplete;
             }
             if (content.Any(x => (string)x["type"] == "refusal")) return Fail("refusal", usage);
             var texts = content.Where(x => (string)x["type"] == "output_text").ToArray();
             if (texts.Length != 1 || texts[0]["text"]?.Type != JTokenType.String) return Fail("missing_output", usage);
             // 不在这里校验内容：结构/引用/白名单统一交给 Core 管线，真实与离线走同一套规则。
+            // 成功路径仍只返回原来的单一文本；诊断摘要只服务于失败审查。
+            LastResponseShape = null;
             return new ProviderResult
             {
                 ProviderName = Name, RawText = (string)texts[0]["text"], Simulated = false, ResponseStatus = "completed",
@@ -214,5 +284,82 @@ namespace Town.OpenAI
         }
 
         public void Dispose() => _http.Dispose();
+    }
+
+    internal static class OpenAiResponseShapeReader
+    {
+        internal static OpenAiResponseShape Read(JObject response)
+        {
+            var shape = new OpenAiResponseShape { Status = response["status"]?.Type == JTokenType.String ? (string)response["status"] : null };
+            var details = response["incomplete_details"];
+            if (details != null)
+            {
+                var detailObject = details as JObject;
+                shape.IncompleteDetails = new OpenAiIncompleteDetailsShape
+                {
+                    Present = true,
+                    TokenType = details.Type.ToString(),
+                    Reason = detailObject == null ? null : (string)detailObject["reason"]
+                };
+                if (detailObject != null)
+                    foreach (var property in detailObject.Properties()) shape.IncompleteDetails.Keys.Add(property.Name);
+            }
+
+            var usage = response["usage"];
+            if (usage != null)
+            {
+                var usageObject = usage as JObject;
+                shape.Usage = new OpenAiUsageShape
+                {
+                    Present = true,
+                    InputTokens = usageObject == null ? (int?)null : IntValue(usageObject["input_tokens"]),
+                    CachedInputTokens = usageObject == null ? (int?)null : IntValue(usageObject["input_tokens_details"]?["cached_tokens"]),
+                    OutputTokens = usageObject == null ? (int?)null : IntValue(usageObject["output_tokens"])
+                };
+            }
+
+            foreach (var item in response["output"] as JArray ?? new JArray())
+            {
+                string itemType = TypeName(item);
+                shape.OutputItemTypes.Add(itemType);
+                if (itemType == "reasoning") shape.ReasoningItemCount++;
+                if (!(item is JObject message) || itemType != "message") continue;
+                var messageShape = new OpenAiMessageShape();
+                foreach (var content in message["content"] as JArray ?? new JArray())
+                {
+                    string contentType = TypeName(content);
+                    messageShape.ContentTypes.Add(contentType);
+                    if (contentType == "refusal") shape.RefusalContentCount++;
+                    if (contentType == "output_text" && content is JObject outputText)
+                        shape.OutputTextSegments.Add(TextSegment(outputText["text"]));
+                }
+                shape.Messages.Add(messageShape);
+            }
+            return shape;
+        }
+
+        static int? IntValue(JToken token) => token != null &&
+            (token.Type == JTokenType.Integer || token.Type == JTokenType.Float) &&
+            int.TryParse(token.ToString(), out var value) ? (int?)value : null;
+
+        static string TypeName(JToken token)
+        {
+            if (token is JObject obj && obj["type"]?.Type == JTokenType.String) return (string)obj["type"];
+            return token?.Type.ToString() ?? "Null";
+        }
+
+        static OpenAiTextSegmentShape TextSegment(JToken value)
+        {
+            if (value?.Type != JTokenType.String)
+                return new OpenAiTextSegmentShape { TokenType = value?.Type.ToString() ?? "Null" };
+            string text = (string)value;
+            byte[] bytes = Encoding.UTF8.GetBytes(text);
+            using (var sha = SHA256.Create())
+                return new OpenAiTextSegmentShape
+                {
+                    TokenType = "String", Length = text.Length, Utf8Bytes = bytes.Length,
+                    Sha256 = BitConverter.ToString(sha.ComputeHash(bytes)).Replace("-", "").ToLowerInvariant()
+                };
+        }
     }
 }

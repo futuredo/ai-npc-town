@@ -1,9 +1,11 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
 using Town.Core.Dragonsleep;
@@ -37,6 +39,22 @@ namespace Town.Core.Tests
                 ["usage"] = includeUsage ? new JObject { ["input_tokens"] = 900, ["output_tokens"] = 80, ["input_tokens_details"] = new JObject { ["cached_tokens"] = 0 } } : null
             }.ToString())
         };
+
+        static HttpResponseMessage Shape(JArray output, string status = "completed", JObject incompleteDetails = null) =>
+            new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(new JObject
+                {
+                    ["status"] = status,
+                    ["incomplete_details"] = incompleteDetails,
+                    ["output"] = output,
+                    ["usage"] = new JObject
+                    {
+                        ["input_tokens"] = 900, ["output_tokens"] = 80,
+                        ["input_tokens_details"] = new JObject { ["cached_tokens"] = 12 }
+                    }
+                }.ToString())
+            };
 
         static DragonsleepSession Session(FakeHttp http, Budget budget) =>
             new DragonsleepSession(new OpenAiDragonsleepProvider("test-key", budget, http));
@@ -138,6 +156,200 @@ namespace Town.Core.Tests
             Assert.AreEqual("max_output_tokens", t.Provider.IncompleteReason);
             Assert.IsNull(t.Receipt, "截断结果不可执行");
             Assert.AreEqual(1, http.Calls, "不重试截断请求");
+        }
+
+        [Test]
+        public void 响应形态诊断_零段输出仍为missing_output且只记录结构元数据()
+        {
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "message", ["content"] = new JArray()
+            })) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("missing_output", t.FailureCode);
+            Assert.AreEqual(new[] { "message" }, provider.LastResponseShape == null ? null : provider.LastResponseShape.OutputItemTypes.ToArray());
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 响应形态诊断_两段文本不拼接且记录各自长度哈希()
+        {
+            OpenAiDragonsleepProvider provider = null;
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "message", ["content"] = new JArray(
+                    new JObject { ["type"] = "output_text", ["text"] = "甲" },
+                    new JObject { ["type"] = "output_text", ["text"] = "乙乙" })
+            })) };
+            var budget = new Budget();
+            provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("missing_output", t.FailureCode);
+            Assert.AreEqual(new[] { "output_text", "output_text" }, provider.LastResponseShape.Messages.Single().ContentTypes.ToArray());
+            Assert.AreEqual(2, provider.LastResponseShape.OutputTextSegments.Count);
+            Assert.AreEqual(1, provider.LastResponseShape.OutputTextSegments[0].Length);
+            Assert.AreEqual(2, provider.LastResponseShape.OutputTextSegments[1].Length);
+            Assert.AreNotEqual(provider.LastResponseShape.OutputTextSegments[0].Sha256, provider.LastResponseShape.OutputTextSegments[1].Sha256);
+            Assert.IsNull(t.Provider.RawText, "missing_output 不拼接多段文本");
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 响应形态诊断_非字符串文本只记录token类型不记录内容()
+        {
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "message", ["content"] = new JArray(new JObject
+                {
+                    ["type"] = "output_text", ["text"] = new JObject { ["secret"] = "请求头不应出现" }
+                })
+            })) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("missing_output", t.FailureCode);
+            var segment = provider.LastResponseShape.OutputTextSegments.Single();
+            Assert.AreEqual("Object", segment.TokenType);
+            Assert.IsNull(segment.Length);
+            Assert.IsNull(segment.Sha256);
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 响应形态诊断_只有reasoning仍为missing_output()
+        {
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "reasoning", ["summary"] = new JArray(new JObject { ["text"] = "私密推理不应落盘" })
+            })) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("missing_output", t.FailureCode);
+            CollectionAssert.AreEqual(new[] { "reasoning" }, provider.LastResponseShape.OutputItemTypes);
+            Assert.AreEqual(1, provider.LastResponseShape.ReasoningItemCount);
+            Assert.IsFalse(provider.LastResponseShape.Messages.Any());
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 响应形态诊断_refusal保留拒答形态但不记录拒答文本()
+        {
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "message", ["content"] = new JArray(new JObject
+                {
+                    ["type"] = "refusal", ["refusal"] = "拒答私密文本"
+                })
+            })) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("refusal", t.FailureCode);
+            CollectionAssert.AreEqual(new[] { "refusal" }, provider.LastResponseShape.Messages.Single().ContentTypes);
+            Assert.AreEqual(1, provider.LastResponseShape.RefusalContentCount);
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 响应形态诊断_incomplete保留状态原因用量和文本哈希()
+        {
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "message", ["content"] = new JArray(new JObject { ["type"] = "output_text", ["text"] = "半句" })
+            }), "incomplete", new JObject { ["reason"] = "max_output_tokens" }) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("incomplete_response", t.FailureCode);
+            Assert.AreEqual("incomplete", provider.LastResponseShape.Status);
+            Assert.IsTrue(provider.LastResponseShape.IncompleteDetails.Present);
+            Assert.AreEqual("max_output_tokens", provider.LastResponseShape.IncompleteDetails.Reason);
+            Assert.AreEqual(new[] { "reason" }, provider.LastResponseShape.IncompleteDetails.Keys.ToArray());
+            Assert.AreEqual(900, provider.LastResponseShape.Usage.InputTokens);
+            Assert.AreEqual(12, provider.LastResponseShape.Usage.CachedInputTokens);
+            Assert.AreEqual(80, provider.LastResponseShape.Usage.OutputTokens);
+            Assert.AreEqual(2, provider.LastResponseShape.OutputTextSegments.Single().Length);
+            Assert.AreEqual("半句", t.Provider.RawText, "保留既有截断RawText行为");
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 响应形态诊断_incomplete多段文本不拼接()
+        {
+            var http = new FakeHttp { Reply = () => Shape(new JArray(new JObject
+            {
+                ["type"] = "message", ["content"] = new JArray(
+                    new JObject { ["type"] = "output_text", ["text"] = "甲" },
+                    new JObject { ["type"] = "output_text", ["text"] = "乙" })
+            }), "incomplete", new JObject { ["reason"] = "max_output_tokens" }) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.AreEqual("incomplete_response", t.FailureCode);
+            Assert.IsNull(t.Provider.RawText, "截断多段响应不拼接");
+            Assert.AreEqual(2, provider.LastResponseShape.OutputTextSegments.Count);
+            AssertNoSecrets(provider.LastResponseShape);
+        }
+
+        [Test]
+        public void 成功路径响应与公开记录不增加诊断字段()
+        {
+            var http = new FakeHttp { Reply = () => Ok("{\"say\":\"原文\",\"cites\":[],\"reveal\":[],\"trust_delta\":0,\"persuaded_by\":[],\"action\":\"none\"}") };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+            Assert.IsNull(t.FailureCode);
+            Assert.AreEqual("{\"say\":\"原文\",\"cites\":[],\"reveal\":[],\"trust_delta\":0,\"persuaded_by\":[],\"action\":\"none\"}", t.Provider.RawText);
+            Assert.IsNull(provider.LastResponseShape);
+            StringAssert.DoesNotContain("response_shape", MiniJson.Write(t.ToRecord()));
+        }
+
+        [Test]
+        public void 研究器私有诊断只记录失败一次且成功不追加()
+        {
+            string directory = Path.Combine(Path.GetTempPath(), "town-response-shape-" + Guid.NewGuid().ToString("N"));
+            int call = 0;
+            var http = new FakeHttp
+            {
+                Reply = () => call++ == 0
+                    ? Shape(new JArray(new JObject { ["type"] = "message", ["content"] = new JArray() }))
+                    : Ok("{\"say\":\"成功\",\"cites\":[],\"reveal\":[],\"trust_delta\":0,\"persuaded_by\":[],\"action\":\"none\"}")
+            };
+            try
+            {
+                var budget = new Budget();
+                using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+                ResponseShapeDiagnostics.Attach(provider, directory);
+                var failed = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+                Assert.AreEqual("missing_output", failed.FailureCode);
+                var succeeded = new DragonsleepSession(provider).SpeakAsync("marta", "你好").Result;
+                Assert.IsNull(succeeded.FailureCode);
+                var path = Path.Combine(directory, "response-shapes.jsonl");
+                Assert.IsTrue(File.Exists(path));
+                var lines = File.ReadAllLines(path);
+                Assert.AreEqual(1, lines.Length, "同一提供方的成功响应不应重复写入诊断");
+                StringAssert.Contains("missing_output", lines[0]);
+                StringAssert.DoesNotContain("RawText", lines[0]);
+                StringAssert.DoesNotContain("test-key", lines[0]);
+            }
+            finally
+            {
+                if (Directory.Exists(directory)) Directory.Delete(directory, true);
+            }
+        }
+
+        static void AssertNoSecrets(OpenAiResponseShape shape)
+        {
+            string json = JsonConvert.SerializeObject(shape);
+            StringAssert.DoesNotContain("test-key", json);
+            StringAssert.DoesNotContain("Authorization", json);
+            StringAssert.DoesNotContain("Bearer", json);
+            StringAssert.DoesNotContain("私密", json);
+            StringAssert.DoesNotContain("请求头", json);
+            StringAssert.DoesNotContain("拒答", json);
         }
 
         [TestCase(AiTaskKind.Adjudicate)]

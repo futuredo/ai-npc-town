@@ -24,6 +24,7 @@ internal static class Journey
         var before=new Dictionary<string,DsWorldSnapshot>();
         var traces=new List<AiTrace>(); string step="";
         using var online=live?new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,OpenAiRunProfile.SixMechanismResearch),profile:OpenAiRunProfile.SixMechanismResearch):null;
+        if(online!=null)ResponseShapeDiagnostics.Attach(online,dir);
         using var limited=fourMechanisms?new FourMechanismResearch.LimitedProvider(online??(IAiProvider)new RuleProvider(),live,live?FourMechanismResearch.Folder(root):dir):null;
         var s=new DragonsleepSession(limited??(IAiProvider)online??new RuleProvider(),seed,requireBoundCraftConfirmation:fourMechanisms);
         s.StageChanged+=(t,stage)=>{if(stage==AiStage.Context&&!before.ContainsKey(t.RequestId))before[t.RequestId]=s.CaptureState();};

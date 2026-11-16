@@ -157,6 +157,7 @@ internal static partial class ActionKernelResearch
                 if (OpenAiPolicy.Model != "gpt-6-luna") throw new InvalidOperationException("research_model_mismatch");
                 online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),
                     new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
+                ResponseShapeDiagnostics.Attach(online, dir);
             }
             IAiProvider provider = online ?? offlineProvider ?? (IAiProvider)new RuleProvider();
             for (int index = startFixture; index < fixtures.Length; index++)

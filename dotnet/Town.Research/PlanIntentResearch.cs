@@ -75,6 +75,7 @@ internal static class PlanIntentResearch
                     throw new InvalidOperationException("research_model_mismatch");
                 online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),
                     new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
+                ResponseShapeDiagnostics.Attach(online, dir);
             }
             IAiProvider provider = online == null ? (IAiProvider)new RuleProvider()
                 : new RoutingProvider(online, new RuleProvider(), new[] { AiTaskKind.Plan }) { FallbackOnBudget = false };

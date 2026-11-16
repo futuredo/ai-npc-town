@@ -40,7 +40,11 @@ internal static class PlanRecovery
         }, Formatting.Indented));
         try
         {
-            if (live) online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
+            if (live)
+            {
+                online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
+                ResponseShapeDiagnostics.Attach(online, dir);
+            }
             foreach (JObject f in fixtures)
             {
                 var snapshot = DsWorldSnapshot.Parse(f["before"].ToString(Formatting.None));

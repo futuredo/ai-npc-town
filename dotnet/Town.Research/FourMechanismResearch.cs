@@ -236,7 +236,8 @@ internal static class FourMechanismResearch
         string output=Path.Combine(dir,group+(live?"-live":"-offline"));
         if(Directory.Exists(output))throw new InvalidOperationException("batch_already_exists_no_resampling");
         Directory.CreateDirectory(output);
-        using var online=live?new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,OpenAiRunProfile.SixMechanismResearch),profile:OpenAiRunProfile.SixMechanismResearch):null;
+         using var online=live?new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,OpenAiRunProfile.SixMechanismResearch),profile:OpenAiRunProfile.SixMechanismResearch):null;
+         if(online!=null)ResponseShapeDiagnostics.Attach(online,dir);
         // 离线故障注入的STOPPED仅写该离线输出目录，不影响真实研究状态。
         using var provider=new LimitedProvider(online??replacement??(IAiProvider)new RuleProvider(),live,live?dir:output);
         var rows=new List<JObject>();string status="running";

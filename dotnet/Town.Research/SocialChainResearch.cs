@@ -349,6 +349,7 @@ internal static class SocialChainResearch
         using var online = live
             ? new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch)
             : null;
+        if (online != null) ResponseShapeDiagnostics.Attach(online, dir);
         using var provider = new LimitedProvider(online ?? (IAiProvider)new OfflineSocialProvider(), live, dir);
         var rows = new List<JObject>(); string status = "running";
         try

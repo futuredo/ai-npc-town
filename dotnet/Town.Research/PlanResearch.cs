@@ -97,7 +97,11 @@ internal static class PlanResearch
             sourceFiles.ToDictionary(f => f, f => DsWorldSnapshot.Digest(File.ReadAllText(Path.Combine(root, f)))), Formatting.Indented));
         try
         {
-            if (live) online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
+            if (live)
+            {
+                online = new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root), new FileRequestBudget(root, OpenAiRunProfile.SixMechanismResearch), profile: OpenAiRunProfile.SixMechanismResearch);
+                ResponseShapeDiagnostics.Attach(online, dir);
+            }
             IAiProvider Planner() => online == null ? (IAiProvider)new RuleProvider() : new RoutingProvider(online, new RuleProvider(), new[] { AiTaskKind.Plan }) { FallbackOnBudget = false };
             Console.WriteLine($"归巢计划研究；规划={(live ? OpenAiPolicy.Model + "（仅计划请求联网，居民/GM 离线）" : "离线基线")}；{(transfer ? "状态迁移集" : holdout ? "新措辞集" : "冻结集")} {cases.Count} 例；整局种子 {seeds}。");
 

@@ -115,7 +115,11 @@ internal static class Program
         try
         {
             // 唯一读密钥与联网的分支；默认运行与所有单元测试不会进入。
-            if(live) online=new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,profile),profile:profile);
+            if(live)
+            {
+                online=new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,profile),profile:profile);
+                ResponseShapeDiagnostics.Attach(online, dir);
+            }
             foreach(var c in cases)
             {
                 var baseline=new DragonsleepSession(new RuleProvider(),seed); c.Setup(baseline);
