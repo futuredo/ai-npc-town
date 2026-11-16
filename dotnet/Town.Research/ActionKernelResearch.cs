@@ -110,14 +110,17 @@ internal static partial class ActionKernelResearch
         internal readonly string ActionPromptVersion;
         internal readonly string ActionPerceptionVersion;
         internal Host(IAiProvider provider, DsWorldSnapshot before, string actionPromptVersion = DsActionPrompt.Legacy,
-            string actionPerceptionVersion = DsActionPerception.Legacy)
+            string actionPerceptionVersion = DsActionPerception.Legacy, int seed = Seed,
+            IDsRoll rolls = null, bool requireBoundCraftConfirmation = false)
         {
             ActionPromptVersion = actionPromptVersion;
             ActionPerceptionVersion = actionPerceptionVersion;
             Provider = new ObservedProvider(provider);
-            Session = new DragonsleepSession(Provider, Seed, ownerDispatcher: Owner);
+            Session = new DragonsleepSession(Provider, seed, rolls, ownerDispatcher: Owner,
+                requireBoundCraftConfirmation: requireBoundCraftConfirmation);
             Session.RestoreState(before);
-            Legacy = new DragonsleepSession(Recorded, Seed, ownerDispatcher: Owner);
+            Legacy = new DragonsleepSession(Recorded, seed, ownerDispatcher: Owner,
+                requireBoundCraftConfirmation: requireBoundCraftConfirmation);
             Legacy.RestoreState(before);
             Kernel = new ActionKernelAdapter(new DsKernelStatePort(Session.CaptureState));
             Transaction = new KernelActionTransaction(Kernel);

@@ -406,7 +406,7 @@ namespace Town.Unity.Dragonsleep
                     .TryGetValue("recent_player_actions", out var remembered) == true)
                     Result.actionMemoryEntries = ((List<object>)remembered).Count;
                 if (failure == null && actions.Any(trace => trace.Prompt.ActionPromptVersion != DsActionPrompt.Current))
-                    failure = "Game 自由行动未使用当前冻结提示版本。";
+                    failure = "Game 自由行动未使用已验证的生产提示 v2。";
                 if (failure == null && actions.Any(trace => trace.Prompt.ActionPerceptionVersion != DsActionPerception.Current))
                     failure = "Game 自由行动未使用当前亲历感知版本。";
             }

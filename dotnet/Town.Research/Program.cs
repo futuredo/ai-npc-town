@@ -43,6 +43,23 @@ internal static class Program
             { Console.Error.WriteLine("四机制诊断停止；保留已落盘证据，不补跑，不输出凭据或异常正文。"); return 2; }
         }
         if (args.Length==2 && (args[0]=="--replay" || args[0]=="--replay-execution")) return await Replay(args[1],args[0]=="--replay-execution");
+        if (args.Contains("--action-v3-production"))
+        {
+            if (args.Any(x => x != "--action-v3-production" && x != "--prepare" && x != "--live")
+                || args.Contains("--prepare") && args.Contains("--live")) return 2;
+            try
+            {
+                if (args.Contains("--prepare"))
+                    return args.Length == 2 ? ActionKernelResearch.PrepareActionV3Production(root) : 2;
+                return await ActionKernelResearch.RunActionV3Production(root, args.Contains("--live"));
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException ||
+                e is InvalidOperationException || e is ArgumentException || e is TimeoutException)
+            {
+                Console.Error.WriteLine("任务三生产套题停止；已保留已落盘证据，不输出凭据或异常正文。");
+                return 2;
+            }
+        }
         if (args.Contains("--action-focus-transfer"))
         {
             if (args.Any(x => x != "--action-focus-transfer" && x != "--live")) return 2;

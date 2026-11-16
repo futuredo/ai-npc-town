@@ -168,6 +168,8 @@ namespace Town.Unity.Dragonsleep
                 }
                 else if (mode == LoomMode.Act)
                     trace = await Session.ActAsync(text, _lifetime.Token, ActionTransaction,
+                        // v3 生产门槛未通过，Game 保持已验证的 v2；计划、默认 Session
+                        // 和其它入口仍保留各自的 v1/v2 版本边界。
                         DsActionPrompt.Current, DsActionPerception.Current);
                 else trace = await Session.CraftAsync(text, _lifetime.Token);
                 if (this == null || Session.World.SessionGen != generation) return;
