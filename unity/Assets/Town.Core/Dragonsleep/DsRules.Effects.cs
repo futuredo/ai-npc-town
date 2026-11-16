@@ -67,7 +67,11 @@ namespace Town.Core.Dragonsleep
                             w.Flags.Remove("ally:maren");
                             t.Changes.Add(new WorldChange { Path = "flags.pact_custody", Before = "maren", After = "", Note = "取回原件，保管合作失效" });
                         }
-                        Move(t, item, "player"); return "你趁" + owner.Name + "不注意，拿走了「" + item.Name + "」。";
+                        Move(t, item, "player");
+                        ObserveEvent(w, "take", w.PlayerPlace, owner.Id + ":" + item.Id,
+                            "玩家从" + owner.Name + "处取回了「" + item.Name + "」。" +
+                            (item.Id == "pact_page" && owner.Id == "maren" ? "原件已不在梅伦手中，原件保管资格及相关同行合作已撤销。" : ""), t);
+                        return "你趁" + owner.Name + "不注意，拿走了「" + item.Name + "」。";
                     }
                     Set(t, owner.Id + ".trust", ref owner.Trust, owner.Trust - 0.3f);
                     return owner.Name + "一把按住你的手：“干什么？”";
@@ -79,9 +83,13 @@ namespace Town.Core.Dragonsleep
                     {
                         w.Flags["pact_custody:maren"] = w.ClockText;
                         t.Changes.Add(new WorldChange { Path = "flags.pact_custody", Before = "", After = "maren", Note = "交付原件保管核验" });
+                        ObserveEvent(w, "give", w.PlayerPlace, actor.Id + ":" + item.Id,
+                            "玩家把契约原件交给梅伦保管核验，原件现在由梅伦持有；这次交付本身不是托付护送，也未建立同行合作。", t);
                         return "梅伦收好契约原件：“我会保管核验。有它作教会的凭据，你再托付护送时，我愿意同行。”你不再持有原件。";
                     }
                     Set(t, actor.Id + ".trust", ref actor.Trust, actor.Trust + 0.1f);
+                    ObserveEvent(w, "give", w.PlayerPlace, actor.Id + ":" + item.Id,
+                        "玩家把「" + item.Name + "」交给了" + actor.Name + "。", t);
                     return actor.Name + "接过了「" + item.Name + "」。";
                 case "use":
                     if (!ok) return "物件微微发亮，但这次没有发挥作用。";
@@ -108,6 +116,8 @@ namespace Town.Core.Dragonsleep
                         w.Flags[shownKey] = w.ClockText;
                         t.Changes.Add(new WorldChange { Path = "flags.shown", Before = "", After = item.Id + "→" + actor.Id });
                     }
+                    ObserveEvent(w, "show", w.PlayerPlace, actor.Id + ":" + item.Id,
+                        "玩家向" + actor.Name + "出示了「" + item.Name + "」。", t);
                     if (item.Id == "pact_page" && actor.Id == "maren")
                     {
                         if (firstShown) Set(t, "maren.trust", ref actor.Trust, actor.Trust + 0.3f);

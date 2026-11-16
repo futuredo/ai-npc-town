@@ -32,7 +32,8 @@ namespace Town.Core.Dragonsleep
             var a = w.Actors[npcId];
             var beliefs = w.BeliefsOf(npcId).Select(b => (object)new Dictionary<string, object>
             {
-                ["id"] = b.Id, ["text"] = b.Text, ["guarded"] = b.RevealTrust > a.Trust
+                ["id"] = b.Id, ["text"] = b.Text, ["guarded"] = b.RevealTrust > a.Trust,
+                ["root"] = b.EffectiveRootId, ["hops"] = b.EffectiveHops, ["source"] = b.Source
             }).ToList();
             return new Dictionary<string, object>
             {
@@ -94,6 +95,8 @@ namespace Town.Core.Dragonsleep
                 ["fear"] = Round(a.Fear),
                 ["trust_in_player"] = Round(a.Trust),
                 ["your_beliefs"] = w.BeliefsOf(npcId).Select(b => (object)(b.Id + "：" + b.Text)).ToList(),
+                ["belief_sources"] = w.BeliefsOf(npcId).ToDictionary(b => b.Id, b => (object)new Dictionary<string, object>
+                { ["root"] = b.EffectiveRootId, ["hops"] = b.EffectiveHops, ["source"] = b.Source, ["topic"] = b.Topic }),
                 ["others"] = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal)
                     .Where(x => x.Id != npcId && x.Place == a.Place).Select(x => (object)(x.Id + "@" + x.Place)).ToList(),
                 ["known_people"] = w.Actors.Values.OrderBy(x => x.Id, System.StringComparer.Ordinal)

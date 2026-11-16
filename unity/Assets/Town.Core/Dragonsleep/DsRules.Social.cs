@@ -15,7 +15,7 @@ namespace Town.Core.Dragonsleep
             string id = "b_plan_" + actor.Id;
             if (w.Belief(id) == null)
             {
-                w.Beliefs.Add(new DsBelief { Id = id, Owner = actor.Id, Topic = "plan", RevealTrust = 0.3f, Source = "told:player",
+                w.Beliefs.Add(new DsBelief { Id = id, Owner = actor.Id, RootId = id, RootOwner = actor.Id, Hops = 0, Topic = "plan", RevealTrust = 0.3f, Source = "told:player",
                     Text = "言契师打算把小烬送上龙骨岗，等苍穹之母降临时交还给她。" });
                 t.Changes.Add(new WorldChange { Path = actor.Id + ".beliefs", Before = "", After = id, Note = "得知护送计划" });
             }
@@ -85,6 +85,7 @@ namespace Town.Core.Dragonsleep
                 case "guard":
                     Relocate(w, a, place, t);
                     if (verb == "guard") w.Flags["guard:" + place] = npcId;
+                    ObserveLocalGuards(w, a.Place, t);
                     line = a.Name + (verb == "guard" ? "守在" : "去了") + w.Places[place];
                     break;
                 case "search":
@@ -113,24 +114,30 @@ namespace Town.Core.Dragonsleep
                     if (!w.Actors.TryGetValue(target, out var listener) || listener.Id == npcId)
                     { Fail(t, "unknown_entity", "tell 的对象无效：" + target); return; }
                     if (listener.Place != a.Place) { Reject(t, "交谈对象不在身边，需要先寻访", "actor_absent", listener.Id); return; }
-                    var own = new HashSet<string>(w.BeliefsOf(npcId).Select(b => b.Id));
-                    var valid = share.Where(own.Contains).ToList();
-                    foreach (var bad in share.Except(valid)) t.ValidationIssues.Add("不能转述别人的认知：" + bad);
-                    int shared = 0;
-                    foreach (var id in valid)
+                    List<DsBelief> shared;
+                    string firstFailure;
+                    ShareBeliefs(w, a, listener, share, t, out shared, out firstFailure);
+                    if (shared.Count == 0)
                     {
-                        var src = w.Belief(id);
-                        string newId = id + "@" + target;
-                        if (w.Belief(newId) != null || src.Id.Contains("@")) continue;
-                        w.Beliefs.Add(new DsBelief
-                        {
-                            Id = newId, Owner = target, Topic = src.Topic, Text = "听" + a.Name + "说：" + src.Text,
-                            RevealTrust = Math.Max(0.1f, src.RevealTrust * 0.5f), True = src.True, Source = "told:" + npcId
-                        });
-                        shared++;
-                        t.Changes.Add(new WorldChange { Path = target + ".beliefs", Before = "", After = newId, Note = "流言" });
+                        t.Verdict.Kind = VerdictKind.Rejected;
+                        t.Verdict.ReasonCode = new DsReason(firstFailure ?? "no_beliefs_selected", target);
+                        t.Verdict.Reason = "没有可实际传出的认知";
+                        line = a.Name + "没有把可转述的消息告诉" + listener.Name;
+                        break;
                     }
-                    if (shared > 0)
+                    if (firstFailure != null)
+                    {
+                        t.Verdict.Kind = VerdictKind.Partial;
+                        t.Verdict.ReasonCode = new DsReason("partial_hearsay", target);
+                        t.Verdict.Reason = "只传出了 " + shared.Count + " 条认知";
+                    }
+                    else
+                    {
+                        t.Verdict.Kind = VerdictKind.Accepted;
+                        t.Verdict.ReasonCode = new DsReason("hearsay_shared", target);
+                        t.Verdict.Reason = "传出了 " + shared.Count + " 条认知";
+                    }
+                    if (shared.Count > 0)
                     {
                         string key = target + ">" + npcId;
                         float prior = w.Relations.TryGetValue(key, out var trust) ? trust : 0.5f;
@@ -141,13 +148,14 @@ namespace Town.Core.Dragonsleep
                             After = w.Relations[key].ToString("0.00"), Note = "收到新信息"
                         });
                     }
-                    line = a.Name + "悄悄对" + listener.Name + "说了些什么";
+                    line = a.Name + (t.Verdict.Kind == VerdictKind.Partial ? "只把以下消息告诉" : "把以下消息告诉") + listener.Name +
+                        "：" + string.Join("；", shared.Select(b => b.Text));
                     break;
                 default:
                     line = a.Name + "一夜没有出门";
                     break;
             }
-            t.Verdict.Reason = reason;
+            if (verb != "tell") t.Verdict.Reason = reason;
             t.Presented = line + "。";
             w.Chronicle.Add(w.ClockText + "：" + line + "。");
         }

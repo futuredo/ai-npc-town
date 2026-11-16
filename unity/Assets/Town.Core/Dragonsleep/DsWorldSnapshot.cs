@@ -35,7 +35,9 @@ namespace Town.Core.Dragonsleep
                 }).ToList(),
                 ["beliefs"] = w.Beliefs.Select(b => (object)new Dictionary<string, object>
                 {
-                    ["id"] = b.Id, ["owner"] = b.Owner, ["text"] = b.Text, ["topic"] = b.Topic,
+                    ["id"] = b.Id, ["owner"] = b.Owner, ["root"] = b.EffectiveRootId, ["hops"] = b.EffectiveHops,
+                    ["root_owner"] = b.RootOwner ?? w.Belief(b.EffectiveRootId)?.Owner ?? (b.EffectiveHops == 0 ? b.Owner : null),
+                    ["text"] = b.Text, ["topic"] = b.Topic,
                     ["reveal_trust"] = b.RevealTrust, ["true"] = b.True, ["source"] = b.Source
                 }).ToList(),
                 ["player_knows"] = w.PlayerKnows.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
@@ -91,7 +93,13 @@ namespace Town.Core.Dragonsleep
                 });
             foreach (var b in Objects(d, "beliefs"))
                 w.Beliefs.Add(new DsBelief { Id = b.Str("id"), Owner = b.Str("owner"), Text = b.Str("text"), Topic = b.Str("topic"),
+                    RootId = b.ContainsKey("root") && b.Str("root") != null ? b.Str("root") : LegacyRoot(b.Str("id")),
+                    RootOwner = b.Str("root_owner"),
+                    Hops = b.ContainsKey("hops") ? (int)b.Num("hops").Value : LegacyHops(b.Str("id")),
                     RevealTrust = Float(b, "reveal_trust"), True = Bool(b, "true"), Source = b.Str("source") });
+            foreach (var belief in w.Beliefs)
+                if (string.IsNullOrEmpty(belief.RootOwner))
+                    belief.RootOwner = w.Belief(belief.EffectiveRootId)?.Owner ?? (belief.EffectiveHops == 0 ? belief.Owner : null);
             w.PlayerKnows.UnionWith(d.StrList("player_knows"));
             foreach (var l in Objects(d, "laws"))
                 w.Laws.Add(l.Str("id"), new DsLaw { Id = l.Str("id"), Text = l.Str("text"), SupportTags = l.StrList("support").ToArray(),
@@ -133,6 +141,9 @@ namespace Town.Core.Dragonsleep
         static int Int(Dictionary<string, object> d, string key) => (int)d.Num(key).Value;
         static float Float(Dictionary<string, object> d, string key) => (float)d.Num(key).Value;
         static bool Bool(Dictionary<string, object> d, string key) => (bool)d[key];
+
+        static string LegacyRoot(string id) => (id ?? "").Split('@')[0];
+        static int LegacyHops(string id) => string.IsNullOrEmpty(id) ? 0 : id.Count(c => c == '@');
 
         public static string Digest(string text)
         {

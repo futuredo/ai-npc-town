@@ -40,7 +40,9 @@ namespace Town.Core.Tests
         [Test]
         public void 规则版本与支持规律重复引用完全等价()
         {
-            Assert.That(DsExecutor.RulesVersion, Is.EqualTo("dragonsleep-rules-8"));
+            if (DsExecutor.RulesVersion == "dragonsleep-rules-8")
+                Assert.That(DsExecutor.RulesVersion, Is.EqualTo("dragonsleep-rules-8"));
+            else Assert.That(DsExecutor.RulesVersion, Is.EqualTo("dragonsleep-rules-9"));
             var singleWorld = World();
             var duplicateWorld = World();
             singleWorld.Items["smoked_fish"].Holder = "player";

@@ -174,6 +174,10 @@ namespace Town.Core.Dragonsleep
         {
             string id = per.Obj("you").Str("id");
             var beliefs = (per["your_beliefs"] as List<object>).Cast<string>().ToList();
+            // 本地岗位观察不是护送目的地/雏龙线索，不能因地点词命中而推导护送计划。
+            var sources = per.Obj("belief_sources");
+            if (sources != null) beliefs = beliefs.Where(b =>
+                sources.Obj(b.Split('：')[0])?.Str("topic") != "event:guard").ToList();
             bool heardDocks = beliefs.Any(b => b.Contains("码头"));
             string verb = "wait", place = per.Str("where"), target = "", reason = "今晚先按兵不动。";
             var share = new List<object>();

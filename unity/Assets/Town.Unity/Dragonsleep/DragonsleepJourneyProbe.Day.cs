@@ -37,8 +37,11 @@ namespace Town.Unity.Dragonsleep
             var s = _game.Session; var sdk = _game.SceneTransaction.LastReceipt; var host = s.RuleEvents.Last().Receipt;
             Require(s.World.Phase == phase && s.World.Day == 1 && s.CaptureState().Spent == 0 && s.TimeLeftInPhase == 4,
                 "SDK 日间时钟与剩余时间未原子更新。");
+            // rules-9 的换岗事件会把当前地点的岗位观察写入候选世界，随后再推进时段，
+            // 因而每次日间提交产生两次版本递增；提交次数和巡逻骰仍保持一次。
+            int versionDelta = DsExecutor.RulesVersion == "dragonsleep-rules-9" ? count * 2 : count;
             Require(_game.SceneTransaction.DayCommits == count && _game.SceneTransaction.Commits == count &&
-                s.World.Version == _sceneVersion + count && s.World.RollCounter == 0, "日间提交次数、版本或巡逻次数错误。");
+                s.World.Version == _sceneVersion + versionDelta && s.World.RollCounter == 0, "日间提交次数、版本或巡逻次数错误。");
             Require(sdk.Code == "committed" && host.Status == "committed" && host.Applied && sdk.BeforeDigest == _before &&
                 host.BeforeHash == _before && sdk.AfterDigest == State() && host.AfterHash == State(), "日间 SDK 与宿主回执不一致。");
         }

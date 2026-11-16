@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Town.Core.Dragonsleep
 {
@@ -16,6 +17,7 @@ namespace Town.Core.Dragonsleep
             t.Changes.Add(new WorldChange { Path = "player.place", Before = w.PlayerPlace, After = place });
             bool bring = wh.Following && wh.CapturedBy == null && wh.Place == w.PlayerPlace;
             w.PlayerPlace = place;
+            ObserveLocalGuards(w, place, t);
             if (bring)
             {
                 t.Changes.Add(new WorldChange { Path = "whelp.place", Before = wh.Place, After = place, Note = "跟随玩家" });
@@ -52,6 +54,8 @@ namespace Town.Core.Dragonsleep
         {
             t.Verdict.Kind = VerdictKind.Accepted;
             t.Verdict.Reason = "换岗";
+            foreach (string place in w.Actors.Values.Select(a => a.Place).Distinct().OrderBy(p => p, System.StringComparer.Ordinal))
+                ObserveLocalGuards(w, place, t);
             string patrol = DsGuards.Patrol(w, t, rolls);
             if (patrol != null && w.Whelp.CapturedBy != null) { t.Verdict.Kind = VerdictKind.Rejected; t.Verdict.Reason = "雏龙被卫兵发现"; }
             t.Presented = patrol ?? "";

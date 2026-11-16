@@ -98,7 +98,8 @@ namespace Town.Core.Dragonsleep
         }
 
         static void B(DsWorld w, string id, string owner, string topic, string text, float revealTrust) =>
-            w.Beliefs.Add(new DsBelief { Id = id, Owner = owner, Topic = topic, Text = text, RevealTrust = revealTrust });
+            w.Beliefs.Add(new DsBelief { Id = id, Owner = owner, RootId = id, RootOwner = owner, Hops = 0,
+                Topic = topic, Text = text, RevealTrust = revealTrust });
 
         static void L(DsWorld w, string id, string text, string[] support, string[] hinder, bool common) =>
             w.Laws[id] = new DsLaw

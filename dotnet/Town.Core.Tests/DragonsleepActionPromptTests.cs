@@ -57,9 +57,19 @@ namespace Town.Core.Tests
             Assert.AreEqual("ds_adjudicate_v1", packet.SchemaName);
             Assert.AreEqual(DsReplayFrame.Fingerprint(explicitLegacy), DsReplayFrame.Fingerprint(packet));
             string binding = "Adjudicate|player|" + Protocol.Version + "|dragonsleep-rules-8";
-            Assert.AreEqual("dragonsleep-rules-8", DsExecutor.RulesVersion);
-            Assert.AreEqual(binding, ActionPromptCodec.Binding);
-            Assert.AreEqual(binding, ActionPromptCodec.BindingFor(packet));
+            if (DsExecutor.RulesVersion == "dragonsleep-rules-8")
+            {
+                Assert.AreEqual("dragonsleep-rules-8", DsExecutor.RulesVersion);
+                Assert.AreEqual(binding, ActionPromptCodec.Binding);
+                Assert.AreEqual(binding, ActionPromptCodec.BindingFor(packet));
+            }
+            else
+            {
+                Assert.AreEqual("dragonsleep-rules-9", DsExecutor.RulesVersion);
+                string rules9Binding = "Adjudicate|player|" + Protocol.Version + "|dragonsleep-rules-9";
+                Assert.AreEqual(rules9Binding, ActionPromptCodec.Binding);
+                Assert.AreEqual(rules9Binding, ActionPromptCodec.BindingFor(packet));
+            }
             CollectionAssert.AreEqual(LegacyEncoding(packet), ActionPromptCodec.Encode(packet));
             CollectionAssert.AreEqual(ActionPromptCodec.Encode(explicitLegacy), ActionPromptCodec.Encode(packet));
             Assert.IsNull(JObject.Parse(Encoding.UTF8.GetString(ActionPromptCodec.Encode(packet)))["action_prompt_version"]);

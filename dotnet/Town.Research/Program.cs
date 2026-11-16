@@ -14,6 +14,19 @@ internal static class Program
     {
         string root = Directory.GetCurrentDirectory();
         if (!File.Exists(Path.Combine(root,"dotnet","Town.sln"))) { Console.Error.WriteLine("请在仓库根目录运行。"); return 2; }
+        if (args.Contains("--social-chain"))
+        {
+            if (args.Any(x => x != "--social-chain" && x != "--prepare" && x != "--live") ||
+                args.Contains("--prepare") && args.Contains("--live")) return 2;
+            try
+            {
+                if (args.Contains("--prepare")) return args.Length == 2 ? SocialChainResearch.Prepare(root) : 2;
+                return await SocialChainResearch.Run(root, args.Contains("--live"));
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException ||
+                e is InvalidOperationException || e is ArgumentException)
+            { Console.Error.WriteLine("社会链研究停止；已保留已落盘证据，不输出凭据或异常正文。"); return 2; }
+        }
         // 独立诊断入口；不带此开关的历史入口、过滤、种子与默认离线行为保持原样。
         if (args.Contains("--four-mechanisms"))
         {

@@ -192,7 +192,9 @@ namespace Town.Tests.PlayMode
                 Assert.AreEqual(0, actual.Spent);
                 Assert.AreEqual(legacy.CaptureState().Json, actual.Json, "新旧完整世界与时间快照须逐字一致");
                 Assert.AreEqual(legacy.World.Version, world.Version, "版本号必须保留旧路径语义");
-                Assert.AreEqual(initialVersion + i + 1, world.Version, "正午巡逻增长一版，黄昏只推进一版");
+                int expectedVersionDelta = DsExecutor.RulesVersion == "dragonsleep-rules-9" ? i * 2 : i + 1;
+                Assert.AreEqual(initialVersion + expectedVersionDelta, world.Version,
+                    "rules-9 换岗观察与时段推进各产生一版；仍只提交一次且不重复巡逻");
                 Assert.AreEqual(legacy.World.RollCounter, world.RollCounter);
                 Assert.AreEqual(initialRoll + 1, world.RollCounter, "正午只巡逻一次，黄昏岗哨关闭不得再掷骰");
                 Assert.IsNull(world.Whelp.CapturedBy, "固定夹具的首次巡逻必须未抓捕");

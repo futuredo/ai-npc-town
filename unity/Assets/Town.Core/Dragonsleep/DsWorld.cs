@@ -11,6 +11,12 @@ namespace Town.Core.Dragonsleep
     {
         public string Id;
         public string Owner;
+        /// <summary>根认知 ID；旧快照没有该字段时按 ID 前缀补全。</summary>
+        public string RootId;
+        /// <summary>根拥有者独立保存，避免有界事件淘汰根记录后失去防回传依据。</summary>
+        public string RootOwner;
+        /// <summary>从根认知传递的跳数：亲历为 0，传话最多 2。</summary>
+        public int Hops;
         public string Text;
         public string Topic;
         /// <summary>秘密只有在信任足够时才允许说出口（规则裁决，不靠模型自觉）。</summary>
@@ -18,6 +24,11 @@ namespace Town.Core.Dragonsleep
         /// <summary>该认知是否属实；不属实的认知是“错误相信”，可被传播。</summary>
         public bool True = true;
         public string Source = "seen";
+
+        public string EffectiveRootId => string.IsNullOrEmpty(RootId) ?
+            (Id ?? "").Split('@')[0] : RootId;
+        public int EffectiveHops => string.IsNullOrEmpty(RootId) ?
+            (Id ?? "").Count(c => c == '@') : Math.Max(0, Hops);
     }
 
     /// <summary>世界规律：语义判定的依据（例：雏龙爱吃熏鱼、龙厌恶冷铁）。</summary>

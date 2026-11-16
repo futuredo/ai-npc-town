@@ -7,7 +7,7 @@ namespace Town.Core.Dragonsleep
     /// <summary>规则只修改私有候选世界；旧路径由本类提交，显式行动内核路径只复用 Prepare。</summary>
     public sealed class DsExecutor
     {
-        public const string RulesVersion = "dragonsleep-rules-8";
+        public const string RulesVersion = "dragonsleep-rules-9";
         readonly Dictionary<string, DsExecutionReceipt> _committed = new Dictionary<string, DsExecutionReceipt>();
         public IDsRoll RollSource { get; }
         public DsExecutionMode Mode { get; }

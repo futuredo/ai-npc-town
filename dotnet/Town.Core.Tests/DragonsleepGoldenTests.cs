@@ -9,7 +9,7 @@ using Town.Core.Dragonsleep;
 namespace Town.Core.Tests
 {
     /// <summary>
-    /// 当前 rules-8 黄金与原样保留的 rules-6/7 历史证据。新版本不冒充与旧行为相同。
+    /// 当前 rules-9 黄金与原样保留的 rules-6/7/8 历史证据。新版本不冒充与旧行为相同。
     /// 不提供自动更新快照开关；预期值的修改必须经过人工审查。
     /// </summary>
     public class DragonsleepGoldenTests
@@ -19,7 +19,16 @@ namespace Town.Core.Tests
 
         [Test]
         public async Task rules8冻结起点的计划与全部居民感知_提示与提案字节固定()
-            => Check("rules-8/perceptions.json", await CapturePerceptionsAsync());
+        {
+            if (DsExecutor.RulesVersion == "dragonsleep-rules-8")
+                Check("rules-8/perceptions.json", await CapturePerceptionsAsync());
+            else Assert.AreEqual("aaec5438d50c4d10f709d00b00cef65ab1058c41d827aad6460e8ae5e20ca567",
+                Hash(File.ReadAllText(Fixture("rules-8/perceptions.json"))));
+        }
+
+        [Test]
+        public async Task rules9冻结起点的计划与全部居民感知_提示与提案字节固定()
+            => Check("rules-9/perceptions.json", await CapturePerceptionsAsync());
 
         public static async Task<Dictionary<string, object>> CapturePerceptionsAsync()
         {
@@ -50,7 +59,16 @@ namespace Town.Core.Tests
 
         [Test]
         public async Task rules8固定种子完整离线局_全部轨迹回执与终局哈希固定()
-            => Check("rules-8/episode.json", await CaptureEpisodeAsync());
+        {
+            if (DsExecutor.RulesVersion == "dragonsleep-rules-8")
+                Check("rules-8/episode.json", await CaptureEpisodeAsync());
+            else Assert.AreEqual("0aa55087b9491eb77f4bc0f7bef36b3f02795ea08d49485add19b36fdefcb3a4",
+                Hash(File.ReadAllText(Fixture("rules-8/episode.json"))));
+        }
+
+        [Test]
+        public async Task rules9固定种子完整离线局_全部轨迹回执与终局哈希固定()
+            => Check("rules-9/episode.json", await CaptureEpisodeAsync());
 
         public static async Task<Dictionary<string, object>> CaptureEpisodeAsync()
         {
@@ -128,9 +146,13 @@ namespace Town.Core.Tests
                     Verdict = (VerdictKind)Enum.Parse(typeof(VerdictKind), t.Str("verdict")),
                     Response = new ProviderResult { RawText = t.Str("raw"), Simulated = true },
                 };
-                Assert.AreEqual(before.Hash, t.Obj("receipt").Str("after_hash"), "规划不能改变录制世界");
+                if (DsExecutor.RulesVersion == "dragonsleep-rules-6")
+                    Assert.AreEqual(before.Hash, t.Obj("receipt").Str("after_hash"), "规划不能改变录制世界");
+                else Assert.AreEqual(Hash(MiniJson.Write(d.Obj("before"))), t.Obj("receipt").Str("after_hash"),
+                    "历史规划不能改变录制世界；旧格式哈希不混用补全来源字段后的新快照哈希");
                 Assert.AreEqual("dragonsleep-rules-6", frame.RulesVersion);
-                Assert.AreEqual("dragonsleep-rules-8", DsExecutor.RulesVersion);
+                if (DsExecutor.RulesVersion == "dragonsleep-rules-8") Assert.AreEqual("dragonsleep-rules-8", DsExecutor.RulesVersion);
+                else Assert.AreEqual("dragonsleep-rules-9", DsExecutor.RulesVersion);
                 Assert.IsFalse(await frame.VerifyAsync(), "不能跨规则版本冒充严格回放成功：" + d.Str("scope"));
                 Assert.IsFalse(await frame.VerifyExecutionAsync(), "执行回放也不能跳过版本核对");
                 frame.PromptHash = new string('0', 64);
@@ -175,7 +197,33 @@ namespace Town.Core.Tests
             {
                 var frame = DsReplayFrame.Parse(line);
                 Assert.AreEqual("dragonsleep-rules-8", frame.RulesVersion);
+                if (DsExecutor.RulesVersion != frame.RulesVersion)
+                {
+                    Assert.IsFalse(await frame.VerifyAsync());
+                    Assert.IsFalse(await frame.VerifyExecutionAsync());
+                    continue;
+                }
                 Assert.IsTrue(await frame.VerifyAsync(), frame.Input);
+                frame.PromptHash = new string('0', 64);
+                Assert.IsFalse(await frame.VerifyAsync());
+                var changed = DsReplayFrame.Parse(line);
+                var world = changed.After.Restore(); world.Coins++;
+                changed.After = DsWorldSnapshot.Capture(world, changed.After.Spent, changed.After.PhaseBudget);
+                Assert.IsFalse(await changed.VerifyAsync(), "正确提示也不能接受错误终态");
+            }
+        }
+
+        [Test]
+        public async Task rules9新录制严格回放_提示与终态篡改被拒绝()
+        {
+            var lines = File.ReadAllLines(Fixture("rules-9/plans.replay.jsonl"));
+            Assert.AreEqual(14, lines.Length);
+            foreach (string line in lines)
+            {
+                var frame = DsReplayFrame.Parse(line);
+                Assert.AreEqual("dragonsleep-rules-9", frame.RulesVersion);
+                Assert.IsTrue(await frame.VerifyAsync(), frame.Input);
+                Assert.IsTrue(await frame.VerifyExecutionAsync(), frame.Input);
                 frame.PromptHash = new string('0', 64);
                 Assert.IsFalse(await frame.VerifyAsync());
                 var changed = DsReplayFrame.Parse(line);

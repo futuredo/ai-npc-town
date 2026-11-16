@@ -123,7 +123,14 @@ namespace Town.Core.Tests
             Assert.AreEqual(before.Restore().Day, current.World.Day);
             Assert.AreEqual(before.Restore().Whelp.Fear, current.World.Whelp.Fear, "换岗不能额外增加恐惧");
             Assert.AreEqual(before.Restore().RollCounter + (phase == DayPhase.Dawn ? 1 : 0), current.World.RollCounter);
-            Assert.AreEqual(before.Restore().Version + (phase == DayPhase.Dawn ? 2 : 1), current.World.Version);
+            if (DsExecutor.RulesVersion == "dragonsleep-rules-8")
+                Assert.AreEqual(before.Restore().Version + (phase == DayPhase.Dawn ? 2 : 1), current.World.Version);
+            else
+            {
+                Assert.AreEqual("dragonsleep-rules-9", DsExecutor.RulesVersion);
+                Assert.AreEqual(before.Restore().Version + 2, current.World.Version,
+                    "rules-9每次换岗实际新增本人本地岗哨观察，独立于是否掷巡逻骰");
+            }
             bool captured = phase == DayPhase.Dawn && roll == 0.0;
             Assert.AreEqual(captured ? "osric" : null, current.World.Whelp.CapturedBy);
             Assert.AreEqual(captured, actual.WhelpCaptured);
