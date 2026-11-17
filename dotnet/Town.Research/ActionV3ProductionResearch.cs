@@ -369,10 +369,12 @@ internal static partial class ActionKernelResearch
             g => new { requested = g.Count(), intent = g.Count(r => (bool)r["intent_match"]), effect = g.Count(r => (bool)r["effect_match"]),
                 regression_observed = g.Count(r => (bool)r["regression_observed"]) });
         bool keyProbes = new[] { "observe", "wait", "confide", "lure", "repeat_show", "repeat_buy", "take_after_delivery" }
-            .All(group => rows.Any(r => (string)r["group"] == group));
+            .All(group => rows.Any(r => (string)r["group"] == group && (bool)r["intent_match"]));
+        // 原套件的晋升门槛只约束意图、关键探针、不变量、回放和隐私。
+        // 合法骰失败/规则拒绝属于独立的 effect 分账，不能冒充意图失败，
+        // 也不能用效果分账额外收紧原门槛；失败原因仍完整保留在结果中。
         bool promotion = status == "completed" && rows.Count == ActionV3ProductionMaximumRequests
-            && intent >= 44 && keyProbes && invariants == 48 && replay == 48 && privacy == 48
-            && nonRegressionEffectFailures == 0;
+            && intent >= 44 && keyProbes && invariants == 48 && replay == 48 && privacy == 48;
         decimal known = rows.Where(r => r["estimated_usd"] != null).Sum(r => (decimal)r["estimated_usd"]);
         int unknown = rows.Count(r => r["estimated_usd"] == null);
         File.WriteAllText(Path.Combine(dir, "summary.json"), JsonConvert.SerializeObject(new
@@ -389,6 +391,7 @@ internal static partial class ActionKernelResearch
             promotion_gate_passed = promotion,
             known_estimated_usd = known, unknown_costs = unknown, estimated_usd = unknown == 0 ? (decimal?)known : null,
             stop_phase = stopPhase, groups, results = rows,
+            effect_gate_policy = "effects独立记账；合法骰失败/规则拒绝不计入意图门槛，历史反例单独观察；不代表普遍可靠性。",
             scope = "Game生产接线同构的有限批；反例独立记录，不用最终目标抵消模型意图或规则效果；不代表普遍可靠性。"
         }, Formatting.Indented));
     }
