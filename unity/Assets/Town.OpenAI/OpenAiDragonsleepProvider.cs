@@ -142,7 +142,14 @@ namespace Town.OpenAI
             EstimatedUsd = usage?.Usd,
         };
 
-        private sealed class TokenUsageLite { public int Input; public int Output; public decimal? Usd; }
+        private sealed class TokenUsageLite { public int? Input; public int? Output; public decimal? Usd; }
+
+        // 缺失/非法不是零；只接受非负、Int32范围内的JSON整数，不做字符串/浮点强转。
+        private static int? UsageInteger(JToken token)
+        {
+            if (token?.Type != JTokenType.Integer) return null;
+            return int.TryParse(token.ToString(Formatting.None), out int n) && n >= 0 ? (int?)n : null;
+        }
 
         private ProviderResult Parse(string json)
         {
@@ -151,10 +158,12 @@ namespace Town.OpenAI
             TokenUsageLite usage = null;
             if (response["usage"] is JObject u)
             {
-                int input = (int?)u["input_tokens"] ?? 0;
-                int cached = (int?)u["input_tokens_details"]?["cached_tokens"] ?? 0;
-                int output = (int?)u["output_tokens"] ?? 0;
-                usage = new TokenUsageLite { Input = input, Output = output, Usd = OpenAiPolicy.EstimateUsd(input, cached, output) };
+                int? input = UsageInteger(u["input_tokens"]);
+                int? output = UsageInteger(u["output_tokens"]);
+                int? cached = UsageInteger((u["input_tokens_details"] as JObject)?["cached_tokens"]);
+                usage = new TokenUsageLite { Input = input, Output = output,
+                    Usd = input.HasValue && output.HasValue && cached.HasValue && cached.Value <= input.Value
+                        ? (decimal?)OpenAiPolicy.EstimateUsd(input.Value, cached.Value, output.Value) : null };
             }
             var content = (response["output"] as JArray ?? new JArray()).OfType<JObject>()
                 .Where(x => (string)x["type"] == "message")
@@ -313,7 +322,7 @@ namespace Town.OpenAI
                 {
                     Present = true,
                     InputTokens = usageObject == null ? (int?)null : IntValue(usageObject["input_tokens"]),
-                    CachedInputTokens = usageObject == null ? (int?)null : IntValue(usageObject["input_tokens_details"]?["cached_tokens"]),
+                    CachedInputTokens = usageObject == null ? (int?)null : IntValue((usageObject["input_tokens_details"] as JObject)?["cached_tokens"]),
                     OutputTokens = usageObject == null ? (int?)null : IntValue(usageObject["output_tokens"])
                 };
             }
@@ -338,9 +347,8 @@ namespace Town.OpenAI
             return shape;
         }
 
-        static int? IntValue(JToken token) => token != null &&
-            (token.Type == JTokenType.Integer || token.Type == JTokenType.Float) &&
-            int.TryParse(token.ToString(), out var value) ? (int?)value : null;
+        static int? IntValue(JToken token) => token?.Type == JTokenType.Integer &&
+            int.TryParse(token.ToString(Formatting.None), out var value) && value >= 0 ? (int?)value : null;
 
         static string TypeName(JToken token)
         {

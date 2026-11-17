@@ -85,6 +85,71 @@ namespace Town.Core.Tests
             Assert.AreEqual(1, budget.Calls);
         }
 
+        [TestCase("{}", null, null)]
+        [TestCase("{\"output_tokens\":0}", null, 0)]
+        [TestCase("{\"input_tokens\":0}", 0, null)]
+        [TestCase("{\"input_tokens\":\"0\",\"output_tokens\":0}", null, 0)]
+        [TestCase("{\"input_tokens\":-1,\"output_tokens\":0}", null, 0)]
+        [TestCase("{\"input_tokens\":1.5,\"output_tokens\":0}", null, 0)]
+        [TestCase("{\"input_tokens\":2147483648,\"output_tokens\":0}", null, 0)]
+        [TestCase("{\"input_tokens\":8,\"output_tokens\":2}", 8, 2)]
+        [TestCase("{\"input_tokens\":8,\"output_tokens\":2,\"input_tokens_details\":{\"cached_tokens\":9}}", 8, 2)]
+        [TestCase("{\"input_tokens\":8,\"output_tokens\":2,\"input_tokens_details\":{\"cached_tokens\":\"0\"}}", 8, 2)]
+        [TestCase("{\"input_tokens\":8,\"output_tokens\":2,\"input_tokens_details\":5}", 8, 2)]
+        [TestCase("{\"input_tokens\":8,\"output_tokens\":-1,\"input_tokens_details\":{\"cached_tokens\":0}}", 8, null)]
+        [TestCase("{\"input_tokens\":8,\"output_tokens\":2,\"input_tokens_details\":{\"cached_tokens\":-1}}", 8, 2)]
+        public async Task 残缺或非法usage保持字段未知_不补零_不重试(string usage, int? input, int? output)
+        {
+            var http = new FakeHttp { Reply = () => UsageResponse(JToken.Parse(usage)) };
+            var budget = new Budget();
+            using var provider = new OpenAiDragonsleepProvider("test-key", budget, http);
+            var t = await new DragonsleepSession(provider).SpeakAsync("marta", "你好");
+            Assert.IsNull(t.Provider.Error); Assert.NotNull(t.Receipt);
+            Assert.AreEqual(input, t.Provider.InputTokens); Assert.AreEqual(output, t.Provider.OutputTokens);
+            Assert.IsNull(t.Provider.EstimatedUsd);
+            Assert.AreEqual(1, http.Calls); Assert.AreEqual(1, budget.Calls);
+        }
+
+        [TestCase(0, 0, 0)]
+        [TestCase(900, 80, 0)]
+        [TestCase(900, 80, 12)]
+        public async Task 完整有效usage才估算_显式合法零可以为零(int input, int output, int cached)
+        {
+            var http = new FakeHttp { Reply = () => UsageResponse(new JObject { ["input_tokens"] = input,
+                ["output_tokens"] = output, ["input_tokens_details"] = new JObject { ["cached_tokens"] = cached } }) };
+            using var provider = new OpenAiDragonsleepProvider("test-key", new Budget(), http);
+            var result = await provider.CompleteAsync(ContextBuilder.BuildDialogue(
+                NpcPerceptionView.Capture(DsContent.NewWorld(), "marta"), "你好"), CancellationToken.None);
+            Assert.AreEqual(OpenAiPolicy.EstimateUsd(input, cached, output), result.EstimatedUsd);
+            Assert.AreEqual(input, result.InputTokens); Assert.AreEqual(output, result.OutputTokens);
+        }
+
+        [TestCase("incomplete")]
+        [TestCase("missing_output")]
+        [TestCase("refusal")]
+        public async Task 失败响应有空usage也未知_保留原失败码(string kind)
+        {
+            var http = new FakeHttp { Reply = () => UsageResponse(new JObject(), kind) };
+            using var provider = new OpenAiDragonsleepProvider("test-key", new Budget(), http);
+            var result = await provider.CompleteAsync(ContextBuilder.BuildDialogue(
+                NpcPerceptionView.Capture(DsContent.NewWorld(), "marta"), "你好"), CancellationToken.None);
+            Assert.AreEqual(kind == "incomplete" ? "incomplete_response" : kind, result.Error);
+            Assert.IsNull(result.InputTokens); Assert.IsNull(result.OutputTokens); Assert.IsNull(result.EstimatedUsd);
+            Assert.AreEqual(1, http.Calls);
+        }
+
+        static HttpResponseMessage UsageResponse(JToken usage, string kind = "completed")
+        {
+            var content = kind == "missing_output" ? new JArray() : new JArray(kind == "refusal"
+                ? new JObject { ["type"] = "refusal", ["refusal"] = "test" }
+                : new JObject { ["type"] = "output_text", ["text"] = "{\"say\":\"你好\",\"cites\":[],\"reveal\":[],\"trust_delta\":0,\"persuaded_by\":[],\"action\":\"none\"}" });
+            return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(new JObject
+            {
+                ["status"] = kind == "incomplete" ? "incomplete" : "completed", ["usage"] = usage,
+                ["output"] = new JArray(new JObject { ["type"] = "message", ["content"] = content })
+            }.ToString()) };
+        }
+
         [Test]
         public void 请求体使用严格Schema且玩家输入标为不可信_不含世界真值()
         {

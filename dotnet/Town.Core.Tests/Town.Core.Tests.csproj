@@ -19,6 +19,11 @@
     <Compile Include="../Town.Research/FourMechanismResearch.cs" Link="Research/FourMechanismResearch.cs" />
     <Compile Include="../Town.Research/ResponseShapeDiagnostics.cs" Link="Research/ResponseShapeDiagnostics.cs" />
     <Compile Include="../Town.Research/ResearchStatistics.cs" Link="Research/ResearchStatistics.cs" />
+    <Compile Include="../Town.Research/Journey.cs" Link="Research/Journey.cs" />
+    <Compile Include="../Town.Research/ContinuousWorldResearch.cs" Link="Research/ContinuousWorldResearch.cs" />
+    <Compile Include="../Town.Research/ContinuousWorldResearch.Audit.cs" Link="Research/ContinuousWorldResearch.Audit.cs" />
+    <Compile Include="../Town.Research/ContinuousWorldResearch.Artifacts.cs" Link="Research/ContinuousWorldResearch.Artifacts.cs" />
+    <Compile Include="../Town.Research/ContinuousWorldResearch.Snapshot.cs" Link="Research/ContinuousWorldResearch.Snapshot.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.cs" Link="Research/ActionKernelResearch.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Transfer.cs" Link="Research/ActionKernelResearch.Transfer.cs" />
     <Compile Include="../Town.Research/ActionKernelResearch.Semantics.cs" Link="Research/ActionKernelResearch.Semantics.cs" />

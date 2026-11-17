@@ -10,8 +10,22 @@ using Town.OpenAI;
 
 internal static class Journey
 {
-    public static async Task<int> Run(string root, bool live, int seed=18, int nights=1, bool fourMechanisms=false)
+    // options 仅供独立研究宿主注入；不选择时保留历史入口、确认方式与三夜时序。
+    internal sealed class RunOptions
     {
+        public string Directory;
+        public IAiProvider Provider;
+        public Action<AiTrace,DsWorldSnapshot> Context;
+        public Action<string,string,DsReplayFrame,AiTrace> Observe;
+        public string Outcome { get; internal set; }
+    }
+
+    public static async Task<int> Run(string root, bool live, int seed=18, int nights=1, bool fourMechanisms=false,
+        RunOptions options=null)
+    {
+        if(options!=null&&(fourMechanisms||options.Provider==null||string.IsNullOrEmpty(options.Directory)||
+            !live&&!options.Provider.IsSimulated||live&&!(options.Provider is ContinuousWorldResearch.GuardedProvider)))
+            throw new ArgumentException("invalid_journey_research_options");
         if(fourMechanisms)FourMechanismResearch.VerifyRegistration(root,FourMechanismResearch.Folder(root));
         string dir=Path.Combine(root,".local","dragonsleep","experiments",DateTime.UtcNow.ToString("yyyyMMdd-HHmmss-fff")+(live?"-journey-live":"-journey-offline"));
         if(fourMechanisms)
@@ -19,15 +33,27 @@ internal static class Journey
             dir=Path.Combine(FourMechanismResearch.Folder(root),live?"c-live":"c-offline");
             if(Directory.Exists(dir))throw new InvalidOperationException("journey_already_exists_no_resampling");
         }
+        if(options!=null)
+        {
+            dir=options.Directory;
+            if(Directory.Exists(dir))throw new InvalidOperationException("journey_already_exists_no_resampling");
+        }
         Directory.CreateDirectory(dir);
         var frames=new List<(string Id,DsReplayFrame Frame)>();
         var before=new Dictionary<string,DsWorldSnapshot>();
         var traces=new List<AiTrace>(); string step="";
-        using var online=live?new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,OpenAiRunProfile.SixMechanismResearch),profile:OpenAiRunProfile.SixMechanismResearch):null;
+        using var online=live&&options==null?new OpenAiDragonsleepProvider(LocalValidationAccess.ReadKey(root),new FileRequestBudget(root,OpenAiRunProfile.SixMechanismResearch),profile:OpenAiRunProfile.SixMechanismResearch):null;
         if(online!=null)ResponseShapeDiagnostics.Attach(online,dir);
         using var limited=fourMechanisms?new FourMechanismResearch.LimitedProvider(online??(IAiProvider)new RuleProvider(),live,live?FourMechanismResearch.Folder(root):dir):null;
-        var s=new DragonsleepSession(limited??(IAiProvider)online??new RuleProvider(),seed,requireBoundCraftConfirmation:fourMechanisms);
-        s.StageChanged+=(t,stage)=>{if(stage==AiStage.Context&&!before.ContainsKey(t.RequestId))before[t.RequestId]=s.CaptureState();};
+        var s=new DragonsleepSession(options?.Provider??limited??(IAiProvider)online??new RuleProvider(),seed,requireBoundCraftConfirmation:fourMechanisms);
+        s.StageChanged+=(t,stage)=>
+        {
+            if(stage==AiStage.Context&&!before.ContainsKey(t.RequestId))
+            {
+                before[t.RequestId]=s.CaptureState();
+                options?.Context?.Invoke(t,before[t.RequestId]);
+            }
+        };
         s.TraceCompleted+=t=>
         {
             if(t.CraftDecision=="pending")return;
@@ -35,6 +61,7 @@ internal static class Journey
             var f=DsReplayFrame.Capture(before[t.RequestId],s.CaptureState(),t);frames.Add((id,f));traces.Add(t);
             File.WriteAllText(Path.Combine(dir,id+".replay.json"),MiniJson.Write(f.ToRecord(),true));
             File.WriteAllText(Path.Combine(dir,id+".trace.json"),MiniJson.Write(t.ToRecord(),true));
+            options?.Observe?.Invoke(dir,id,f,t);
             if(fourMechanisms)
             {
                 if(t.Prompt!=null)File.WriteAllText(Path.Combine(dir,id+".payload.json"),OpenAiDragonsleepProvider.BuildPayload(t.Prompt,OpenAiRunProfile.SixMechanismResearch).ToString());
@@ -60,7 +87,7 @@ internal static class Journey
             }
             StopOnError(traces);
             var item=s.World.Items.Values.FirstOrDefault(i=>i.Crafted&&i.Holder=="player");
-            if(item==null) { Console.WriteLine("未获得生成物件，停止依赖它的后续步骤。");return 1; }
+            if(item==null) { if(options!=null)options.Outcome="craft_dependency_failed";Console.WriteLine("未获得生成物件，停止依赖它的后续步骤。");return 1; }
             s.World.PlayerPlace="docks";
             step="use_generated";await s.ActAsync("我使用「"+item.Name+"」，让它熟悉的气味把门后的雏龙吸引过来。");StopOnError(traces);
             step="feed_generated";await s.ActAsync("我蹲低身子，轻轻把「"+item.Name+"」喂给雏龙，让它尝尝这份小点心。");StopOnError(traces);
@@ -71,23 +98,41 @@ internal static class Journey
                 int day=s.World.Day;
                 while(s.World.Day==day&&!s.World.FinalDawn) { await s.EndPhaseAsync();StopOnError(traces); }
             }
+            if(options!=null)options.Outcome="completed";
             return 0;
         }
-        catch(InvalidOperationException){Console.WriteLine("链路停止，已保存实际响应与世界状态。");return 1;}
+        catch(InvalidOperationException)
+        {
+            if(options!=null)options.Outcome=traces.Any(t=>t.Provider?.Error!=null)?"provider_failed":"guard_or_invariant_failed";
+            Console.WriteLine("链路停止，已保存实际响应与世界状态。");return 1;
+        }
         finally
         {
             var replay=new List<object>();foreach(var f in frames)replay.Add(new {id=f.Id,passed=await f.Frame.VerifyAsync()});
             var provider=traces.Where(t=>t.Provider!=null).Select(t=>t.Provider).ToList();
-            decimal? total=provider.Any(p=>!p.EstimatedUsd.HasValue)?(decimal?)null:provider.Sum(p=>p.EstimatedUsd??0);
+            decimal? total=options!=null&&(!live||provider.Count==0||provider.Any(p=>!p.InputTokens.HasValue||!p.OutputTokens.HasValue))
+                ||provider.Any(p=>!p.EstimatedUsd.HasValue)?(decimal?)null:provider.Sum(p=>p.EstimatedUsd??0);
+            var metrics=s.Metrics();
+            if(options!=null)metrics["estimated_usd"]=total;
+            if(options!=null)File.WriteAllText(Path.Combine(dir,"journey.local.json"),JsonConvert.SerializeObject(new
+            {
+                outcome=options.Outcome,final=Newtonsoft.Json.Linq.JObject.Parse(s.CaptureState().Json),
+                traces=traces.Select(t=>new {kind=t.Kind.ToString(),actor=t.ActorId,input=t.PlayerInput,
+                    raw=t.Provider?.RawText,error=t.Provider?.Error,failure=t.FailureCode,verdict=t.Verdict.Kind.ToString(),
+                    craft_decision=t.CraftDecision,receipt=t.Receipt?.ToRecord()})
+            },Formatting.Indented));
             File.WriteAllText(Path.Combine(dir,"summary.json"),JsonConvert.SerializeObject(new {utc=DateTime.UtcNow,live,seed,nights,rulesVersion=DsExecutor.RulesVersion,
-                requests=provider.Count,estimatedUsd=total,inputTokens=provider.Sum(p=>p.InputTokens??0),outputTokens=provider.Sum(p=>p.OutputTokens??0),
+                requests=provider.Count,estimatedUsd=total,
+                inputTokens=options!=null&&(!live||provider.Any(p=>!p.InputTokens.HasValue))?(int?)null:provider.Sum(p=>p.InputTokens??0),
+                outputTokens=options!=null&&(!live||provider.Any(p=>!p.OutputTokens.HasValue))?(int?)null:provider.Sum(p=>p.OutputTokens??0),
                 whelp=new {s.World.Whelp.Hidden,s.World.Whelp.Hunger,s.World.Whelp.TrustPlayer,s.World.Whelp.CapturedBy},
                 protectedByPlayer=s.World.Flags.ContainsKey("whelp_hidden_by_player"),
                 createdItems=s.World.Items.Values.Where(i=>i.Crafted).Select(i=>new {i.Id,i.Name,i.Holder,tags=i.Tags.ToArray()}),
                 newBeliefs=s.World.Beliefs.Where(b=>b.Source.StartsWith("told:")).Select(b=>new {b.Id,b.Owner,b.Text,b.Source}),
-                relations=s.World.Relations,replay,metrics=s.Metrics(),
+                relations=s.World.Relations,replay,metrics,
                 finalDay=s.World.Day,ending=s.World.FinalDawn?DsEndings.Evaluate(s.World).Title:null,
-                notes="只有本链路的实际模型调用，未把预期结果写入世界；移动由实验脚本安排。各步可独立回放，非完整 Unity 寻路验收。"},Formatting.Indented));
+                notes=options==null?"只有本链路的实际模型调用，未把预期结果写入世界；移动由实验脚本安排。各步可独立回放，非完整 Unity 寻路验收。":
+                    "研究注入仍复用原Journey；模拟调用不代表真实usage，离线费用为未知而非0。移动由实验脚本安排；非完整Unity寻路或意图正确验收。"},Formatting.Indented));
             Console.WriteLine("报告："+dir);
         }
     }

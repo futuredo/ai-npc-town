@@ -14,6 +14,23 @@ internal static class Program
     {
         string root = Directory.GetCurrentDirectory();
         if (!File.Exists(Path.Combine(root,"dotnet","Town.sln"))) { Console.Error.WriteLine("请在仓库根目录运行。"); return 2; }
+        if (args.Contains("--continuous-world"))
+        {
+            if (args.Any(x => x != "--continuous-world" && x != "--prepare" && x != "--live") ||
+                args.Distinct(StringComparer.Ordinal).Count() != args.Length ||
+                args.Contains("--prepare") && args.Contains("--live")) return 2;
+            try
+            {
+                if (args.Contains("--prepare")) return ContinuousWorldResearch.Prepare(root);
+                return await ContinuousWorldResearch.Run(root, args.Contains("--live"));
+            }
+            catch (Exception e) when (e is IOException || e is UnauthorizedAccessException ||
+                e is InvalidOperationException || e is ArgumentException || e is Newtonsoft.Json.JsonException)
+            {
+                Console.Error.WriteLine("T3-2需要固定制品入口Town.Research.T3Launcher；普通--continuous-world不准入。保留既有证据，不输出异常正文。");
+                return 2;
+            }
+        }
         if (args.Contains("--social-chain"))
         {
             if (args.Any(x => x != "--social-chain" && x != "--prepare" && x != "--live") ||
